@@ -1,11 +1,11 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Gnomad Studio Webcanvas",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "identifier": "com.gnomadstudio.webcanvas",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://127.0.0.1:5173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
@@ -28,6 +28,20 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "fileAssociations": [
+      {
+        "ext": ["html", "htm"],
+        "mimeType": "text/html",
+        "name": "HTML Document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["txt"],
+        "mimeType": "text/plain",
+        "name": "Text Document",
+        "role": "Editor"
+      }
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

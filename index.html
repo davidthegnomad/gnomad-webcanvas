@@ -1,12 +1,173 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-app-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gnomad Studio Webcanvas</title>
+    <title>Gnomad Studio Webcanvas (Beta)</title>
+    <script>window.__GNOMAD_SPLASH_START__ = Date.now();</script>
+    <style>
+      #gnomad-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0d1117;
+        color: #f5f5f5;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        overflow: hidden;
+        transition: opacity 0.45s ease, visibility 0.45s ease;
+      }
+
+      #gnomad-splash::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 60%),
+          radial-gradient(ellipse 50% 40% at 80% 100%, rgba(168, 85, 247, 0.12), transparent 55%);
+        pointer-events: none;
+      }
+
+      #gnomad-splash.gnomad-splash-exit {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .gnomad-splash-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 2rem;
+        text-align: center;
+        animation: gnomad-splash-in 0.7s ease both;
+      }
+
+      .gnomad-splash-logo {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #fff;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+          0 20px 40px rgba(99, 102, 241, 0.25);
+        animation: gnomad-splash-pulse 2.4s ease-in-out infinite;
+      }
+
+      .gnomad-splash-title {
+        margin: 0;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        color: #f5f5f5;
+      }
+
+      .gnomad-splash-subtitle {
+        margin: -0.5rem 0 0;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #a3a3a3;
+      }
+
+      .gnomad-splash-beta {
+        display: inline-block;
+        margin-top: 0.35rem;
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #fbbf24;
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.28);
+      }
+
+      .gnomad-splash-tagline {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #737373;
+        max-width: 18rem;
+        line-height: 1.5;
+      }
+
+      .gnomad-splash-loader {
+        width: min(12rem, 60vw);
+        height: 3px;
+        margin-top: 0.5rem;
+        border-radius: 999px;
+        background: #21262d;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .gnomad-splash-loader::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent);
+        animation: gnomad-splash-shimmer 1.2s ease-in-out infinite;
+      }
+
+      @keyframes gnomad-splash-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes gnomad-splash-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+      }
+
+      @keyframes gnomad-splash-shimmer {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(320%); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .gnomad-splash-inner,
+        .gnomad-splash-logo,
+        .gnomad-splash-loader::after {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body class="bg-neutral-950 text-neutral-100">
+    <div id="gnomad-splash" role="status" aria-live="polite" aria-label="Loading Gnomad Studio Webcanvas">
+      <div class="gnomad-splash-inner">
+        <div class="gnomad-splash-logo" aria-hidden="true">WC</div>
+        <div>
+          <h1 class="gnomad-splash-title">Gnomad Studio</h1>
+          <p class="gnomad-splash-subtitle">Webcanvas</p>
+          <span class="gnomad-splash-beta">Public Beta</span>
+        </div>
+        <p class="gnomad-splash-tagline">Live HTML, CSS &amp; JavaScript editor</p>
+        <div class="gnomad-splash-loader" aria-hidden="true"></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

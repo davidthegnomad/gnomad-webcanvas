@@ -45,7 +45,8 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
-            patchelf
+            patchelf \
+            rpm
 
       - name: Install npm dependencies
         run: npm ci
@@ -58,13 +59,18 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: Gnomad Studio Webcanvas ${{ github.ref_name }}
           releaseBody: |
-            Desktop builds for Gnomad Studio Webcanvas.
+            **Public beta** — desktop builds for Gnomad Studio Webcanvas.
+
+            Web app: https://davidthegnomad.github.io/gnomad-webcanvas/
+            Get page: https://davidthegnomad.github.io/gnomad-webcanvas/get/
 
             | Platform | Artifact |
             |----------|----------|
-            | Linux | `.deb`, `.AppImage` |
+            | Linux | `.rpm` (Fedora/RHEL), `.deb` (Ubuntu/Debian), `.AppImage` |
             | Windows | `.msi`, `.exe` (NSIS) |
             | macOS (Apple Silicon) | `.dmg`, `.app` |
             | macOS (Intel) | `.dmg`, `.app` |
+
+            Feedback: david@gnomad.studio
           releaseDraft: true
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') }}

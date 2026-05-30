@@ -62,12 +62,12 @@ export default function ColorPicker() {
         type="color"
         value={color}
         onChange={(e) => setColor(e.target.value)}
-        className="w-7 h-7 rounded cursor-pointer border border-[#30363d] bg-transparent"
+        className="w-7 h-7 rounded cursor-pointer border border-wc bg-transparent"
       />
       <select
         value={format}
         onChange={(e) => setFormat(e.target.value as 'hex' | 'rgb' | 'hsl')}
-        className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none"
+        className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none"
       >
         <option value="hex">HEX</option>
         <option value="rgb">RGB</option>

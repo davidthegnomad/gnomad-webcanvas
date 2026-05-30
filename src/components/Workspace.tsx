@@ -4,6 +4,7 @@ import CodeEditorPane from './CodeEditorPane';
 import PreviewFrame from './PreviewFrame';
 import ErrorBoundary from './ErrorBoundary';
 import ResizeHandle from './ResizeHandle';
+import MonacoThemeSync from './MonacoThemeSync';
 import type { PaneType } from '../types/editor.types';
 import { PANE_LABELS, PANE_COLORS } from '../constants/editorConfig';
 
@@ -22,7 +23,7 @@ function PaneHeader({
 }) {
   return (
     <div
-      className="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border-b border-[#30363d] shrink-0 cursor-pointer select-none"
+      className="flex items-center justify-between px-3 py-1.5 bg-wc-surface border-b border-wc shrink-0 cursor-pointer select-none"
       onDoubleClick={onMaximize}
       onClick={onActivate}
     >
@@ -31,7 +32,7 @@ function PaneHeader({
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: PANE_COLORS[pane] }}
         />
-        <span className="text-xs font-medium text-neutral-400">
+        <span className="text-xs font-medium text-wc-muted">
           {PANE_LABELS[pane]}
         </span>
       </div>
@@ -40,7 +41,7 @@ function PaneHeader({
           e.stopPropagation();
           onMaximize();
         }}
-        className="text-[10px] text-neutral-600 hover:text-neutral-300 transition-colors"
+        className="text-[10px] text-wc-faint hover:text-wc-muted transition-colors"
         title={isMaximized ? 'Restore' : 'Maximize'}
       >
         {isMaximized ? '⊟' : '⊞'}
@@ -54,6 +55,7 @@ export default function Workspace() {
   const maximizedPane = useEditorStore((s) => s.maximizedPane);
   const activePane = useEditorStore((s) => s.activePane);
   const previewFullscreen = useEditorStore((s) => s.previewFullscreen);
+  const projectVersion = useEditorStore((s) => s.projectVersion);
   const setActivePane = useEditorStore((s) => s.setActivePane);
   const setMaximizedPane = useEditorStore((s) => s.setMaximizedPane);
   const togglePreviewFullscreen = useEditorStore((s) => s.togglePreviewFullscreen);
@@ -85,7 +87,7 @@ export default function Workspace() {
             />
           )}
           <ErrorBoundary fallbackLabel={PANE_LABELS[pane]}>
-            <CodeEditorPane pane={pane} />
+            <CodeEditorPane key={`${pane}-${projectVersion}`} pane={pane} />
           </ErrorBoundary>
         </div>
       </Panel>
@@ -104,15 +106,15 @@ export default function Workspace() {
 
   const renderHorizontalEditors = () => (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex bg-[#161b22] border-b border-[#30363d] shrink-0">
+      <div className="flex bg-wc-surface border-b border-wc shrink-0">
         {PANES.map((pane) => (
           <button
             key={pane}
             onClick={() => setActivePane(pane)}
             className={`px-4 py-2 text-xs font-medium transition-colors relative ${
               activePane === pane
-                ? 'text-neutral-100 bg-[#0d1117]'
-                : 'text-neutral-500 hover:text-neutral-300 hover:bg-[#1c2128]'
+                ? 'text-wc bg-wc-app'
+                : 'text-wc-faint hover:text-wc-muted hover:bg-wc-elevated'
             }`}
           >
             <span
@@ -133,7 +135,7 @@ export default function Workspace() {
             className={`absolute inset-0 ${activePane === pane ? '' : 'hidden'}`}
           >
             <ErrorBoundary fallbackLabel={PANE_LABELS[pane]}>
-              <CodeEditorPane pane={pane} />
+              <CodeEditorPane key={`${pane}-${projectVersion}`} pane={pane} />
             </ErrorBoundary>
           </div>
         ))}
@@ -143,6 +145,7 @@ export default function Workspace() {
 
   return (
     <div className="flex-1 overflow-hidden relative">
+      <MonacoThemeSync />
       <Group
         orientation={isVertical ? 'horizontal' : 'vertical'}
         id={`lv-main-${isVertical ? 'v' : 'h'}`}
@@ -177,7 +180,7 @@ export default function Workspace() {
       {previewFullscreen && (
         <button
           onClick={togglePreviewFullscreen}
-          className="absolute top-12 right-3 z-30 px-2 py-1 text-[10px] rounded bg-[#21262d]/80 text-neutral-400 hover:text-neutral-200 hover:bg-[#30363d] transition-colors backdrop-blur-sm"
+          className="absolute top-12 right-3 z-30 px-2 py-1 text-[10px] rounded bg-wc-elevated/80 text-wc-muted hover:text-wc hover:bg-wc-hover transition-colors backdrop-blur-sm"
         >
           Exit Fullscreen
         </button>

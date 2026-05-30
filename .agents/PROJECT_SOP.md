@@ -93,6 +93,8 @@ npm run tauri:build
 | Issue | Fix |
 |-------|-----|
 | Rust not found | Install via `rustup` — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| Tauri build fails on Fedora/Nobara | Run `./scripts/install-linux-deps.sh` (WebKitGTK, libsoup3, etc.) |
+| Wayland / WebKit crash on launch | Use `npm run tauri:dev:linux` or `./scripts/tauri-dev-linux.sh` |
 | Tauri build fails | Check `src-tauri/Cargo.toml` deps, run `cargo check` in src-tauri/ |
 | Vite HMR not working in Tauri | Ensure `tauri.conf.json` devUrl points to Vite dev server |
 

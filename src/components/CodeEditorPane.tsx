@@ -23,6 +23,7 @@ function CodeEditorPaneInner({ pane }: CodeEditorPaneProps) {
   const editorTheme = useEditorStore((s) => s.editorTheme);
   const fontSize = useEditorStore((s) => s.fontSize);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
   const initialValueRef = useRef(code);
 
   const debouncedSetCode = useDebouncedCallback(
@@ -40,14 +41,24 @@ function CodeEditorPaneInner({ pane }: CodeEditorPaneProps) {
   );
 
   const handleMount: OnMount = useCallback(
-    (editorInstance) => {
+    (editorInstance, monaco) => {
       editorRef.current = editorInstance;
+      monacoRef.current = monaco;
+      monaco.editor.setTheme(editorTheme);
       editorInstance.onDidFocusEditorWidget(() => {
         setActivePane(pane);
       });
     },
-    [pane, setActivePane],
+    [pane, setActivePane, editorTheme],
   );
+
+  useEffect(() => {
+    monacoRef.current?.editor.setTheme(editorTheme);
+  }, [editorTheme]);
+
+  useEffect(() => {
+    editorRef.current?.updateOptions({ fontSize });
+  }, [fontSize]);
 
   // Listen for floating tool insertions
   useEffect(() => {
@@ -96,7 +107,7 @@ function CodeEditorPaneInner({ pane }: CodeEditorPaneProps) {
         onChange={handleChange}
         onMount={handleMount}
         loading={
-          <div className="flex items-center justify-center h-full text-neutral-600 text-sm">
+          <div className="flex items-center justify-center h-full text-wc-faint text-sm">
             Loading editor...
           </div>
         }

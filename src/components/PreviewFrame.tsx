@@ -97,12 +97,12 @@ export default function PreviewFrame() {
           background={previewBackground}
           onCycleBackground={cyclePreviewBackground}
         />
-        <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
+        <div className="flex-1 flex items-center justify-center bg-wc-app">
           <div className="text-center">
             <div className="text-3xl mb-3 opacity-40">||</div>
             <p className="text-sm text-neutral-500">Preview paused</p>
             <p className="text-xs text-neutral-600 mt-1">
-              Press <kbd className="px-1.5 py-0.5 bg-[#21262d] rounded text-[10px]">Ctrl+Enter</kbd> to force refresh
+              Press <kbd className="px-1.5 py-0.5 bg-wc-elevated rounded text-[10px]">Ctrl+Enter</kbd> to force refresh
             </p>
           </div>
         </div>
@@ -179,7 +179,7 @@ function PreviewHeader({
   onCycleBackground: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border-b border-[#30363d] shrink-0">
+    <div className="flex items-center justify-between px-3 py-1.5 bg-wc-surface border-b border-wc shrink-0">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />

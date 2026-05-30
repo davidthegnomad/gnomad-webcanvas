@@ -12,21 +12,12 @@ export interface Template {
 
 export const TEMPLATES: Template[] = [
   {
-    id: 'blank',
-    name: 'Blank',
-    description: 'Empty canvas',
-    html: '',
-    css: '',
-    js: '',
-    libraries: [],
-  },
-  {
     id: 'landing',
     name: 'Landing Page',
-    description: 'Hero section with CTA',
+    description: 'Marketing hero with CTA',
     html: `<header class="hero">
   <nav class="nav">
-    <span class="logo">Acme</span>
+    <span class="logo">Your Brand</span>
     <div class="nav-links">
       <a href="#">Features</a>
       <a href="#">Pricing</a>
@@ -37,7 +28,7 @@ export const TEMPLATES: Template[] = [
     <h1>Build something amazing</h1>
     <p>The modern toolkit for creators who ship fast and iterate faster.</p>
     <div class="hero-buttons">
-      <button class="btn-primary">Start Free Trial</button>
+      <button class="btn-primary" id="cta-btn">Start Free Trial</button>
       <button class="btn-secondary">Watch Demo</button>
     </div>
   </div>
@@ -95,7 +86,7 @@ h1 {
   line-height: 1.6;
 }
 
-.hero-buttons { display: flex; gap: 1rem; justify-content: center; }
+.hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
 .btn-primary {
   padding: 0.8rem 2rem;
@@ -120,180 +111,290 @@ h1 {
   transition: border-color 0.2s, color 0.2s;
 }
 .btn-secondary:hover { border-color: #666; color: #fff; }`,
-    js: `document.querySelector('.btn-primary').addEventListener('click', () => {
-  alert('Starting your free trial!');
+    js: `document.getElementById('cta-btn')?.addEventListener('click', () => {
+  console.log('CTA clicked — ready for your action');
 });`,
     libraries: [],
   },
   {
-    id: 'canvas',
-    name: 'Canvas Animation',
-    description: 'Animated particles on HTML5 Canvas',
-    html: `<canvas id="canvas"></canvas>`,
-    css: `* { margin: 0; padding: 0; }
-body { overflow: hidden; background: #000; }
-canvas { display: block; }`,
-    js: `const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    id: 'portfolio',
+    name: 'Portfolio',
+    description: 'Showcase work and skills',
+    html: `<div class="page">
+  <header class="intro">
+    <p class="eyebrow">Portfolio</p>
+    <h1>Hi, I'm Alex Rivera</h1>
+    <p class="tagline">Designer & front-end developer building thoughtful digital experiences.</p>
+  </header>
 
-const particles = [];
-for (let i = 0; i < 100; i++) {
-  particles.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 2,
-    vy: (Math.random() - 0.5) * 2,
-    r: Math.random() * 3 + 1,
-  });
-}
-
-function draw() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = \`hsl(\${(p.x + p.y) * 0.1 % 360}, 70%, 60%)\`;
-    ctx.fill();
-  });
-
-  particles.forEach((a, i) => {
-    particles.slice(i + 1).forEach(b => {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 120) {
-        ctx.strokeStyle = \`rgba(255, 255, 255, \${1 - dist / 120})\`;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-      }
-    });
-  });
-
-  requestAnimationFrame(draw);
-}
-draw();
-
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});`,
-    libraries: [],
-  },
-  {
-    id: 'grid-gallery',
-    name: 'CSS Grid Gallery',
-    description: 'Responsive image grid layout',
-    html: `<div class="gallery">
-  <div class="card card-wide">
-    <div class="card-img" style="background: linear-gradient(135deg, #667eea, #764ba2)"></div>
-    <h3>Featured Project</h3>
-    <p>A showcase of modern design principles</p>
-  </div>
-  <div class="card">
-    <div class="card-img" style="background: linear-gradient(135deg, #f093fb, #f5576c)"></div>
-    <h3>Photography</h3>
-    <p>Urban landscapes</p>
-  </div>
-  <div class="card">
-    <div class="card-img" style="background: linear-gradient(135deg, #4facfe, #00f2fe)"></div>
-    <h3>Illustration</h3>
-    <p>Digital artwork</p>
-  </div>
-  <div class="card card-tall">
-    <div class="card-img" style="background: linear-gradient(135deg, #43e97b, #38f9d7)"></div>
-    <h3>Branding</h3>
-    <p>Identity systems and guidelines</p>
-  </div>
-  <div class="card">
-    <div class="card-img" style="background: linear-gradient(135deg, #fa709a, #fee140)"></div>
-    <h3>Motion</h3>
-    <p>Animation reel</p>
-  </div>
-  <div class="card">
-    <div class="card-img" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)"></div>
-    <h3>Print</h3>
-    <p>Editorial design</p>
-  </div>
+  <section class="projects">
+    <h2>Selected Work</h2>
+    <div class="grid">
+      <article class="card">
+        <div class="thumb" style="background: linear-gradient(135deg, #667eea, #764ba2)"></div>
+        <h3>Brand Refresh</h3>
+        <p>Identity system for a growing SaaS startup.</p>
+      </article>
+      <article class="card">
+        <div class="thumb" style="background: linear-gradient(135deg, #f093fb, #f5576c)"></div>
+        <h3>E-commerce UI</h3>
+        <p>Mobile-first checkout flow redesign.</p>
+      </article>
+      <article class="card">
+        <div class="thumb" style="background: linear-gradient(135deg, #4facfe, #00f2fe)"></div>
+        <h3>Marketing Site</h3>
+        <p>High-converting landing page for a local agency.</p>
+      </article>
+    </div>
+  </section>
 </div>`,
     css: `* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: system-ui, sans-serif;
-  background: #111;
-  color: #eee;
-  padding: 2rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
 }
 
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  max-width: 1200px;
+.page {
+  max-width: 960px;
   margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  color: #818cf8;
+  margin-bottom: 0.75rem;
+}
+
+h1 { font-size: 2.75rem; margin-bottom: 0.75rem; }
+.tagline { color: #94a3b8; max-width: 540px; line-height: 1.6; }
+
+.projects { margin-top: 3rem; }
+.projects h2 { font-size: 1.25rem; margin-bottom: 1.25rem; color: #cbd5e1; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
 }
 
 .card {
-  background: #1a1a1a;
+  background: #1e293b;
   border-radius: 1rem;
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
-.card-img { height: 180px; }
-.card-wide { grid-column: span 2; }
-.card-wide .card-img { height: 240px; }
-.card-tall { grid-row: span 2; }
-.card-tall .card-img { height: 100%; min-height: 200px; }
-
-h3 { padding: 1rem 1rem 0.25rem; font-size: 1rem; }
-p { padding: 0 1rem 1rem; font-size: 0.85rem; color: #888; }`,
-    js: `document.querySelectorAll('.card').forEach(card => {
+.thumb { height: 140px; }
+.card h3 { padding: 1rem 1rem 0.25rem; font-size: 1rem; }
+.card p { padding: 0 1rem 1rem; font-size: 0.85rem; color: #94a3b8; }`,
+    js: `document.querySelectorAll('.card').forEach((card) => {
   card.addEventListener('click', () => {
     card.style.outline = '2px solid #818cf8';
-    setTimeout(() => card.style.outline = '', 1000);
+    setTimeout(() => { card.style.outline = ''; }, 800);
   });
 });`,
     libraries: [],
   },
   {
-    id: 'form-validation',
-    name: 'Form + Validation',
-    description: 'Styled form with JS validation',
-    html: `<div class="form-container">
-  <h2>Create Account</h2>
-  <form id="signup-form" novalidate>
+    id: 'business',
+    name: 'Local Business',
+    description: 'Service business homepage',
+    html: `<div class="page">
+  <nav class="topbar">
+    <strong>Harbor Coffee Co.</strong>
+    <span>Open daily 7am – 6pm</span>
+  </nav>
+
+  <section class="hero">
+    <h1>Fresh roasts. Warm welcomes.</h1>
+    <p>Neighborhood coffee shop serving single-origin espresso, pastries, and good conversation since 2012.</p>
+    <button class="btn" id="order-btn">View Menu</button>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <h3>☕ Specialty Drinks</h3>
+      <p>Lattes, cold brew, seasonal pours.</p>
+    </div>
+    <div class="feature">
+      <h3>🥐 Fresh Pastries</h3>
+      <p>Baked locally every morning.</p>
+    </div>
+    <div class="feature">
+      <h3>📍 Downtown Location</h3>
+      <p>142 Main Street — free Wi‑Fi.</p>
+    </div>
+  </section>
+</div>`,
+    css: `* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #faf7f2;
+  color: #3d2c1e;
+}
+
+.page { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #7c6a58;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hero { text-align: center; margin-bottom: 3rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2; }
+.hero p { max-width: 520px; margin: 0 auto 1.5rem; color: #6b5744; line-height: 1.7; }
+
+.btn {
+  padding: 0.75rem 1.75rem;
+  background: #8b5e34;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn:hover { background: #6f4a28; }
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.feature {
+  background: #fff;
+  border: 1px solid #e8dfd3;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+.feature h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.feature p { font-size: 0.9rem; color: #7c6a58; }`,
+    js: `document.getElementById('order-btn')?.addEventListener('click', () => {
+  console.log('Menu link — replace with your menu page');
+});`,
+    libraries: [],
+  },
+  {
+    id: 'blog',
+    name: 'Blog / Article',
+    description: 'Content-focused reading layout',
+    html: `<article class="post">
+  <header>
+    <p class="meta">May 30, 2026 · 5 min read</p>
+    <h1>How to prototype faster with live preview</h1>
+    <p class="deck">A practical workflow for testing HTML/CSS ideas before you commit to a full build.</p>
+  </header>
+
+  <figure class="cover"></figure>
+
+  <div class="content">
+    <p>Live preview tools remove the guesswork from front-end experiments. Instead of saving, refreshing, and context-switching, you see every change as you type.</p>
+    <h2>Start with structure</h2>
+    <p>Sketch your HTML first — headings, sections, and calls to action. Style comes second once the content hierarchy feels right.</p>
+    <blockquote>Good prototypes answer questions cheaply.</blockquote>
+    <p>Iterate in small loops: edit, preview, adjust. Ship when the layout communicates clearly on mobile and desktop.</p>
+  </div>
+</article>`,
+    css: `* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #fff;
+  color: #1e293b;
+  line-height: 1.7;
+}
+
+.post {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+h1 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.deck {
+  font-size: 1.15rem;
+  color: #475569;
+  margin-bottom: 2rem;
+}
+
+.cover {
+  height: 220px;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #c7d2fe, #fbcfe8);
+  margin-bottom: 2rem;
+}
+
+.content p { margin-bottom: 1.25rem; }
+.content h2 { font-size: 1.35rem; margin: 2rem 0 0.75rem; }
+
+blockquote {
+  border-left: 4px solid #6366f1;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #475569;
+  font-style: italic;
+}`,
+    js: '',
+    libraries: [],
+  },
+  {
+    id: 'contact',
+    name: 'Contact Page',
+    description: 'Form with validation',
+    html: `<div class="page">
+  <header class="header">
+    <h1>Get in touch</h1>
+    <p>Tell us about your project — we typically reply within one business day.</p>
+  </header>
+
+  <form id="contact-form" novalidate>
     <div class="field">
-      <label for="name">Full Name</label>
-      <input type="text" id="name" placeholder="John Doe" required>
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Your name" required>
       <span class="error" id="name-error"></span>
     </div>
     <div class="field">
       <label for="email">Email</label>
-      <input type="email" id="email" placeholder="john@example.com" required>
+      <input type="email" id="email" placeholder="you@example.com" required>
       <span class="error" id="email-error"></span>
     </div>
     <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Min 8 characters" required>
-      <span class="error" id="password-error"></span>
+      <label for="message">Message</label>
+      <textarea id="message" rows="5" placeholder="How can we help?" required></textarea>
+      <span class="error" id="message-error"></span>
     </div>
-    <button type="submit">Sign Up</button>
+    <button type="submit">Send Message</button>
   </form>
 </div>`,
     css: `* { margin: 0; padding: 0; box-sizing: border-box; }
@@ -301,59 +402,63 @@ p { padding: 0 1rem 1rem; font-size: 0.85rem; color: #888; }`,
 body {
   font-family: system-ui, sans-serif;
   background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  color: #e2e8f0;
+  padding: 1.5rem;
 }
 
-.form-container {
-  background: #1e293b;
-  padding: 2.5rem;
-  border-radius: 1rem;
+.page {
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  max-width: 440px;
+  background: #1e293b;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
-h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+.header { margin-bottom: 1.5rem; }
+.header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+.header p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
 
-.field { margin-bottom: 1.25rem; }
+.field { margin-bottom: 1.1rem; }
 
 label {
   display: block;
   font-size: 0.85rem;
   color: #94a3b8;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
-input {
+input, textarea {
   width: 100%;
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 0.9rem;
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 0.5rem;
   color: #e2e8f0;
-  font-size: 0.95rem;
+  font: inherit;
   outline: none;
   transition: border-color 0.2s;
+  resize: vertical;
 }
-input:focus { border-color: #6366f1; }
-input.invalid { border-color: #ef4444; }
-input.valid { border-color: #22c55e; }
+input:focus, textarea:focus { border-color: #6366f1; }
+input.invalid, textarea.invalid { border-color: #ef4444; }
 
 .error {
   display: block;
   font-size: 0.75rem;
   color: #ef4444;
-  margin-top: 0.3rem;
   min-height: 1rem;
+  margin-top: 0.25rem;
 }
 
 button {
   width: 100%;
   padding: 0.8rem;
+  margin-top: 0.5rem;
   background: #6366f1;
   color: white;
   border: none;
@@ -361,97 +466,30 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s;
-  margin-top: 0.5rem;
 }
 button:hover { background: #4f46e5; }`,
-    js: `const form = document.getElementById('signup-form');
+    js: `const form = document.getElementById('contact-form');
 
-function validate(field, errorEl, test, message) {
-  if (!test) {
-    field.classList.add('invalid');
-    field.classList.remove('valid');
-    errorEl.textContent = message;
-    return false;
-  }
-  field.classList.remove('invalid');
-  field.classList.add('valid');
-  errorEl.textContent = '';
-  return true;
+function showError(field, errorEl, ok, message) {
+  field.classList.toggle('invalid', !ok);
+  errorEl.textContent = ok ? '' : message;
+  return ok;
 }
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   const name = document.getElementById('name');
   const email = document.getElementById('email');
-  const password = document.getElementById('password');
+  const message = document.getElementById('message');
 
-  const v1 = validate(name, document.getElementById('name-error'),
-    name.value.trim().length >= 2, 'Name must be at least 2 characters');
-  const v2 = validate(email, document.getElementById('email-error'),
-    /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.value), 'Enter a valid email');
-  const v3 = validate(password, document.getElementById('password-error'),
-    password.value.length >= 8, 'Password must be at least 8 characters');
+  const v1 = showError(name, document.getElementById('name-error'), name.value.trim().length >= 2, 'Enter your name');
+  const v2 = showError(email, document.getElementById('email-error'), /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.value), 'Enter a valid email');
+  const v3 = showError(message, document.getElementById('message-error'), message.value.trim().length >= 10, 'Message must be at least 10 characters');
 
   if (v1 && v2 && v3) {
-    console.log('Form submitted:', { name: name.value, email: email.value });
+    console.log('Form ready to submit:', { name: name.value, email: email.value, message: message.value });
   }
 });`,
     libraries: [],
-  },
-  {
-    id: 'threejs',
-    name: 'Three.js Scene',
-    description: 'Rotating cube with lighting',
-    html: `<div id="three-container"></div>`,
-    css: `* { margin: 0; padding: 0; }
-body { overflow: hidden; background: #000; }
-#three-container { width: 100vw; height: 100vh; }`,
-    js: `const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-document.getElementById('three-container').appendChild(renderer.domElement);
-
-const geometry = new THREE.BoxGeometry(2, 2, 2);
-const material = new THREE.MeshStandardMaterial({
-  color: 0x6366f1,
-  metalness: 0.3,
-  roughness: 0.4,
-});
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 5, 5);
-scene.add(light);
-
-const ambient = new THREE.AmbientLight(0x404040, 0.5);
-scene.add(ambient);
-
-camera.position.z = 5;
-
-function animate() {
-  requestAnimationFrame(animate);
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});`,
-    libraries: [
-      {
-        id: 'three',
-        name: 'Three.js',
-        category: 'js' as const,
-        version: 'r170',
-        tag: '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>',
-      },
-    ],
   },
 ];

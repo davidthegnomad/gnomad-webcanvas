@@ -15,7 +15,7 @@ const MIN_FONT_SIZE = 10;
 const MAX_FONT_SIZE = 24;
 
 export const DEFAULT_HTML = `<div class="container">
-  <h1>Hello, Webcanvas!</h1>
+  <h1>Welcome to Webcanvas!</h1>
   <p>Start editing to see live changes.</p>
   <button id="counter-btn">Click me: 0</button>
 </div>`;
@@ -136,20 +136,22 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
     }),
 
   resetProject: () =>
-    set({
+    set((s) => ({
       htmlCode: DEFAULT_HTML,
       cssCode: DEFAULT_CSS,
       jsCode: DEFAULT_JS,
       activeLibraries: [],
       maximizedPane: null,
-      previewKey: 0,
+      previewKey: s.previewKey + 1,
+      projectVersion: s.projectVersion + 1,
       fontPairingId: null,
       customHeadingFont: null,
       customBodyFont: null,
       consoleEntries: [],
       consoleIdCounter: 0,
+      currentFilePath: null,
       isDirty: true,
-    }),
+    })),
 
   initializeStore: (data) => set({ ...data, isDirty: false }),
 
@@ -157,7 +159,14 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
   forceRefreshPreview: () =>
     set((s) => ({ previewKey: s.previewKey + 1, consoleEntries: [], consoleIdCounter: 0 })),
 
-  setEditorTheme: (theme: EditorTheme) => set({ editorTheme: theme }),
+  setEditorTheme: (theme: EditorTheme) => {
+    set({ editorTheme: theme });
+    try {
+      localStorage.setItem('webcanvas-editor-theme', theme);
+    } catch {
+      // ignore
+    }
+  },
 
   setFontSize: (size: number) =>
     set({ fontSize: Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, size)) }),

@@ -1,3 +1,6 @@
+import { invoke } from '@tauri-apps/api/core';
+import { assembleFullHtml, parseFileContent, OPEN_FILE_EXTENSIONS } from './fileContent';
+
 export interface ProjectFileData {
   html: string;
   css: string;
@@ -8,52 +11,27 @@ export interface ProjectFileData {
 export interface PlatformBridge {
   isDesktop: boolean;
   openProject: () => Promise<ProjectFileData | null>;
+  openFileAtPath?: (filePath: string) => Promise<ProjectFileData | null>;
+  getPendingOpenPaths?: () => Promise<string[]>;
   saveProject: (html: string, css: string, js: string, filePath?: string) => Promise<string | null>;
   saveProjectAs: (html: string, css: string, js: string) => Promise<string | null>;
 }
 
-function assembleFullHtml(html: string, css: string, js: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcanvas Project</title>
-    <style>
-${css}
-    </style>
-</head>
-<body>
-${html}
-    <script>
-${js}
-    <\/script>
-</body>
-</html>`;
+const OPEN_FILTERS = [
+  { name: 'Web & Text Files', extensions: OPEN_FILE_EXTENSIONS },
+  { name: 'HTML', extensions: ['html', 'htm'] },
+  { name: 'Text', extensions: ['txt', 'md'] },
+  { name: 'CSS', extensions: ['css'] },
+  { name: 'JavaScript', extensions: ['js'] },
+];
+
+async function readPathContent(filePath: string): Promise<string> {
+  return invoke<string>('read_text_file_path', { path: filePath });
 }
 
-function parseHtmlFile(content: string): { html: string; css: string; js: string } {
-  let css = '';
-  let js = '';
-  let html = '';
-
-  // Extract CSS from <style> tags
-  const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-  if (styleMatch) css = styleMatch[1].trim();
-
-  // Extract JS from <script> tags (not src-based)
-  const scriptMatch = content.match(/<script(?![^>]*\bsrc\b)[^>]*>([\s\S]*?)<\/script>/i);
-  if (scriptMatch) js = scriptMatch[1].trim();
-
-  // Extract body content
-  const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  if (bodyMatch) {
-    html = bodyMatch[1]
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .trim();
-  }
-
-  return { html, css, js };
+function toProjectData(content: string, filePath: string): ProjectFileData {
+  const parsed = parseFileContent(content, filePath);
+  return { ...parsed, filePath };
 }
 
 // Web implementation — no native file access
@@ -66,7 +44,7 @@ const webBridge: PlatformBridge = {
 
 async function createTauriBridge(): Promise<PlatformBridge> {
   const { open, save } = await import('@tauri-apps/plugin-dialog');
-  const { readTextFile, writeTextFile } = await import('@tauri-apps/plugin-fs');
+  const { writeTextFile } = await import('@tauri-apps/plugin-fs');
 
   return {
     isDesktop: true,
@@ -74,15 +52,21 @@ async function createTauriBridge(): Promise<PlatformBridge> {
     openProject: async () => {
       const path = await open({
         multiple: false,
-        filters: [{ name: 'HTML Files', extensions: ['html', 'htm'] }],
+        filters: OPEN_FILTERS,
       });
 
       if (!path) return null;
 
-      const content = await readTextFile(path as string);
-      const parsed = parseHtmlFile(content);
-      return { ...parsed, filePath: path as string };
+      const content = await readPathContent(path as string);
+      return toProjectData(content, path as string);
     },
+
+    openFileAtPath: async (filePath) => {
+      const content = await readPathContent(filePath);
+      return toProjectData(content, filePath);
+    },
+
+    getPendingOpenPaths: async () => invoke<string[]>('take_pending_open_files'),
 
     saveProject: async (html, css, js, filePath?) => {
       if (!filePath) {
@@ -95,7 +79,7 @@ async function createTauriBridge(): Promise<PlatformBridge> {
 
     saveProjectAs: async (html, css, js) => {
       const path = await save({
-        filters: [{ name: 'HTML Files', extensions: ['html'] }],
+        filters: [{ name: 'HTML Files', extensions: ['html', 'htm'] }],
         defaultPath: 'project.html',
       });
 
@@ -113,7 +97,6 @@ let _bridge: PlatformBridge | null = null;
 export async function getPlatformBridge(): Promise<PlatformBridge> {
   if (_bridge) return _bridge;
 
-  // Check for Tauri runtime
   if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
     try {
       _bridge = await createTauriBridge();

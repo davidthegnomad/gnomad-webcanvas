@@ -1,4 +1,5 @@
 import type { ProjectMeta } from '../types/editor.types';
+import { DEFAULT_CSS, DEFAULT_HTML, DEFAULT_JS } from '../store/editorStore';
 
 const INDEX_KEY = 'webcanvas_projects_index';
 const PROJECT_PREFIX = 'webcanvas_project_';
@@ -13,6 +14,19 @@ export interface ProjectData {
   fontPairingId?: string | null;
   customHeadingFont?: string | null;
   customBodyFont?: string | null;
+}
+
+export function getDefaultProjectData(): ProjectData {
+  return {
+    htmlCode: DEFAULT_HTML,
+    cssCode: DEFAULT_CSS,
+    jsCode: DEFAULT_JS,
+    activeLibraries: [],
+  };
+}
+
+export function isEmptyProjectData(data: Pick<ProjectData, 'htmlCode' | 'cssCode' | 'jsCode'>): boolean {
+  return !data.htmlCode.trim() && !data.cssCode.trim() && !data.jsCode.trim();
 }
 
 function generateId(): string {
@@ -52,12 +66,7 @@ export function createProject(name: string): { meta: ProjectMeta; projects: Proj
   const meta: ProjectMeta = { id: generateId(), name, updatedAt: Date.now() };
   const updated = [...projects, meta];
   saveProjectsIndex(updated);
-  saveProjectData(meta.id, {
-    htmlCode: '',
-    cssCode: '',
-    jsCode: '',
-    activeLibraries: [],
-  });
+  saveProjectData(meta.id, getDefaultProjectData());
   return { meta, projects: updated };
 }
 

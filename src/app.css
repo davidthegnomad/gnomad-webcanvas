@@ -1,14 +1,76 @@
 @import 'tailwindcss';
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@theme {
+  --color-wc-app: var(--wc-bg-app);
+  --color-wc-surface: var(--wc-bg-surface);
+  --color-wc-elevated: var(--wc-bg-elevated);
+  --color-wc-input: var(--wc-bg-input);
+  --color-wc-hover: var(--wc-bg-hover);
+  --color-wc-border: var(--wc-border);
+  --color-wc-text: var(--wc-text);
+  --color-wc-muted: var(--wc-text-muted);
+  --color-wc-faint: var(--wc-text-faint);
+}
+
+:root,
+[data-app-theme='dark'] {
+  --wc-bg-app: #0d1117;
+  --wc-bg-surface: #161b22;
+  --wc-bg-elevated: #21262d;
+  --wc-bg-input: #0d1117;
+  --wc-bg-hover: #30363d;
+  --wc-border: #30363d;
+  --wc-text: #f5f5f5;
+  --wc-text-muted: #a3a3a3;
+  --wc-text-faint: #737373;
+  --wc-scrollbar-track: #1e1e2e;
+  --wc-scrollbar-thumb: #45475a;
+  --wc-scrollbar-thumb-hover: #585b70;
+}
+
+[data-app-theme='light'] {
+  --wc-bg-app: #f6f8fa;
+  --wc-bg-surface: #ffffff;
+  --wc-bg-elevated: #eef1f5;
+  --wc-bg-input: #ffffff;
+  --wc-bg-hover: #d8dee4;
+  --wc-border: #d0d7de;
+  --wc-text: #1f2328;
+  --wc-text-muted: #656d76;
+  --wc-text-faint: #8c959f;
+  --wc-scrollbar-track: #eef1f5;
+  --wc-scrollbar-thumb: #c4cad0;
+  --wc-scrollbar-thumb-hover: #aeb5bc;
 }
 
 html, body, #root {
   height: 100%;
   margin: 0;
   overflow: hidden;
+}
+
+.wc-shell {
+  color: var(--wc-text);
+}
+
+[data-app-theme='light'] .wc-shell .text-neutral-100,
+[data-app-theme='light'] .wc-shell .text-neutral-200,
+[data-app-theme='light'] .wc-shell .text-neutral-300 {
+  color: var(--wc-text);
+}
+
+[data-app-theme='light'] .wc-shell .text-neutral-400,
+[data-app-theme='light'] .wc-shell .text-neutral-500 {
+  color: var(--wc-text-muted);
+}
+
+[data-app-theme='light'] .wc-shell .text-neutral-600 {
+  color: var(--wc-text-faint);
+}
+
+[data-app-theme='light'] select option {
+  background: #ffffff;
+  color: #1f2328;
 }
 
 /* Scrollbar styling for code editors */
@@ -18,16 +80,16 @@ html, body, #root {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e1e2e;
+  background: var(--wc-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #45475a;
+  background: var(--wc-scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #585b70;
+  background: var(--wc-scrollbar-thumb-hover);
 }
 
 /* Checkerboard preview background */

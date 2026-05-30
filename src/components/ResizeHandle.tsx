@@ -16,7 +16,7 @@ export default function ResizeHandle({ direction = 'horizontal', className = '' 
         transition-colors duration-150 ${className}`}
     >
       <div
-        className={`rounded-full bg-[#30363d] group-hover:bg-indigo-400 group-active:bg-indigo-300 transition-colors
+        className={`rounded-full bg-wc-border group-hover:bg-indigo-400 group-active:bg-indigo-300 transition-colors
           ${isHorizontal ? 'w-0.5 h-8' : 'h-0.5 w-8'}`}
       />
     </Separator>

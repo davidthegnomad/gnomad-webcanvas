@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { useAppTheme } from './hooks/useAppTheme';
 import TopNavbar from './components/TopNavbar';
 import Workspace from './components/Workspace';
 import ColorPicker from './components/FloatingTools/ColorPicker';
@@ -7,8 +8,10 @@ import FontPairings from './components/FloatingTools/FontPairings';
 import { useEditorStore } from './store/editorStore';
 import { exportProject } from './utils/exportProject';
 import { decodeProjectFromHash } from './utils/shareUrl';
-import { migrateLegacyStorage, loadProjectsIndex, loadProjectData, saveProjectData } from './utils/projectManager';
+import { migrateLegacyStorage, loadProjectsIndex, loadProjectData, saveProjectData, getDefaultProjectData, isEmptyProjectData } from './utils/projectManager';
 import { getPlatformBridge, isDesktop } from './utils/platformBridge';
+import { useDesktopLifecycle } from './hooks/useDesktopLifecycle';
+import UnsavedChangesModal from './components/UnsavedChangesModal';
 import { CDN_REGISTRY } from './utils/cdnRegistry';
 import type { PaneType } from './types/editor.types';
 
@@ -38,6 +41,8 @@ export default function App() {
   const bumpProjectVersion = useEditorStore((s) => s.bumpProjectVersion);
 
   const hydrated = useRef(false);
+
+  useAppTheme();
 
   // Hydrate: URL hash > project manager > legacy localStorage
   useEffect(() => {
@@ -88,7 +93,7 @@ export default function App() {
       const firstId = projectsIndex[0].id;
       setCurrentProject(firstId);
       const data = loadProjectData(firstId);
-      if (data) {
+      if (data && !isEmptyProjectData(data)) {
         initializeStore({
           htmlCode: data.htmlCode,
           cssCode: data.cssCode,
@@ -97,6 +102,11 @@ export default function App() {
           fontPairingId: data.fontPairingId ?? null,
           customHeadingFont: data.customHeadingFont ?? null,
           customBodyFont: data.customBodyFont ?? null,
+        });
+      } else {
+        initializeStore({
+          ...getDefaultProjectData(),
+          activeLibraries: [],
         });
       }
     }
@@ -153,7 +163,22 @@ export default function App() {
     }
   }, [initializeStore, setCurrentFilePath, setDirty, bumpProjectVersion]);
 
-  const handleDesktopSave = useCallback(async () => {
+  const applyLoadedFile = useCallback(
+    (result: { html: string; css: string; js: string; filePath?: string }) => {
+      initializeStore({
+        htmlCode: result.html,
+        cssCode: result.css,
+        jsCode: result.js,
+        activeLibraries: [],
+      });
+      setCurrentFilePath(result.filePath ?? null);
+      setDirty(false);
+      bumpProjectVersion();
+    },
+    [initializeStore, setCurrentFilePath, setDirty, bumpProjectVersion],
+  );
+
+  const handleDesktopSave = useCallback(async (): Promise<boolean> => {
     const bridge = await getPlatformBridge();
     const s = useEditorStore.getState();
     if (bridge.isDesktop) {
@@ -161,19 +186,34 @@ export default function App() {
       if (path) {
         setCurrentFilePath(path);
         setDirty(false);
+        return true;
       }
-    } else {
-      // Web: force localStorage save
-      saveProjectData(s.currentProjectId, {
-        htmlCode: s.htmlCode, cssCode: s.cssCode, jsCode: s.jsCode,
-        activeLibraries: s.activeLibraries,
-        fontPairingId: s.fontPairingId,
-        customHeadingFont: s.customHeadingFont,
-        customBodyFont: s.customBodyFont,
-      });
-      setDirty(false);
+      return false;
     }
+
+    saveProjectData(s.currentProjectId, {
+      htmlCode: s.htmlCode,
+      cssCode: s.cssCode,
+      jsCode: s.jsCode,
+      activeLibraries: s.activeLibraries,
+      fontPairingId: s.fontPairingId,
+      customHeadingFont: s.customHeadingFont,
+      customBodyFont: s.customBodyFont,
+    });
+    setDirty(false);
+    return true;
   }, [setCurrentFilePath, setDirty]);
+
+  const {
+    closePromptOpen,
+    closePromptFileName,
+    handleCloseSave,
+    handleCloseDiscard,
+    handleCloseCancel,
+  } = useDesktopLifecycle({
+    onLoadFile: applyLoadedFile,
+    onSave: handleDesktopSave,
+  });
 
   const handleDesktopSaveAs = useCallback(async () => {
     const bridge = await getPlatformBridge();
@@ -273,18 +313,26 @@ export default function App() {
   }, [handleKeyDown]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#0d1117] text-neutral-100">
+    <div className="wc-shell flex flex-col h-screen bg-wc-app text-wc">
       <TopNavbar />
       <Workspace />
       {/* Floating Tools Bar */}
       {!previewFullscreen && (
-        <div className="flex items-center gap-4 px-4 py-1.5 bg-[#161b22] border-t border-[#30363d] shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-4 px-4 py-1.5 bg-wc-surface border-t border-wc shrink-0 overflow-x-auto">
           <ColorPicker />
-          <div className="w-px h-4 bg-[#30363d] shrink-0" />
+          <div className="w-px h-4 bg-wc-border shrink-0" />
           <CssGenerator />
-          <div className="w-px h-4 bg-[#30363d] shrink-0" />
+          <div className="w-px h-4 bg-wc-border shrink-0" />
           <FontPairings />
         </div>
+      )}
+      {closePromptOpen && (
+        <UnsavedChangesModal
+          fileName={closePromptFileName}
+          onSave={() => void handleCloseSave()}
+          onDiscard={() => void handleCloseDiscard()}
+          onCancel={handleCloseCancel}
+        />
       )}
     </div>
   );

@@ -2,7 +2,7 @@
   "name": "gnomad-webcanvas",
   "description": "Gnomad Studio Webcanvas — live HTML/CSS/JS editor with instant preview",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "tauri:dev": "tauri dev",
+    "tauri:dev:linux": "GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev",
     "tauri:build": "tauri build"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "@tauri-apps/plugin-fs": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2.5.4",
     "@types/file-saver": "^2.0.7",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",

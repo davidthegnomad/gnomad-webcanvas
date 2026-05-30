@@ -37,7 +37,7 @@ export default function FontPairings() {
         <select
           value={customHeadingFont ?? ''}
           onChange={(e) => setCustomFonts(e.target.value || null, customBodyFont)}
-          className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[110px]"
+          className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[110px]"
         >
           <option value="">Heading...</option>
           {AVAILABLE_FONTS.map((f) => (
@@ -49,7 +49,7 @@ export default function FontPairings() {
         <select
           value={customBodyFont ?? ''}
           onChange={(e) => setCustomFonts(customHeadingFont, e.target.value || null)}
-          className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[110px]"
+          className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[110px]"
         >
           <option value="">Body...</option>
           {AVAILABLE_FONTS.map((f) => (
@@ -93,7 +93,7 @@ export default function FontPairings() {
           if (id) setFontPairing(id);
           else clearFontPairing();
         }}
-        className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[130px]"
+        className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none max-w-[130px]"
       >
         <option value="">None</option>
         {FONT_PAIRINGS.map((p) => (

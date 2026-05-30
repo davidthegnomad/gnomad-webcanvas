@@ -87,7 +87,7 @@ export default function CssGenerator() {
       <select
         value={selectedPreset}
         onChange={(e) => handlePresetChange(Number(e.target.value))}
-        className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none"
+        className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none"
       >
         {CSS_PRESETS.map((p, i) => (
           <option key={p.label} value={i}>
@@ -110,7 +110,7 @@ export default function CssGenerator() {
         <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="text-[10px] bg-[#21262d] border border-[#30363d] rounded px-1.5 py-1 text-neutral-400 outline-none"
+          className="text-[10px] bg-wc-elevated border border-wc rounded px-1.5 py-1 text-neutral-400 outline-none"
         >
           {preset.options?.map((opt) => (
             <option key={opt} value={opt}>

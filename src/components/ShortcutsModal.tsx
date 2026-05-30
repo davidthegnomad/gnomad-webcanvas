@@ -27,11 +27,11 @@ export default function ShortcutsModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+        className="relative bg-wc-surface border border-wc rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#30363d]">
-          <h2 className="text-sm font-semibold text-neutral-200">Keyboard Shortcuts</h2>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-wc">
+          <h2 className="text-sm font-semibold text-wc">Keyboard Shortcuts</h2>
           <button
             onClick={onClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors text-sm"
@@ -43,16 +43,16 @@ export default function ShortcutsModal({ onClose }: { onClose: () => void }) {
           {SHORTCUTS.map((s) => (
             <div
               key={s.keys}
-              className="flex items-center justify-between py-2 border-b border-[#1b1f27] last:border-b-0"
+              className="flex items-center justify-between py-2 border-b border-wc/40 last:border-b-0"
             >
-              <span className="text-xs text-neutral-400">{s.action}</span>
-              <kbd className="text-[10px] font-mono px-2 py-1 rounded bg-[#0d1117] border border-[#30363d] text-neutral-300 shrink-0 ml-3">
+              <span className="text-xs text-wc-muted">{s.action}</span>
+              <kbd className="text-[10px] font-mono px-2 py-1 rounded bg-wc-input border border-wc text-wc-muted shrink-0 ml-3">
                 {s.keys}
               </kbd>
             </div>
           ))}
         </div>
-        <div className="px-5 py-2 border-t border-[#30363d] text-[10px] text-neutral-600 text-center">
+        <div className="px-5 py-2 border-t border-wc text-[10px] text-wc-faint text-center">
           On macOS, use Cmd instead of Ctrl
         </div>
       </div>

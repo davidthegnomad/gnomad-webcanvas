@@ -22,8 +22,8 @@ export default function ConsolePanel() {
   const warnCount = entries.filter((e) => e.method === 'warn').length;
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117] overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-1 bg-[#161b22] border-b border-[#30363d] shrink-0">
+    <div className="flex flex-col h-full bg-wc-app overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-1 bg-wc-surface border-b border-wc shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">Console</span>
           <span className="text-[10px] text-neutral-600">{entries.length}</span>
