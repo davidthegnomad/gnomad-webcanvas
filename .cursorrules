@@ -1,0 +1,56 @@
+# LiveView Notepad (gnomad-preview) — Agent Directives
+
+## Identity
+You are working in **LiveView Notepad**, a Tauri v2 + React desktop application that provides a live code editor/notepad with Monaco editor, resizable panels, and file system access.
+This project is part of the Gnomad Enterprise workspace at `/mnt/SteamDrive/ORGANIZATION/`.
+
+## Session Start Protocol (MANDATORY)
+1. Read `.agents/LOGS/SESSION_STATE.md` FIRST — this is your context from the last session.
+2. If stale or missing, read the latest `.agents/LOGS/SESSIONS/HANDOFF_*.md`.
+3. Run `git log -3 --oneline` to verify state matches reality.
+
+## Stack
+- **Framework**: Tauri 2.11.2 (Rust backend) + Vite 8.0.12 (frontend bundler) + React 19.2.6
+- **Language**: TypeScript 6.0.2 (frontend), Rust 2021 edition (backend)
+- **Key Dependencies**: Monaco Editor (`@monaco-editor/react` ^4.7.0), Tailwind CSS 4.3.0 (`@tailwindcss/vite`), Zustand 5.0.13 (state), Tauri FS/Dialog plugins
+
+## Key Commands
+- Dev (web only): `npm run dev`
+- Dev (Tauri desktop): `npm run tauri:dev`
+- Build (web): `npm run build` → `tsc -b && vite build`
+- Build (Tauri desktop): `npm run tauri:build`
+- Lint: `npm run lint`
+- Preview: `npm run preview`
+
+## Conventions
+- Use TypeScript strict mode with project references (`tsconfig.app.json` / `tsconfig.node.json`).
+- State management via Zustand stores — keep stores small and focused.
+- Styling via Tailwind CSS v4 (Vite plugin, not PostCSS) — use utility classes, avoid custom CSS.
+- Tauri commands live in `src-tauri/src/` (Rust) — use `#[tauri::command]` for IPC.
+- File operations use `@tauri-apps/plugin-fs` and `@tauri-apps/plugin-dialog` — never use browser File API.
+
+## Agent Infrastructure
+- `AGENTS.md` — Agent roster and responsibilities
+- `.agents/CHRONICLER.md` — Session memory protocol (follow trigger rules)
+- `.agents/PROJECT_SOP.md` — Full build/test/deploy procedures
+- `.agents/SKILLS/` — Evolving skill files (update when you learn something)
+- `.agents/DECISIONS/` — Log architectural decisions here
+
+## Cross-Project Resources
+- Swarm Core: `/mnt/SteamDrive/ORGANIZATION/02_ai_engineering/gnomad-swarm-core/`
+- RAG Search: `/mnt/SteamDrive/ORGANIZATION/02_ai_engineering/workspace-rag/`
+- VAULT (secrets): `/mnt/SteamDrive/ORGANIZATION/03_admin_finance/VAULT/`
+- Full workspace map: `/mnt/SteamDrive/ORGANIZATION/WORKSPACE.md`
+- **Skill Library**: `/mnt/SteamDrive/ORGANIZATION/SKILL_LIBRARY/` — 573 reusable skills, recipes, and patterns. See `SKILL_LIBRARY/README.md` for the catalog. Orchestrators can pull relevant skills into `.agents/SKILLS/` when beneficial.
+
+## Chronicler Protocol
+At checkpoints ("save session"), end of day ("done for the day"), or after git push:
+1. Update `.agents/LOGS/SESSION_STATE.md`
+2. Append to today's `.agents/LOGS/SESSIONS/HANDOFF_YYYY-MM-DD.md`
+See `.agents/CHRONICLER.md` for full trigger rules.
+
+## Self-Evolution
+When you discover a better pattern or solve a hard problem, capture it:
+1. Append to `.agents/SKILLS/LEARNING_LOG.md`
+2. Create/update a skill file in `.agents/SKILLS/`
+See `.agents/SKILLS/SELF_EVOLUTION.md` for the full protocol.

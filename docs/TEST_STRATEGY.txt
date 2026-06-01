@@ -1,0 +1,116 @@
+════════════════════════════════════════════════════════════════════════
+  TEST STRATEGY
+  LiveView Notepad · docs/TEST_STRATEGY.md
+════════════════════════════════════════════════════════════════════════
+
+TEST STRATEGY — LIVEVIEW NOTEPAD
+================================
+
+Version: 0.1.0  
+Last updated: June 2026
+
+────────────────────────────────────────
+
+OVERVIEW
+--------
+
+Testing layers progress from fast automated checks to manual cross-platform QA before release.
+
+  [code]
+    Unit tests (Vitest)     →  19 tests — parseHtmlFile, shareUrl, assembleSource
+    Type check + lint       →  every commit / pre-release
+    Production build        →  pre-release
+    Manual QA checklist     →  every release
+
+────────────────────────────────────────
+
+LAYER 1 — STATIC ANALYSIS (CURRENT)
+-----------------------------------
+
+  [bash]
+    npm run lint              # ESLint
+    npx tsc -b --noEmit       # TypeScript strict
+    npm run test              # Vitest unit tests (19 tests)
+
+Covers: Type errors, unused imports, React hooks rules, parser/share/assembler behavior.
+
+────────────────────────────────────────
+
+LAYER 2 — UNIT TESTS ✓
+----------------------
+
+Framework: Vitest + jsdom
+
+Implemented suites (src/utils/__tests__/):
+
+  Module             |  Cases                                                                   
+  parseHtmlFile.ts   |  DOMParser extraction, multiple style/script tags, round-trip, edge cases
+  shareUrl.ts        |  LZ encode/decode round-trip, optional fields, invalid hash, unicode     
+  assembleSource.ts  |  CDN injection, Google Fonts, deduplication, runtime error wrapper       
+
+  [bash]
+    npm run test              # single run
+    npm run test:watch        # watch mode
+
+────────────────────────────────────────
+
+LAYER 3 — INTEGRATION / E2E (PLANNED)
+-------------------------------------
+
+  Tool             |  Scope                                        
+  Playwright       |  Web mode: edit → preview update → export     
+  Tauri WebDriver  |  Desktop: open/save dialogs (headless limited)
+
+Not in v0.1 scope — manual QA covers critical paths.
+
+────────────────────────────────────────
+
+LAYER 4 — MANUAL QA
+-------------------
+
+QA_CHECKLIST.md — required before every tagged release.
+
+Minimum smoke (5 min) documented in checklist.
+
+────────────────────────────────────────
+
+LAYER 5 — RUST BACKEND
+----------------------
+
+Current Rust surface is plugin-only (no custom commands).
+
+  [bash]
+    cd src-tauri && cargo check && cargo test
+
+Add command-specific tests when custom #[tauri::command] handlers land.
+
+────────────────────────────────────────
+
+CI GATES
+--------
+
+  Trigger             |  Checks                 
+  PR / push (future)  |  lint, tsc, build       
+  Tag v*              |  Full Tauri matrix build
+
+Release workflow (.github/workflows/release.yml) does not yet run lint — add a build.yml for PR gates.
+
+────────────────────────────────────────
+
+COVERAGE GOALS (V1.0)
+---------------------
+
+  Area                                                  |  Target                  |  Status                  
+  Pure utils (assembleSource, shareUrl, parseHtmlFile)  |  80%+                    |  ✓ 19 tests shipped      
+  Zustand store actions                                 |  Key paths covered       |  Planned                 
+  React components                                      |  Smoke E2E only          |  Planned (Playwright)    
+  Rust commands                                         |  Per-command when added  |  N/A (no custom commands)
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

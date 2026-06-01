@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ── Shell theme tokens (Monaco theme drives data-ui-theme on <html>) ── */
+[data-ui-theme='dark'] {
+  --ui-bg-base: #0d1117;
+  --ui-bg-panel: #161b22;
+  --ui-bg-elevated: #21262d;
+  --ui-bg-menu: #1c2128;
+  --ui-border: #30363d;
+  --ui-text: #f0f6fc;
+  --ui-text-muted: #8b949e;
+  --ui-text-faint: #6e7681;
+  --ui-accent: #818cf8;
+  --ui-accent-soft: rgba(129, 140, 248, 0.2);
+  --ui-scrollbar-track: #1e1e2e;
+  --ui-scrollbar-thumb: #45475a;
+  --ui-scrollbar-hover: #585b70;
+}
+
+[data-ui-theme='light'] {
+  --ui-bg-base: #ffffff;
+  --ui-bg-panel: #f6f8fa;
+  --ui-bg-elevated: #eaeef2;
+  --ui-bg-menu: #ffffff;
+  --ui-border: #d0d7de;
+  --ui-text: #1f2328;
+  --ui-text-muted: #656d76;
+  --ui-text-faint: #8c959f;
+  --ui-accent: #6366f1;
+  --ui-accent-soft: rgba(99, 102, 241, 0.12);
+  --ui-scrollbar-track: #f6f8fa;
+  --ui-scrollbar-thumb: #c9d1d9;
+  --ui-scrollbar-hover: #afb8c1;
+}
+
+[data-ui-theme='hc'] {
+  --ui-bg-base: #000000;
+  --ui-bg-panel: #0a0a0a;
+  --ui-bg-elevated: #1a1a1a;
+  --ui-bg-menu: #0a0a0a;
+  --ui-border: #ffffff;
+  --ui-text: #ffffff;
+  --ui-text-muted: #e6e6e6;
+  --ui-text-faint: #cccccc;
+  --ui-accent: #ffff00;
+  --ui-accent-soft: rgba(255, 255, 0, 0.15);
+  --ui-scrollbar-track: #1a1a1a;
+  --ui-scrollbar-thumb: #ffffff;
+  --ui-scrollbar-hover: #ffff00;
+}
+
+/* Utility classes for themed shell chrome */
+.ui-bg-base { background-color: var(--ui-bg-base); }
+.ui-bg-panel { background-color: var(--ui-bg-panel); }
+.ui-bg-elevated { background-color: var(--ui-bg-elevated); }
+.ui-bg-menu { background-color: var(--ui-bg-menu); }
+.ui-border { border-color: var(--ui-border); }
+.ui-text { color: var(--ui-text); }
+.ui-text-muted { color: var(--ui-text-muted); }
+.ui-text-faint { color: var(--ui-text-faint); }
+
+.ui-btn {
+  background-color: var(--ui-bg-elevated);
+  color: var(--ui-text-muted);
+  transition: color 0.15s, background-color 0.15s;
+}
+.ui-btn:hover {
+  color: var(--ui-text);
+  background-color: var(--ui-border);
+}
+
+.ui-input {
+  background-color: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text-muted);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ui-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ui-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-scrollbar-hover);
+}
+
+.bg-checkerboard {
+  background-image:
+    linear-gradient(45deg, #e5e5e5 25%, transparent 25%),
+    linear-gradient(-45deg, #e5e5e5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e5e5e5 75%),
+    linear-gradient(-45deg, transparent 75%, #e5e5e5 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-color: #fff;
+}

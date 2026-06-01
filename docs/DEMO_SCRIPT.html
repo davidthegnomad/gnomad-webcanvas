@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo Script — LiveView Notepad</title>
+  <meta name="description" content="Demo Script documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/DEMO_SCRIPT.md</p>
+          <a href="#setup-before-demo" class="toc-h2">Setup (before demo)</a>
+<a href="#1-hook-30-sec" class="toc-h2">1. Hook (30 sec)</a>
+<a href="#2-live-editing-1-min" class="toc-h2">2. Live editing (1 min)</a>
+<a href="#3-layout-amp-panes-45-sec" class="toc-h2">3. Layout &amp; panes (45 sec)</a>
+<a href="#4-templates-amp-libraries-1-min" class="toc-h2">4. Templates &amp; libraries (1 min)</a>
+<a href="#5-designer-tools-45-sec" class="toc-h2">5. Designer tools (45 sec)</a>
+<a href="#6-console-amp-debugging-30-sec" class="toc-h2">6. Console &amp; debugging (30 sec)</a>
+<a href="#7-export-amp-share-1-min" class="toc-h2">7. Export &amp; share (1 min)</a>
+<a href="#8-desktop-file-io-30-sec-tauri-only" class="toc-h2">8. Desktop file I/O (30 sec, Tauri only)</a>
+<a href="#9-close-30-sec" class="toc-h2">9. Close (30 sec)</a>
+<a href="#qampa-prep" class="toc-h2">Q&amp;A prep</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Demo Script</h2>
+        <p class="formats">Also available: <a href="DEMO_SCRIPT.md">Markdown</a> · <a href="DEMO_SCRIPT.txt">Plain text</a></p>
+      </header>
+      <h1 id="demo-script-liveview-notepad">Demo Script — LiveView Notepad</h1><p><strong>Duration:</strong> 5–7 minutes<br><strong>Audience:</strong> Designers, front-end developers, technical reviewers<br><strong>Version:</strong> 0.1.0</p>
+<hr>
+<h2 id="setup-before-demo">Setup (before demo)</h2><ul>
+<li><input disabled="" type="checkbox"> App running: <code>npm run tauri:dev</code> (desktop) or <code>npm run dev</code> (web)</li>
+<li><input disabled="" type="checkbox"> Browser zoom 100%; window ~1400×900</li>
+<li><input disabled="" type="checkbox"> Default &quot;Hello, LiveView!&quot; template loaded</li>
+<li><input disabled="" type="checkbox"> Close unrelated apps/notifications</li>
+</ul>
+<hr>
+<h2 id="1-hook-30-sec">1. Hook (30 sec)</h2><blockquote>
+<p>&quot;LiveView Notepad is a live HTML/CSS/JS playground — edit code on the left, see results instantly on the right. It runs in the browser and as a native desktop app with Open/Save.&quot;</p>
+</blockquote>
+<p>Click the counter button in preview to show interactivity.</p>
+<hr>
+<h2 id="2-live-editing-1-min">2. Live editing (1 min)</h2><ol>
+<li>In <strong>HTML</strong>, change the heading text</li>
+<li>In <strong>CSS</strong>, change the gradient colors on <code>h1</code></li>
+<li>Point out <strong>debounced preview</strong> — no manual refresh needed</li>
+<li>Toggle <strong>Pause</strong>, edit silently, then <strong>Refresh</strong></li>
+</ol>
+<blockquote>
+<p>&quot;Preview is debounced so we don&#39;t reload on every keystroke, but you can pause for heavy JS work.&quot;</p>
+</blockquote>
+<hr>
+<h2 id="3-layout-amp-panes-45-sec">3. Layout &amp; panes (45 sec)</h2><ol>
+<li>Toggle <strong>vertical ↔ horizontal</strong> layout (<code>Ctrl/Cmd+\</code>)</li>
+<li>Maximize the CSS pane (double-click header)</li>
+<li>Restore, switch focus with <code>Ctrl/Cmd+1/2/3</code></li>
+</ol>
+<hr>
+<h2 id="4-templates-amp-libraries-1-min">4. Templates &amp; libraries (1 min)</h2><ol>
+<li>Open <strong>Templates</strong> → select <strong>Landing Page</strong></li>
+<li>Show instant preview swap</li>
+<li>Open <strong>Libraries</strong> → enable <strong>Tailwind CSS</strong></li>
+<li>Add a Tailwind class to HTML (e.g. <code>class=&quot;text-4xl font-bold&quot;</code>)</li>
+</ol>
+<blockquote>
+<p>&quot;Templates jump-start projects; CDN libraries inject with one click.&quot;</p>
+</blockquote>
+<hr>
+<h2 id="5-designer-tools-45-sec">5. Designer tools (45 sec)</h2><ol>
+<li><strong>Font Pairings</strong> — apply a heading/body pair; show Google Fonts in preview</li>
+<li><strong>Color Picker</strong> — pick a color, insert into CSS</li>
+<li>Cycle <strong>preview background</strong> to checkerboard for transparency demo</li>
+<li>Switch viewport to <strong>Mobile (375px)</strong></li>
+</ol>
+<hr>
+<h2 id="6-console-amp-debugging-30-sec">6. Console &amp; debugging (30 sec)</h2><ol>
+<li>Add <code>console.log(&#39;Hello from preview&#39;)</code> in JS</li>
+<li>Open <strong>Console panel</strong> (<code>Ctrl/Cmd+Shift+C</code>)</li>
+<li>Show log capture from iframe</li>
+</ol>
+<hr>
+<h2 id="7-export-amp-share-1-min">7. Export &amp; share (1 min)</h2><ol>
+<li>Click <strong>Export</strong> — show ZIP contents (index.html, style.css, script.js)</li>
+<li>Click <strong>Share</strong> — paste URL in incognito tab; project loads from hash</li>
+</ol>
+<blockquote>
+<p>&quot;Export for deployment; share for quick demos without a server.&quot;</p>
+</blockquote>
+<hr>
+<h2 id="8-desktop-file-io-30-sec-tauri-only">8. Desktop file I/O (30 sec, Tauri only)</h2><ol>
+<li><strong>Save As</strong> → save <code>demo.html</code></li>
+<li>Reset project, then <strong>Open</strong> the saved file</li>
+<li>Point out window title with filename</li>
+</ol>
+<p>Skip this section in web-only demos.</p>
+<hr>
+<h2 id="9-close-30-sec">9. Close (30 sec)</h2><blockquote>
+<p>&quot;LiveView Notepad is part of the Gnomad Studio apps portfolio — lightweight, local-first, and built with Tauri and React. Docs and roadmap are in the repo under <code>docs/</code>.&quot;</p>
+</blockquote>
+<hr>
+<h2 id="qampa-prep">Q&amp;A prep</h2><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>vs CodePen/JSFiddle?</td>
+<td>Local-first, desktop Open/Save, no account, ZIP export</td>
+</tr>
+<tr>
+<td>vs VS Code Live Preview?</td>
+<td>Integrated Monaco + tools + share URL in one app</td>
+</tr>
+<tr>
+<td>Backend?</td>
+<td>None in v0.1 — all client-side</td>
+</tr>
+<tr>
+<td>Mobile app?</td>
+<td>Not planned; responsive web works on tablets</td>
+</tr>
+</tbody></table>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

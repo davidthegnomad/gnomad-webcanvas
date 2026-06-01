@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessibility — LiveView Notepad</title>
+  <meta name="description" content="Accessibility documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/ACCESSIBILITY.md</p>
+          <a href="#theme-amp-visual-accessibility" class="toc-h2">Theme &amp; visual accessibility</a>
+<a href="#monaco-editor" class="toc-h2">Monaco editor</a>
+<a href="#focus-management" class="toc-h2">Focus management</a>
+<a href="#color-amp-contrast" class="toc-h2">Color &amp; contrast</a>
+<a href="#known-gaps" class="toc-h2">Known gaps</a>
+<a href="#testing-checklist" class="toc-h2">Testing checklist</a>
+<a href="#feedback" class="toc-h2">Feedback</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Accessibility</h2>
+        <p class="formats">Also available: <a href="ACCESSIBILITY.md">Markdown</a> · <a href="ACCESSIBILITY.txt">Plain text</a></p>
+      </header>
+      <h1 id="accessibility-liveview-notepad">Accessibility — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026<br><strong>Status:</strong> Partial — keyboard shortcuts, Monaco themes, and shell light/dark/hc modes shipped; full WCAG audit pending</p>
+<hr>
+<h2 id="theme-amp-visual-accessibility">Theme &amp; visual accessibility</h2><p>The <strong>Theme</strong> selector in the navbar sets both:</p>
+<ul>
+<li><strong>Monaco editor theme</strong> (<code>vs-dark</code>, <code>vs-light</code>, <code>hc-black</code>)</li>
+<li><strong>Application shell theme</strong> via CSS variables (<code>data-ui-theme</code> on <code>&lt;html&gt;</code>)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Editor theme</th>
+<th>Shell mode</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dark</td>
+<td><code>dark</code></td>
+<td>Default low-light editing</td>
+</tr>
+<tr>
+<td>Light</td>
+<td><code>light</code></td>
+<td>Bright environments</td>
+</tr>
+<tr>
+<td>High Contrast</td>
+<td><code>hc</code></td>
+<td>Maximum contrast (yellow accent on black)</td>
+</tr>
+</tbody></table>
+<p>Theme preference persists in <code>localStorage</code> (<code>liveview-preferences</code>).</p>
+<p>Preview background modes (white / dark / checkerboard) are independent and help test user content contrast.</p>
+<p>LiveView Notepad supports full keyboard workflows for common actions without requiring a pointer.</p>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Ctrl/Cmd+S</code></td>
+<td>Save</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+S</code></td>
+<td>Save As / Export</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+O</code></td>
+<td>Open (desktop)</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Enter</code></td>
+<td>Refresh preview</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+\</code></td>
+<td>Toggle layout</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+1/2/3</code></td>
+<td>Focus HTML/CSS/JS pane</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd++</code> / <code>-</code></td>
+<td>Font size</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+F</code></td>
+<td>Format pane</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+C</code></td>
+<td>Toggle console</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+E</code></td>
+<td>Export ZIP</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>Exit preview fullscreen</td>
+</tr>
+</tbody></table>
+<p>Full list available in the <strong>Shortcuts</strong> modal (navbar).</p>
+<hr>
+<h2 id="monaco-editor">Monaco editor</h2><p>Monaco inherits VS Code accessibility features when focused:</p>
+<ul>
+<li>Screen reader support for code content</li>
+<li>Standard text editing shortcuts</li>
+<li>Syntax highlighting with high-contrast theme option</li>
+</ul>
+<p>Select <strong>High Contrast</strong> in the theme dropdown for improved visibility.</p>
+<hr>
+<h2 id="focus-management">Focus management</h2><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Navbar buttons</td>
+<td>Focusable; native <code>&lt;button&gt;</code> elements</td>
+</tr>
+<tr>
+<td>Pane headers</td>
+<td>Click to activate; maximize button focusable</td>
+</tr>
+<tr>
+<td>Floating tools</td>
+<td>Interactive controls in tab order</td>
+</tr>
+<tr>
+<td>Shortcuts modal</td>
+<td>Closes on Escape (Monaco may capture first)</td>
+</tr>
+<tr>
+<td>Preview iframe</td>
+<td>Separate focus context — Tab enters iframe content</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="color-amp-contrast">Color &amp; contrast</h2><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Editor + shell chrome</td>
+<td>Dark, light, and high-contrast themes via CSS variables</td>
+</tr>
+<tr>
+<td>Pane indicators</td>
+<td>Color + text label (HTML/CSS/JS) — not color-only</td>
+</tr>
+<tr>
+<td>Preview backgrounds</td>
+<td>White, dark, and checkerboard modes for content testing</td>
+</tr>
+</tbody></table>
+<p>Formal contrast ratios not yet audited against WCAG 2.2 AA.</p>
+<hr>
+<h2 id="known-gaps">Known gaps</h2><table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Planned</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Skip link to main content</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>ARIA labels on all icon-only buttons</td>
+<td>v0.2</td>
+</tr>
+<tr>
+<td>Focus trap in modals</td>
+<td>v0.2</td>
+</tr>
+<tr>
+<td>Screen reader announcements for preview updates</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>Reduced motion preference</td>
+<td>v0.3</td>
+</tr>
+<tr>
+<td>Colorblind-specific palette</td>
+<td>v0.3</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="testing-checklist">Testing checklist</h2><p>Manual pass before GA:</p>
+<ul>
+<li><input disabled="" type="checkbox"> Tab through navbar without trap</li>
+<li><input disabled="" type="checkbox"> Operate all menus with keyboard (where supported)</li>
+<li><input disabled="" type="checkbox"> High contrast theme readable</li>
+<li><input disabled="" type="checkbox"> VoiceOver (macOS) / NVDA (Windows) on navbar + Monaco</li>
+<li><input disabled="" type="checkbox"> Preview fullscreen exit via Escape</li>
+</ul>
+<hr>
+<h2 id="feedback">Feedback</h2><p>Accessibility issues: report via project tracker or <a href="https://gnomadstudio.org">Gnomad Studio</a>.</p>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

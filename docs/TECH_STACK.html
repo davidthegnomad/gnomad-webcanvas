@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technology Stack — LiveView Notepad</title>
+  <meta name="description" content="Technology Stack documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/TECH_STACK.md</p>
+          <a href="#executive-summary" class="toc-h2">Executive summary</a>
+<a href="#stack-overview" class="toc-h2">Stack overview</a>
+<a href="#frontend-presentation-layer" class="toc-h2">Frontend (presentation layer)</a>
+<a href="#react-19-typescript" class="toc-h3">React 19 + TypeScript</a>
+<a href="#design-system" class="toc-h3">Design system</a>
+<a href="#state-and-persistence" class="toc-h3">State and persistence</a>
+<a href="#backend-systems-layer" class="toc-h2">Backend (systems layer)</a>
+<a href="#rust-surface" class="toc-h3">Rust surface</a>
+<a href="#preview-architecture" class="toc-h2">Preview architecture</a>
+<a href="#dual-runtime-strategy" class="toc-h2">Dual-runtime strategy</a>
+<a href="#build-toolchain" class="toc-h2">Build toolchain</a>
+<a href="#dependencies-rationale" class="toc-h2">Dependencies rationale</a>
+<a href="#related-documents" class="toc-h2">Related documents</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Technology Stack</h2>
+        <p class="formats">Also available: <a href="TECH_STACK.md">Markdown</a> · <a href="TECH_STACK.txt">Plain text</a></p>
+      </header>
+      <h1 id="technology-stack-liveview-notepad">Technology Stack — LiveView Notepad</h1><p><strong>Document owner:</strong> Engineering<br><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="executive-summary">Executive summary</h2><p>LiveView Notepad is a <strong>cross-platform live code editor</strong> built on <strong>Tauri v2</strong>, pairing a <strong>React 19 + TypeScript</strong> UI with a minimal <strong>Rust</strong> shell for native file dialogs and filesystem access. The same React bundle runs in the browser (Vite dev/preview) and inside the Tauri WebView, with a <strong>platform bridge</strong> abstracting Open/Save behavior.</p>
+<p>The product targets designers and developers who need a fast HTML/CSS/JS sandbox with Monaco editing, live iframe preview, project export, and URL-based sharing — without a backend server.</p>
+<hr>
+<h2 id="stack-overview">Stack overview</h2><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Shell / runtime</strong></td>
+<td>Tauri 2.11</td>
+<td>Native windowing, bundling, plugin host</td>
+</tr>
+<tr>
+<td><strong>UI</strong></td>
+<td>React 19, TypeScript 6, Vite 8</td>
+<td>Component model, build pipeline, HMR</td>
+</tr>
+<tr>
+<td><strong>Editor</strong></td>
+<td>Monaco Editor (<code>@monaco-editor/react</code>)</td>
+<td>Syntax-highlighted HTML/CSS/JS panes</td>
+</tr>
+<tr>
+<td><strong>Layout</strong></td>
+<td>react-resizable-panels</td>
+<td>Draggable split panes for editors + preview</td>
+</tr>
+<tr>
+<td><strong>Styling</strong></td>
+<td>Tailwind CSS 4</td>
+<td>Utility-first UI styling</td>
+</tr>
+<tr>
+<td><strong>State</strong></td>
+<td>Zustand 5</td>
+<td>Editor state, projects, preview settings</td>
+</tr>
+<tr>
+<td><strong>Systems backend</strong></td>
+<td>Rust 2021 (minimal)</td>
+<td>Tauri plugins: fs, dialog, log</td>
+</tr>
+<tr>
+<td><strong>Export</strong></td>
+<td>JSZip, FileSaver</td>
+<td>ZIP project export in browser</td>
+</tr>
+<tr>
+<td><strong>Sharing</strong></td>
+<td>lz-string</td>
+<td>URL hash compression for share links</td>
+</tr>
+<tr>
+<td><strong>Testing</strong></td>
+<td>Vitest 3 + jsdom</td>
+<td>Unit tests for utils (19 tests)</td>
+</tr>
+<tr>
+<td><strong>CI/CD</strong></td>
+<td>GitHub Actions + tauri-action</td>
+<td>Matrix builds on version tags</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="frontend-presentation-layer">Frontend (presentation layer)</h2><h3 id="react-19-typescript">React 19 + TypeScript</h3><p>Single-page application compiled by Vite. TypeScript enforces contracts for editor state, CDN libraries, and platform bridge interfaces.</p>
+<p><strong>Key frontend modules:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>App.tsx</code></td>
+<td>Hydration, persistence, keyboard shortcuts, desktop file ops</td>
+</tr>
+<tr>
+<td><code>components/Workspace.tsx</code></td>
+<td>Resizable editor + preview layout</td>
+</tr>
+<tr>
+<td><code>components/CodeEditorPane.tsx</code></td>
+<td>Monaco wrapper per pane</td>
+</tr>
+<tr>
+<td><code>components/PreviewFrame.tsx</code></td>
+<td>Debounced iframe preview + console relay</td>
+</tr>
+<tr>
+<td><code>components/TopNavbar.tsx</code></td>
+<td>Projects, templates, libraries, export, share</td>
+</tr>
+<tr>
+<td><code>store/editorStore.ts</code></td>
+<td>Zustand store — code, layout, projects, preview</td>
+</tr>
+<tr>
+<td><code>utils/platformBridge.ts</code></td>
+<td>Web vs Tauri Open/Save abstraction</td>
+</tr>
+<tr>
+<td><code>utils/parseHtmlFile.ts</code></td>
+<td>DOMParser-based HTML ↔ pane conversion</td>
+</tr>
+<tr>
+<td><code>utils/preferences.ts</code></td>
+<td>Theme persistence (<code>localStorage</code>)</td>
+</tr>
+<tr>
+<td><code>utils/exportProject.ts</code></td>
+<td>ZIP export</td>
+</tr>
+<tr>
+<td><code>utils/shareUrl.ts</code></td>
+<td>LZ-compressed URL sharing</td>
+</tr>
+<tr>
+<td><code>utils/assembleSource.ts</code></td>
+<td>Build preview iframe document</td>
+</tr>
+<tr>
+<td><code>utils/projectManager.ts</code></td>
+<td>localStorage project index + data</td>
+</tr>
+</tbody></table>
+<h3 id="design-system">Design system</h3><p>Theme-aware shell using CSS custom properties on <code>[data-ui-theme]</code> (<code>dark</code>, <code>light</code>, <code>hc</code>). The navbar <strong>Theme</strong> selector syncs Monaco editor theme with app chrome. Default dark palette mirrors GitHub (<code>#0d1117</code> base); light and high-contrast variants defined in <code>src/app.css</code>. Pane accent colors distinguish HTML (orange), CSS (blue), JS (yellow).</p>
+<h3 id="state-and-persistence">State and persistence</h3><table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code, libraries, fonts</td>
+<td>Zustand (in-memory) + debounced localStorage</td>
+</tr>
+<tr>
+<td>Project index</td>
+<td>localStorage (<code>liveview-projects</code>)</td>
+</tr>
+<tr>
+<td>Editor + shell theme</td>
+<td>localStorage (<code>liveview-preferences</code>)</td>
+</tr>
+<tr>
+<td>Desktop files</td>
+<td>Native filesystem via Tauri plugin-fs</td>
+</tr>
+<tr>
+<td>Share links</td>
+<td>URL hash (ephemeral, not persisted server-side)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="backend-systems-layer">Backend (systems layer)</h2><h3 id="rust-surface">Rust surface</h3><p>The Tauri backend is intentionally thin — no custom <code>#[tauri::command]</code> handlers yet. Native capabilities come from official plugins:</p>
+<pre><code>src-tauri/
+├── src/lib.rs          # Plugin registration (fs, dialog, log)
+├── src/main.rs         # Entry point
+├── tauri.conf.json     # Window, bundle, build config
+└── capabilities/default.json  # fs + dialog permissions
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tauri-plugin-fs</code></td>
+<td>Read/write text files for Open/Save</td>
+</tr>
+<tr>
+<td><code>tauri-plugin-dialog</code></td>
+<td>Native open/save file dialogs</td>
+</tr>
+<tr>
+<td><code>tauri-plugin-log</code></td>
+<td>Debug logging (dev builds only)</td>
+</tr>
+</tbody></table>
+<p>Future Rust commands (e.g., recent files, workspace folders) would extend <code>lib.rs</code> without changing the frontend bridge contract.</p>
+<hr>
+<h2 id="preview-architecture">Preview architecture</h2><p>Preview runs in a <strong>sandboxed iframe</strong> with <code>srcDoc</code> assembled from:</p>
+<ol>
+<li>User HTML, CSS, JS (debounced 500 ms)</li>
+<li>Active CDN library tags</li>
+<li>Optional Google Font <code>&lt;link&gt;</code> from font pairings</li>
+<li>Console capture script (postMessage to parent)</li>
+</ol>
+<p>This keeps user JS isolated from the editor UI while allowing live updates.</p>
+<hr>
+<h2 id="dual-runtime-strategy">Dual-runtime strategy</h2><table>
+<thead>
+<tr>
+<th>Runtime</th>
+<th>Detection</th>
+<th>File I/O</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Web</strong></td>
+<td>No <code>__TAURI_INTERNALS__</code></td>
+<td>localStorage + ZIP export</td>
+</tr>
+<tr>
+<td><strong>Desktop</strong></td>
+<td>Tauri WebView present</td>
+<td>Native dialogs + filesystem</td>
+</tr>
+</tbody></table>
+<p><code>getPlatformBridge()</code> lazy-loads Tauri APIs only when available, keeping the web bundle free of hard Tauri imports at module scope.</p>
+<hr>
+<h2 id="build-toolchain">Build toolchain</h2><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Node.js</td>
+<td>22 LTS (CI)</td>
+<td><code>npm ci</code> in release workflow</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>stable</td>
+<td>Via rustup</td>
+</tr>
+<tr>
+<td>Vite</td>
+<td>8.x</td>
+<td>Frontend bundler</td>
+</tr>
+<tr>
+<td>Tauri CLI</td>
+<td>2.11</td>
+<td><code>npm run tauri:dev</code> / <code>tauri:build</code></td>
+</tr>
+<tr>
+<td>ESLint</td>
+<td>10.x</td>
+<td><code>npm run lint</code></td>
+</tr>
+<tr>
+<td>Vitest</td>
+<td>3.x</td>
+<td><code>npm run test</code> — unit tests with jsdom</td>
+</tr>
+<tr>
+<td>TypeScript</td>
+<td>6.x</td>
+<td><code>tsc -b</code> strict build</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="dependencies-rationale">Dependencies rationale</h2><table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Monaco</td>
+<td>Industry-standard code editor; HTML/CSS/JS language support</td>
+</tr>
+<tr>
+<td>react-resizable-panels</td>
+<td>Accessible, performant split layouts</td>
+</tr>
+<tr>
+<td>Zustand</td>
+<td>Minimal boilerplate for complex editor state</td>
+</tr>
+<tr>
+<td>JSZip + FileSaver</td>
+<td>Client-side export without server</td>
+</tr>
+<tr>
+<td>lz-string</td>
+<td>Compact URL sharing without backend</td>
+</tr>
+<tr>
+<td>Tailwind 4</td>
+<td>Fast UI iteration matching dark editor aesthetic</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="related-documents">Related documents</h2><ul>
+<li><a href="ARCHITECTURE.md">ARCHITECTURE.md</a> — data flow and component diagram</li>
+<li><a href="BUILD.md">BUILD.md</a> — delivery phases</li>
+<li><a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a> — per-OS build commands</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

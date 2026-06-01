@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Architecture — LiveView Notepad</title>
+  <meta name="description" content="Architecture documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/ARCHITECTURE.md</p>
+          <a href="#system-context" class="toc-h2">System context</a>
+<a href="#layer-responsibilities" class="toc-h2">Layer responsibilities</a>
+<a href="#component-hierarchy" class="toc-h2">Component hierarchy</a>
+<a href="#data-flow-live-preview" class="toc-h2">Data flow — live preview</a>
+<a href="#data-flow-persistence" class="toc-h2">Data flow — persistence</a>
+<a href="#web" class="toc-h3">Web</a>
+<a href="#desktop" class="toc-h3">Desktop</a>
+<a href="#hydration-priority-startup" class="toc-h2">Hydration priority (startup)</a>
+<a href="#platform-bridge" class="toc-h2">Platform bridge</a>
+<a href="#share-url-encoding" class="toc-h2">Share URL encoding</a>
+<a href="#security-boundary" class="toc-h2">Security boundary</a>
+<a href="#tauri-configuration" class="toc-h2">Tauri configuration</a>
+<a href="#extension-points" class="toc-h2">Extension points</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Architecture</h2>
+        <p class="formats">Also available: <a href="ARCHITECTURE.md">Markdown</a> · <a href="ARCHITECTURE.txt">Plain text</a></p>
+      </header>
+      <h1 id="architecture-liveview-notepad">Architecture — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="system-context">System context</h2><p>LiveView Notepad is a <strong>live HTML/CSS/JS editor</strong> with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.</p>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                     User (designer / developer)                   │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+         ┌───────────────────┴───────────────────┐
+         │                                       │
+         ▼                                       ▼
+┌─────────────────────┐               ┌─────────────────────┐
+│  Browser (Vite)     │               │  Tauri Desktop      │
+│  localStorage       │               │  native dialogs     │
+│  ZIP export         │               │  filesystem I/O     │
+└──────────┬──────────┘               └──────────┬──────────┘
+           │                                     │
+           └──────────────┬──────────────────────┘
+                          ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                   React 19 SPA (TypeScript)                       │
+│  App · Workspace · TopNavbar · PreviewFrame · FloatingTools      │
+│  Zustand store · platformBridge · parseHtmlFile · assembleSource · shareUrl │
+│  preferences (theme persistence)                                              │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              ▼                             ▼
+     Monaco Editor (3 panes)        Preview iframe (srcDoc)
+     HTML · CSS · JS                 CDN libs · fonts · console
+</code></pre>
+<hr>
+<h2 id="layer-responsibilities">Layer responsibilities</h2><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Owns</th>
+<th>Must not own</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>React UI</strong></td>
+<td>Layout, editor UX, preview assembly, sharing</td>
+<td>Direct filesystem without bridge</td>
+</tr>
+<tr>
+<td><strong>Zustand store</strong></td>
+<td>Code, projects, preview settings</td>
+<td>Persistence format (delegated to utils)</td>
+</tr>
+<tr>
+<td><strong>Platform bridge</strong></td>
+<td>Open/Save abstraction</td>
+<td>UI rendering</td>
+</tr>
+<tr>
+<td><strong>Tauri plugins</strong></td>
+<td>Native dialogs, file read/write</td>
+<td>Editor logic</td>
+</tr>
+<tr>
+<td><strong>Preview iframe</strong></td>
+<td>User HTML/CSS/JS execution</td>
+<td>Parent DOM access (sandboxed)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="component-hierarchy">Component hierarchy</h2><pre><code>App
+├── TopNavbar          — projects, templates, libraries, export, share
+├── Workspace
+│   ├── Group (react-resizable-panels)
+│   │   ├── Panel[] — CodeEditorPane × 3 (html, css, js)
+│   │   └── Panel — PreviewFrame
+│   │       ├── iframe (assembled srcDoc)
+│   │       └── ConsolePanel
+│   └── ResizeHandle
+└── FloatingTools
+    ├── ColorPicker
+    ├── CssGenerator
+    └── FontPairings
+</code></pre>
+<hr>
+<h2 id="data-flow-live-preview">Data flow — live preview</h2><pre><code>User types in Monaco
+        │
+        ▼
+editorStore.setCode(pane, code)     isDirty = true
+        │
+        ▼
+useDebounce (500 ms)
+        │
+        ▼
+assembleSource(html, css, js, libraries, fonts)
+        │
+        ▼
+PreviewFrame sets iframe srcDoc
+        │
+        ▼
+User JS runs in iframe ──postMessage──► ConsolePanel
+</code></pre>
+<p><strong>Force refresh:</strong> <code>previewKey</code> increment bypasses debounce/cache when user presses Ctrl/Cmd+Enter.</p>
+<p><strong>Pause:</strong> When <code>previewPaused</code> is true, <code>assembledSource</code> returns null — iframe retains last rendered document.</p>
+<hr>
+<h2 id="data-flow-persistence">Data flow — persistence</h2><h3 id="web">Web</h3><pre><code>editorStore change
+        │
+        ▼
+App useEffect (debounce 1 s)
+        │
+        ▼
+projectManager.saveProjectData(id, payload)
+        │
+        ▼
+localStorage
+</code></pre>
+<h3 id="desktop">Desktop</h3><pre><code>Ctrl/Cmd+S
+        │
+        ▼
+platformBridge.saveProject(html, css, js, path?)
+        │
+        ▼
+assembleFullHtml() → writeTextFile via Tauri fs plugin
+</code></pre>
+<p><strong>Open:</strong> Native dialog → <code>readTextFile</code> → <code>parseHtmlFile()</code> (DOMParser) extracts styles, inline scripts, and body HTML.</p>
+<p>Implementation: <code>src/utils/parseHtmlFile.ts</code> — uses <code>DOMParser</code> + <code>querySelectorAll</code>, not regex. Covered by 8 unit tests.</p>
+<hr>
+<h2 id="hydration-priority-startup">Hydration priority (startup)</h2><p>On first mount, <code>App.tsx</code> loads state in order:</p>
+<ol>
+<li><strong>URL hash</strong> — shared link (<code>decodeProjectFromHash</code>)</li>
+<li><strong>Legacy migration</strong> — old localStorage keys → new project format</li>
+<li><strong>Existing projects</strong> — first project in index</li>
+</ol>
+<p>Hash wins so shared links always load correctly even if local projects exist.</p>
+<hr>
+<h2 id="platform-bridge">Platform bridge</h2><pre><code class="language-typescript">interface PlatformBridge {
+  isDesktop: boolean;
+  openProject(): Promise&lt;ProjectFileData | null&gt;;
+  saveProject(html, css, js, filePath?): Promise&lt;string | null&gt;;
+  saveProjectAs(html, css, js): Promise&lt;string | null&gt;;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Web</th>
+<th>Desktop</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>openProject</code></td>
+<td>Returns null</td>
+<td>Open dialog → parse HTML</td>
+</tr>
+<tr>
+<td><code>saveProject</code></td>
+<td>Returns null</td>
+<td>Write to path or prompt Save As</td>
+</tr>
+<tr>
+<td><code>saveProjectAs</code></td>
+<td>Returns null</td>
+<td>Save dialog → write file</td>
+</tr>
+</tbody></table>
+<p>Detection: <code>&#39;__TAURI_INTERNALS__&#39; in window</code></p>
+<hr>
+<h2 id="share-url-encoding">Share URL encoding</h2><pre><code>Project state → JSON → lz-string compress → URL hash
+</code></pre>
+<p>Payload fields: <code>html</code>, <code>css</code>, <code>js</code>, optional <code>libs</code>, <code>fp</code> (font pairing), <code>hf</code>/<code>bf</code> (custom fonts).</p>
+<hr>
+<h2 id="security-boundary">Security boundary</h2><table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Trust level</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Editor UI</td>
+<td>Trusted (app code)</td>
+</tr>
+<tr>
+<td>Preview iframe</td>
+<td>Untrusted (user code) — sandboxed, no parent access</td>
+</tr>
+<tr>
+<td>CDN scripts</td>
+<td>Third-party — user opt-in via library toggle</td>
+</tr>
+<tr>
+<td>File I/O</td>
+<td>User-selected paths only (Tauri dialog scope)</td>
+</tr>
+</tbody></table>
+<p>See <a href="SECURITY_MODEL.md">SECURITY_MODEL.md</a> for details.</p>
+<hr>
+<h2 id="tauri-configuration">Tauri configuration</h2><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Product name</td>
+<td>LiveView Notepad</td>
+</tr>
+<tr>
+<td>Identifier</td>
+<td><code>com.liveview.notepad</code></td>
+</tr>
+<tr>
+<td>Default window</td>
+<td>1400×900, min 800×500</td>
+</tr>
+<tr>
+<td>Bundle targets</td>
+<td>all (deb, rpm, msi, dmg, etc.)</td>
+</tr>
+<tr>
+<td>CSP</td>
+<td>null (preview requires inline scripts)</td>
+</tr>
+</tbody></table>
+<p>Capabilities grant fs read/write and dialog open/save on the main window only.</p>
+<hr>
+<h2 id="extension-points">Extension points</h2><table>
+<thead>
+<tr>
+<th>Future feature</th>
+<th>Likely touch points</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Custom Tauri commands</td>
+<td><code>src-tauri/src/lib.rs</code>, <code>platformBridge.ts</code></td>
+</tr>
+<tr>
+<td>Auto-updater</td>
+<td><code>tauri.conf.json</code> plugins, release workflow</td>
+</tr>
+<tr>
+<td>Multi-file projects</td>
+<td><code>projectManager.ts</code>, Rust workspace commands</td>
+</tr>
+<tr>
+<td>Collaboration</td>
+<td>Backend or CRDT layer (not in v0.1)</td>
+</tr>
+</tbody></table>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

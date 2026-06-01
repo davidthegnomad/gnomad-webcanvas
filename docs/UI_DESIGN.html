@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UI Design — LiveView Notepad</title>
+  <meta name="description" content="UI Design documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/UI_DESIGN.md</p>
+          <a href="#design-intent" class="toc-h2">Design intent</a>
+<a href="#theme-system" class="toc-h2">Theme system</a>
+<a href="#color-palette-dark-theme" class="toc-h2">Color palette (dark theme)</a>
+<a href="#pane-accent-colors" class="toc-h3">Pane accent colors</a>
+<a href="#layout" class="toc-h2">Layout</a>
+<a href="#typography" class="toc-h2">Typography</a>
+<a href="#components" class="toc-h2">Components</a>
+<a href="#monaco-themes" class="toc-h2">Monaco themes</a>
+<a href="#preview-chrome" class="toc-h2">Preview chrome</a>
+<a href="#interaction-patterns" class="toc-h2">Interaction patterns</a>
+<a href="#responsive-behavior" class="toc-h2">Responsive behavior</a>
+<a href="#future-polish" class="toc-h2">Future polish</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>UI Design</h2>
+        <p class="formats">Also available: <a href="UI_DESIGN.md">Markdown</a> · <a href="UI_DESIGN.txt">Plain text</a></p>
+      </header>
+      <h1 id="ui-design-liveview-notepad">UI Design — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="design-intent">Design intent</h2><p>LiveView Notepad follows a <strong>GitHub-inspired editor aesthetic</strong> — familiar to developers, low distraction, high information density. The UI prioritizes code and preview over chrome. Three shell themes (dark, light, high contrast) adapt the entire app chrome, not just the Monaco editor.</p>
+<hr>
+<h2 id="theme-system">Theme system</h2><p>The navbar <strong>Theme</strong> dropdown sets both Monaco and shell appearance:</p>
+<table>
+<thead>
+<tr>
+<th>Monaco theme</th>
+<th>Shell <code>data-ui-theme</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>vs-dark</code></td>
+<td><code>dark</code></td>
+<td>Default — <code>#0d1117</code> base, <code>#161b22</code> panels</td>
+</tr>
+<tr>
+<td><code>vs-light</code></td>
+<td><code>light</code></td>
+<td>Light gray/white chrome for bright environments</td>
+</tr>
+<tr>
+<td><code>hc-black</code></td>
+<td><code>hc</code></td>
+<td>High contrast — white borders/text on black</td>
+</tr>
+</tbody></table>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li>CSS variables defined in <code>src/app.css</code> per theme</li>
+<li>Utility classes: <code>.ui-bg-base</code>, <code>.ui-bg-panel</code>, <code>.ui-text-muted</code>, etc.</li>
+<li><code>App.tsx</code> sets <code>document.documentElement.dataset.uiTheme</code> on theme change</li>
+<li>Preference persisted via <code>src/utils/preferences.ts</code> → <code>localStorage</code></li>
+</ul>
+<hr>
+<h2 id="color-palette-dark-theme">Color palette (dark theme)</h2><table>
+<thead>
+<tr>
+<th>Token</th>
+<th>CSS variable</th>
+<th>Dark value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Base background</td>
+<td><code>--ui-bg-base</code></td>
+<td><code>#0d1117</code></td>
+</tr>
+<tr>
+<td>Panel background</td>
+<td><code>--ui-bg-panel</code></td>
+<td><code>#161b22</code></td>
+</tr>
+<tr>
+<td>Elevated surface</td>
+<td><code>--ui-bg-elevated</code></td>
+<td><code>#21262d</code></td>
+</tr>
+<tr>
+<td>Border</td>
+<td><code>--ui-border</code></td>
+<td><code>#30363d</code></td>
+</tr>
+<tr>
+<td>Text primary</td>
+<td><code>--ui-text</code></td>
+<td><code>#f0f6fc</code></td>
+</tr>
+<tr>
+<td>Text muted</td>
+<td><code>--ui-text-muted</code></td>
+<td><code>#8b949e</code></td>
+</tr>
+</tbody></table>
+<p>Light and high-contrast values are in the same file under <code>[data-ui-theme=&#39;light&#39;]</code> and <code>[data-ui-theme=&#39;hc&#39;]</code>.</p>
+<h3 id="pane-accent-colors">Pane accent colors</h3><table>
+<thead>
+<tr>
+<th>Pane</th>
+<th>Color</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HTML</td>
+<td>Orange</td>
+<td>Pane dot indicator</td>
+</tr>
+<tr>
+<td>CSS</td>
+<td>Blue</td>
+<td>Pane dot indicator</td>
+</tr>
+<tr>
+<td>JS</td>
+<td>Yellow</td>
+<td>Pane dot indicator</td>
+</tr>
+</tbody></table>
+<p>Defined in <code>src/constants/editorConfig.ts</code> as <code>PANE_COLORS</code>. Theme-independent.</p>
+<hr>
+<h2 id="layout">Layout</h2><pre><code>┌─────────────────────────────────────────────────────────────┐
+│ TopNavbar (shrink-0, h ~40px)                               │
+├──────────────────────────┬──────────────────────────────────┤
+│ Editor panels (flex)     │ PreviewFrame (flex)              │
+│ react-resizable-panels   │ iframe + toolbar + console       │
+├──────────────────────────┴──────────────────────────────────┤
+│ Floating tools bar (shrink-0, horizontal scroll)            │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<ul>
+<li><strong>Vertical layout (default):</strong> Editors stacked left, preview right</li>
+<li><strong>Horizontal layout:</strong> Editors stacked top, preview bottom</li>
+<li><strong>Preview fullscreen:</strong> Hides editors and tools; preview only</li>
+</ul>
+<hr>
+<h2 id="typography">Typography</h2><table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Font</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UI chrome</td>
+<td>system-ui, Tailwind defaults</td>
+</tr>
+<tr>
+<td>Code editor</td>
+<td>Monaco default (Consolas, Menlo, monospace)</td>
+</tr>
+<tr>
+<td>Preview content</td>
+<td>User-controlled via CSS / font pairings</td>
+</tr>
+</tbody></table>
+<p>Font pairings inject Google Fonts <code>&lt;link&gt;</code> into preview only — not the app shell.</p>
+<hr>
+<h2 id="components">Components</h2><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Design notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>TopNavbar</code></td>
+<td>Compact icon + text buttons; theme selector; dropdown menus</td>
+</tr>
+<tr>
+<td><code>PaneHeader</code></td>
+<td>Colored dot + label; maximize on double-click</td>
+</tr>
+<tr>
+<td><code>ResizeHandle</code></td>
+<td>4px drag target; themed border hover</td>
+</tr>
+<tr>
+<td><code>PreviewFrame</code></td>
+<td>Toolbar with viewport chips, background toggle, console toggle</td>
+</tr>
+<tr>
+<td><code>ConsolePanel</code></td>
+<td>Bottom drawer; monospace log entries with method color coding</td>
+</tr>
+<tr>
+<td><code>FloatingTools</code></td>
+<td>Inline controls; separated by vertical dividers</td>
+</tr>
+<tr>
+<td><code>ShortcutsModal</code></td>
+<td>Overlay table of keyboard shortcuts</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="monaco-themes">Monaco themes</h2><table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Value</th>
+<th>Shell sync</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dark</td>
+<td><code>vs-dark</code></td>
+<td><code>dark</code></td>
+</tr>
+<tr>
+<td>Light</td>
+<td><code>vs-light</code></td>
+<td><code>light</code></td>
+</tr>
+<tr>
+<td>High Contrast</td>
+<td><code>hc-black</code></td>
+<td><code>hc</code></td>
+</tr>
+</tbody></table>
+<p>User-selectable from navbar; <strong>persisted</strong> in <code>localStorage</code> (<code>liveview-preferences</code>).</p>
+<hr>
+<h2 id="preview-chrome">Preview chrome</h2><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Visual</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Viewport presets</td>
+<td>Pill buttons; active state highlighted</td>
+</tr>
+<tr>
+<td>Background cycle</td>
+<td>Icon buttons: ☀ ☾ ▦</td>
+</tr>
+<tr>
+<td>Console</td>
+<td>Toggle; badge when entries present</td>
+</tr>
+</tbody></table>
+<p>Preview iframe border respects viewport preset width (centered when narrower than panel). Preview backgrounds are independent of shell theme.</p>
+<hr>
+<h2 id="interaction-patterns">Interaction patterns</h2><table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dirty state</td>
+<td>Window title <code>*</code> (desktop); no web indicator yet</td>
+</tr>
+<tr>
+<td>Confirm destructive</td>
+<td>Reset project — click twice within 3 s</td>
+</tr>
+<tr>
+<td>Toast</td>
+<td>Share copied — 2 s fade</td>
+</tr>
+<tr>
+<td>Debounced preview</td>
+<td>500 ms after last keystroke</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="responsive-behavior">Responsive behavior</h2><p>Primary target: desktop ≥800×500 (Tauri minimum). Web mode works on smaller screens but panel layout may require horizontal scroll on narrow viewports.</p>
+<hr>
+<h2 id="future-polish">Future polish</h2><ul>
+<li><input disabled="" type="checkbox"> Dedicated colorblind palette</li>
+<li><input disabled="" type="checkbox"> Custom accent color picker</li>
+<li><input disabled="" type="checkbox"> Compact navbar mode for small screens</li>
+<li><input disabled="" type="checkbox"> Reduced motion preference</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+# User Guide — LiveView Notepad
+
+**Version:** 0.1.0
+
+Studio: [gnomadstudio.org](https://gnomadstudio.org)
+
+---
+
+## Introduction
+
+LiveView Notepad (also known as **Gnomad Preview**) is a live HTML/CSS/JS playground with a Monaco code editor and instant preview. Edit code in split panes, see results update in real time, and export or share your work.
+
+The app runs as:
+
+- A **desktop app** (Tauri) with native Open/Save dialogs
+- A **web app** (Vite) in the browser with localStorage persistence and URL sharing
+
+---
+
+## Installation
+
+### Desktop (recommended)
+
+Download the installer for your OS from GitHub Releases (when published):
+
+| Platform | Format |
+|----------|--------|
+| **macOS** | `.dmg` or `.app` |
+| **Windows** | `.msi` or `.exe` |
+| **Linux** | `.deb`, `.rpm`, or AppImage |
+
+First launch on macOS: if Gatekeeper blocks unsigned builds, right-click → **Open**.
+
+### Web (development or hosted)
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` in a modern browser.
+
+---
+
+## Main interface
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Top Navbar — projects, templates, libraries, export, share │
+├──────────────────────┬──────────────────────────────────────┤
+│  HTML / CSS / JS     │  Live Preview (iframe)               │
+│  Monaco editors      │  Viewport presets · Console          │
+├──────────────────────┴──────────────────────────────────────┤
+│  Floating Tools — Color Picker · CSS Generator · Fonts      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Top navbar
+
+| Control | Action |
+|---------|--------|
+| **Projects** | Create, rename, delete, switch between saved projects |
+| **Templates** | Start from Blank, Landing Page, Dashboard, etc. |
+| **Libraries** | Toggle CDN libraries (Tailwind, GSAP, Three.js, …) |
+| **Layout** | Switch vertical ↔ horizontal editor stack |
+| **Pause / Refresh** | Pause live preview or force reload |
+| **Fullscreen** | Preview-only fullscreen mode |
+| **Export** | Download project as `.zip` (HTML + CSS + JS) |
+| **Share** | Copy URL with compressed project in hash |
+| **Theme / Font size** | Editor appearance controls (dark, light, high contrast) |
+
+### Editor panes
+
+Three Monaco panes for **HTML**, **CSS**, and **JavaScript**:
+
+- Click a pane header to focus it
+- Double-click header or click **⊞** to maximize one pane
+- Drag resize handles between panes
+- Syntax highlighting, line numbers, and format-on-demand
+
+### Live preview
+
+- Updates automatically (500 ms debounce) unless paused
+- **Viewport presets:** Full, Mobile (375px), Tablet (768px), Desktop (1024px)
+- **Background cycle:** White → Dark → Checkerboard (for transparency testing)
+- **Console panel:** Captures `console.log`, `warn`, and `error` from preview iframe
+
+### Floating tools bar
+
+| Tool | Purpose |
+|------|---------|
+| **Color Picker** | Pick a color and insert hex/rgb into active CSS pane |
+| **CSS Generator** | Generate utility CSS snippets |
+| **Font Pairings** | Apply curated Google Font heading/body pairs to preview |
+
+---
+
+## Projects & persistence
+
+### Web mode
+
+- Projects saved to **browser localStorage** (debounced, 1 s)
+- Multiple projects supported via the Projects menu
+- Legacy storage is migrated automatically on first load
+
+### Desktop mode
+
+- **Open** (`Ctrl/Cmd+O`): Load a single `.html` file; CSS/JS extracted from `<style>` and `<script>` tags
+- **Save** (`Ctrl/Cmd+S`): Write to current file path
+- **Save As** (`Ctrl/Cmd+Shift+S`): Pick a new path via native dialog
+- Window title shows filename and dirty (`*`) indicator
+
+---
+
+## Sharing projects
+
+1. Click **Share** in the navbar
+2. The current project is compressed into the URL hash (`#...`)
+3. Link is copied to clipboard
+4. Recipients open the URL — project loads from hash (highest priority on startup)
+
+**Note:** Very large projects may exceed URL length limits in some browsers.
+
+---
+
+## Export
+
+**Export** (navbar or `Ctrl/Cmd+Shift+E`) downloads a ZIP containing:
+
+```
+index.html    — assembled page with CDN library tags
+style.css     — your CSS
+script.js     — your JavaScript
+README.md     — generated attribution
+```
+
+---
+
+## Keyboard shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd+S` | Save (desktop: file; web: localStorage) |
+| `Ctrl/Cmd+Shift+S` | Save As (desktop) / Export ZIP (web) |
+| `Ctrl/Cmd+O` | Open file (desktop only) |
+| `Ctrl/Cmd+Enter` | Force refresh preview |
+| `Ctrl/Cmd+\` | Toggle layout orientation |
+| `Ctrl/Cmd+1/2/3` | Focus HTML / CSS / JS pane |
+| `Ctrl/Cmd++` / `Ctrl/Cmd+-` | Increase / decrease editor font size |
+| `Ctrl/Cmd+Shift+F` | Format active pane |
+| `Ctrl/Cmd+Shift+C` | Toggle console panel |
+| `Ctrl/Cmd+Shift+E` | Export ZIP |
+| `Escape` | Exit preview fullscreen |
+
+Press **?** or use the shortcuts button in the navbar for the full list.
+
+---
+
+## Themes & appearance
+
+Use the **Theme** dropdown in the navbar to switch between:
+
+| Theme | Editor | App shell |
+|-------|--------|-----------|
+| **Dark** | Monaco dark | Dark gray chrome (default) |
+| **Light** | Monaco light | Light gray/white chrome |
+| **High contrast** | Monaco hc-black | Black/white high-contrast chrome |
+
+Your choice is saved automatically and restored on next visit.
+
+Preview background (white / dark / checkerboard) is separate — use the cycle button in the preview toolbar to test how your design looks on different surfaces.
+
+---
+
+## CDN libraries
+
+Toggle libraries from the **Libraries** menu. Active libraries inject CDN `<script>` and `<link>` tags into the preview iframe and exported `index.html`.
+
+Available libraries include Tailwind CSS, Bootstrap, Font Awesome, Animate.css, GSAP, Three.js, Chart.js, and more. See `src/utils/cdnRegistry.ts` for the full list.
+
+---
+
+## Templates
+
+The **Templates** menu provides starter projects:
+
+- **Blank** — empty canvas
+- **Landing Page** — hero + CTA
+- **Dashboard** — sidebar layout
+- Additional templates in `src/constants/templates.ts`
+
+Applying a template replaces the current project's code. Save first if needed.
+
+---
+
+## Tips
+
+- **Pause preview** when editing large JS to avoid iframe reload churn
+- Use **checkerboard background** to verify transparent elements
+- **Mobile viewport** helps test responsive layouts without leaving the app
+- Desktop **Open** uses a standards-based HTML parser (handles files edited outside LiveView)
+- Desktop **Save** writes a single self-contained `.html` file (inline CSS/JS assembled)
+
+---
+
+## Getting help
+
+- Troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- Build from source: [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md)
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

@@ -1,0 +1,153 @@
+# UI Design — LiveView Notepad
+
+**Version:** 0.1.0  
+**Last updated:** June 2026
+
+---
+
+## Design intent
+
+LiveView Notepad follows a **GitHub-inspired editor aesthetic** — familiar to developers, low distraction, high information density. The UI prioritizes code and preview over chrome. Three shell themes (dark, light, high contrast) adapt the entire app chrome, not just the Monaco editor.
+
+---
+
+## Theme system
+
+The navbar **Theme** dropdown sets both Monaco and shell appearance:
+
+| Monaco theme | Shell `data-ui-theme` | Description |
+|--------------|----------------------|-------------|
+| `vs-dark` | `dark` | Default — `#0d1117` base, `#161b22` panels |
+| `vs-light` | `light` | Light gray/white chrome for bright environments |
+| `hc-black` | `hc` | High contrast — white borders/text on black |
+
+**Implementation:**
+
+- CSS variables defined in `src/app.css` per theme
+- Utility classes: `.ui-bg-base`, `.ui-bg-panel`, `.ui-text-muted`, etc.
+- `App.tsx` sets `document.documentElement.dataset.uiTheme` on theme change
+- Preference persisted via `src/utils/preferences.ts` → `localStorage`
+
+---
+
+## Color palette (dark theme)
+
+| Token | CSS variable | Dark value |
+|-------|--------------|------------|
+| Base background | `--ui-bg-base` | `#0d1117` |
+| Panel background | `--ui-bg-panel` | `#161b22` |
+| Elevated surface | `--ui-bg-elevated` | `#21262d` |
+| Border | `--ui-border` | `#30363d` |
+| Text primary | `--ui-text` | `#f0f6fc` |
+| Text muted | `--ui-text-muted` | `#8b949e` |
+
+Light and high-contrast values are in the same file under `[data-ui-theme='light']` and `[data-ui-theme='hc']`.
+
+### Pane accent colors
+
+| Pane | Color | Purpose |
+|------|-------|---------|
+| HTML | Orange | Pane dot indicator |
+| CSS | Blue | Pane dot indicator |
+| JS | Yellow | Pane dot indicator |
+
+Defined in `src/constants/editorConfig.ts` as `PANE_COLORS`. Theme-independent.
+
+---
+
+## Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ TopNavbar (shrink-0, h ~40px)                               │
+├──────────────────────────┬──────────────────────────────────┤
+│ Editor panels (flex)     │ PreviewFrame (flex)              │
+│ react-resizable-panels   │ iframe + toolbar + console       │
+├──────────────────────────┴──────────────────────────────────┤
+│ Floating tools bar (shrink-0, horizontal scroll)            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **Vertical layout (default):** Editors stacked left, preview right
+- **Horizontal layout:** Editors stacked top, preview bottom
+- **Preview fullscreen:** Hides editors and tools; preview only
+
+---
+
+## Typography
+
+| Context | Font |
+|---------|------|
+| UI chrome | system-ui, Tailwind defaults |
+| Code editor | Monaco default (Consolas, Menlo, monospace) |
+| Preview content | User-controlled via CSS / font pairings |
+
+Font pairings inject Google Fonts `<link>` into preview only — not the app shell.
+
+---
+
+## Components
+
+| Component | Design notes |
+|-----------|--------------|
+| `TopNavbar` | Compact icon + text buttons; theme selector; dropdown menus |
+| `PaneHeader` | Colored dot + label; maximize on double-click |
+| `ResizeHandle` | 4px drag target; themed border hover |
+| `PreviewFrame` | Toolbar with viewport chips, background toggle, console toggle |
+| `ConsolePanel` | Bottom drawer; monospace log entries with method color coding |
+| `FloatingTools` | Inline controls; separated by vertical dividers |
+| `ShortcutsModal` | Overlay table of keyboard shortcuts |
+
+---
+
+## Monaco themes
+
+| Theme | Value | Shell sync |
+|-------|-------|------------|
+| Dark | `vs-dark` | `dark` |
+| Light | `vs-light` | `light` |
+| High Contrast | `hc-black` | `hc` |
+
+User-selectable from navbar; **persisted** in `localStorage` (`liveview-preferences`).
+
+---
+
+## Preview chrome
+
+| Control | Visual |
+|---------|--------|
+| Viewport presets | Pill buttons; active state highlighted |
+| Background cycle | Icon buttons: ☀ ☾ ▦ |
+| Console | Toggle; badge when entries present |
+
+Preview iframe border respects viewport preset width (centered when narrower than panel). Preview backgrounds are independent of shell theme.
+
+---
+
+## Interaction patterns
+
+| Pattern | Implementation |
+|---------|----------------|
+| Dirty state | Window title `*` (desktop); no web indicator yet |
+| Confirm destructive | Reset project — click twice within 3 s |
+| Toast | Share copied — 2 s fade |
+| Debounced preview | 500 ms after last keystroke |
+
+---
+
+## Responsive behavior
+
+Primary target: desktop ≥800×500 (Tauri minimum). Web mode works on smaller screens but panel layout may require horizontal scroll on narrow viewports.
+
+---
+
+## Future polish
+
+- [ ] Dedicated colorblind palette
+- [ ] Custom accent color picker
+- [ ] Compact navbar mode for small screens
+- [ ] Reduced motion preference
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

@@ -1,0 +1,64 @@
+# Changelog — LiveView Notepad
+
+All notable changes to this project are documented here.
+
+Format based on [Keep a Changelog](https://keepachangelog.com/).
+
+---
+
+## [0.1.0-beta.2] — 2026-06-01
+
+### Added
+
+- Vitest unit tests (19) for `parseHtmlFile`, `shareUrl`, and `assembleSource`
+- DOMParser-based HTML file parsing (replaces fragile regex)
+- Shell UI themes synced with Monaco theme selector (dark / light / high contrast)
+- Persisted editor theme preference in localStorage
+- Full documentation suite (MD + HTML + TXT) with GitHub Pages deploy
+
+### Changed
+
+- `parseHtmlFile` extracted to `src/utils/parseHtmlFile.ts` for testability
+- App chrome uses CSS theme variables instead of hardcoded dark-only colors
+- GitHub Pages serves docs at site root and web app at `/app/`
+
+---
+
+## [0.1.0-beta.1] — 2026-05-30
+
+Initial beta on GitHub (`gnomad-webcanvas`) — Tauri desktop shell, Monaco editor, live preview.
+
+---
+
+## [0.1.0] — 2026-06-01
+
+### Added
+
+- Monaco editor with HTML, CSS, and JavaScript panes
+- Live iframe preview with 500 ms debounce
+- Resizable vertical/horizontal panel layout
+- Preview viewport presets (mobile, tablet, desktop)
+- Preview pause, force refresh, and fullscreen modes
+- Console panel capturing iframe log/warn/error
+- Multi-project localStorage persistence with legacy migration
+- Starter templates (blank, landing page, dashboard, …)
+- CDN library registry (Tailwind, Bootstrap, GSAP, Three.js, …)
+- ZIP export (index.html, style.css, script.js)
+- URL hash sharing via lz-string compression
+- Floating tools: color picker, CSS generator, font pairings
+- Keyboard shortcuts with modal reference
+- Tauri 2 desktop shell with native Open/Save
+- Platform bridge for web vs desktop file I/O
+- GitHub Actions release workflow (macOS, Linux, Windows)
+- Full documentation suite (MD + HTML + TXT)
+
+### Known limitations (v0.1.0 baseline)
+
+- No Playwright E2E tests yet (unit tests only)
+- No auto-updater
+- Desktop saves single self-contained `.html` file (not multi-file workspace)
+- macOS builds unsigned (Gatekeeper may warn)
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

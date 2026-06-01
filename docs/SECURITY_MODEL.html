@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Security Model — LiveView Notepad</title>
+  <meta name="description" content="Security Model documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/SECURITY_MODEL.md</p>
+          <a href="#trust-boundaries" class="toc-h2">Trust boundaries</a>
+<a href="#preview-sandbox" class="toc-h2">Preview sandbox</a>
+<a href="#filesystem-access-desktop" class="toc-h2">Filesystem access (desktop)</a>
+<a href="#network-exposure" class="toc-h2">Network exposure</a>
+<a href="#data-storage" class="toc-h2">Data storage</a>
+<a href="#content-security-policy" class="toc-h2">Content Security Policy</a>
+<a href="#threat-summary" class="toc-h2">Threat summary</a>
+<a href="#pre-release-checklist" class="toc-h2">Pre-release checklist</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Security Model</h2>
+        <p class="formats">Also available: <a href="SECURITY_MODEL.md">Markdown</a> · <a href="SECURITY_MODEL.txt">Plain text</a></p>
+      </header>
+      <h1 id="security-model-liveview-notepad">Security Model — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="trust-boundaries">Trust boundaries</h2><p>LiveView Notepad executes <strong>user-authored HTML, CSS, and JavaScript</strong> in a preview iframe. The app itself is trusted; user code is untrusted.</p>
+<pre><code>┌─────────────────────────────────────────┐
+│  Trusted: React UI, Monaco, Zustand     │
+│  Trusted: Tauri shell, dialog, fs       │
+├─────────────────────────────────────────┤
+│  User-selected: local files (desktop)   │
+├─────────────────────────────────────────┤
+│  Untrusted: preview iframe (user code)  │
+│  Third-party: CDN libraries (opt-in)    │
+└─────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2 id="preview-sandbox">Preview sandbox</h2><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User JS isolation</td>
+<td>iframe with <code>srcDoc</code> — separate document context</td>
+</tr>
+<tr>
+<td>No parent DOM access</td>
+<td>iframe sandbox; no direct <code>window.parent</code> manipulation expected</td>
+</tr>
+<tr>
+<td>Console relay</td>
+<td>postMessage with typed <code>liveview-console</code> events only</td>
+</tr>
+</tbody></table>
+<p><strong>Limitation:</strong> iframe sandbox attributes are not maximally restrictive because inline scripts and styles are required for live preview. Treat preview as running arbitrary code.</p>
+<hr>
+<h2 id="filesystem-access-desktop">Filesystem access (desktop)</h2><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Scope</td>
+<td>User-selected paths via native Open/Save dialogs only</td>
+</tr>
+<tr>
+<td>Permissions</td>
+<td><code>fs:allow-read-text-file</code>, <code>fs:allow-write-text-file</code> in capabilities</td>
+</tr>
+<tr>
+<td>No directory traversal</td>
+<td>App does not browse filesystem outside dialog results</td>
+</tr>
+</tbody></table>
+<p>Tauri capability file: <code>src-tauri/capabilities/default.json</code></p>
+<hr>
+<h2 id="network-exposure">Network exposure</h2><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Network</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User JS in preview</td>
+<td>Can fetch any URL (browser/WebView network stack)</td>
+</tr>
+<tr>
+<td>CDN libraries</td>
+<td>Loaded when user toggles libraries (known registry in <code>cdnRegistry.ts</code>)</td>
+</tr>
+<tr>
+<td>Monaco editor</td>
+<td>Loads from CDN in development</td>
+</tr>
+<tr>
+<td>App backend</td>
+<td>None — no server component in v0.1</td>
+</tr>
+</tbody></table>
+<p><strong>Recommendation:</strong> Do not enter secrets (API keys, tokens) in editor panes if sharing URLs or exporting ZIPs.</p>
+<hr>
+<h2 id="data-storage">Data storage</h2><table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Location</th>
+<th>Sensitivity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Project code (web)</td>
+<td>localStorage</td>
+<td>Local only; survives browser restarts</td>
+</tr>
+<tr>
+<td>Project code (desktop)</td>
+<td>User-chosen <code>.html</code> files</td>
+<td>User-controlled</td>
+</tr>
+<tr>
+<td>Share URLs</td>
+<td>URL hash</td>
+<td>Visible in browser history and referrer logs</td>
+</tr>
+</tbody></table>
+<p>See <a href="PRIVACY.md">PRIVACY.md</a>.</p>
+<hr>
+<h2 id="content-security-policy">Content Security Policy</h2><p><code>tauri.conf.json</code> sets <code>csp: null</code> to allow inline scripts in the WebView for preview assembly. This is acceptable because the app loads local bundled assets — not arbitrary remote HTML as the shell document.</p>
+<hr>
+<h2 id="threat-summary">Threat summary</h2><table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Mitigation</th>
+<th>Residual risk</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Malicious user JS in preview</td>
+<td>iframe isolation</td>
+<td>User runs own code deliberately</td>
+</tr>
+<tr>
+<td>XSS via shared URL</td>
+<td>Recipient loads attacker-crafted hash</td>
+<td>Only open links from trusted sources</td>
+</tr>
+<tr>
+<td>CDN supply chain</td>
+<td>Curated registry; user opt-in</td>
+<td>CDN compromise could affect preview</td>
+</tr>
+<tr>
+<td>Path traversal on Save</td>
+<td>Dialog-scoped paths only</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>localStorage exfiltration</td>
+<td>Same-origin policy</td>
+<td>Other scripts on same origin could read (web hosting)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="pre-release-checklist">Pre-release checklist</h2><ul>
+<li><input disabled="" type="checkbox"> No secrets in source or default templates</li>
+<li><input disabled="" type="checkbox"> Tauri capabilities minimal (fs + dialog only)</li>
+<li><input disabled="" type="checkbox"> CDN registry URLs use HTTPS</li>
+<li><input disabled="" type="checkbox"> Share URL payload contains no automatic network callbacks</li>
+<li><input disabled="" type="checkbox"> Release binaries built from tagged CI commits</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

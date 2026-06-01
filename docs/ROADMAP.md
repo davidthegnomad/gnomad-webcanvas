@@ -1,0 +1,88 @@
+# Product Roadmap — LiveView Notepad
+
+**Version:** 0.1.0  
+**Last updated:** June 2026  
+**Horizon:** v1.0 GA (indicative)
+
+---
+
+## Vision
+
+LiveView Notepad becomes the **default lightweight HTML/CSS/JS sandbox** for Gnomad Studio workflows — instant preview, native file I/O on desktop, shareable demos in the browser, and export-ready project bundles.
+
+---
+
+## Released — v0.1.0 ✓
+
+| Theme | Delivered |
+|-------|-----------|
+| **Editor** | Monaco HTML/CSS/JS panes, resizable layout |
+| **Preview** | Live iframe, viewport presets, console, fullscreen |
+| **Projects** | Multi-project localStorage, templates, CDN libraries |
+| **Tools** | Color picker, CSS generator, font pairings |
+| **Export** | ZIP download, URL hash sharing |
+| **Desktop** | Tauri shell, Open/Save, release CI |
+| **Quality** | Vitest unit tests (19), DOMParser file parsing |
+| **Accessibility** | Dark/light/hc shell + Monaco themes, persisted |
+| **Docs** | Full portfolio doc suite |
+
+---
+
+## v0.2 — Quality & distribution
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Vitest unit tests | P0 | ✓ 19 tests — parseHtmlFile, shareUrl, assembleSource |
+| DOMParser HTML parsing | P1 | ✓ Replaces regex in desktop Open |
+| Shell light/dark/hc themes | P1 | ✓ CSS variables + persisted preference |
+| Playwright E2E smoke | P1 | Web: edit → preview → export |
+| GitHub Pages demo | P1 | Static Vite deploy |
+| CI PR gate (lint + test + build) | P1 | `.github/workflows/build.yml` |
+| Linux ARM64 CI job | P1 | Match desktop assistant matrix |
+| Prettier / format integration | P2 | Monaco format action backing |
+| Recent files list (desktop) | P2 | Tauri command + menu |
+
+---
+
+## v0.3 — Power user features
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Multi-file project folders | P1 | index.html + assets directory |
+| Custom CDN library entries | P2 | User-defined script tags |
+| Sass/Less preprocessor hook | P2 | Optional compile step |
+| Emmet in Monaco | P2 | HTML/CSS abbreviation expansion |
+| Split preview (side-by-side devices) | P3 | Dual iframe view |
+
+---
+
+## v1.0 — GA readiness
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Auto-updater | P0 | Tauri updater plugin + signing |
+| macOS notarization | P0 | Enterprise Gatekeeper compliance |
+| Accessibility audit | P1 | WCAG 2.2 AA pass |
+| Security review sign-off | P1 | See SECURITY_MODEL.md |
+| Windows code signing | P2 | Authenticode for SmartScreen |
+
+---
+
+## Non-goals (v1.0)
+
+- Backend collaboration / real-time multi-user
+- Full IDE features (Git, LSP, debugging)
+- Built-in hosting or deployment pipeline
+- AI code generation (use Gnomad Desktop Assistant separately)
+
+---
+
+## How to propose features
+
+1. Open an issue or add to `.agents/LOGS/SESSION_STATE.md`
+2. Update this roadmap with priority and phase
+3. Link architecture decisions in `docs/adr/` when created
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Guide — LiveView Notepad</title>
+  <meta name="description" content="User Guide documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/USER_GUIDE.md</p>
+          <a href="#introduction" class="toc-h2">Introduction</a>
+<a href="#installation" class="toc-h2">Installation</a>
+<a href="#desktop-recommended" class="toc-h3">Desktop (recommended)</a>
+<a href="#web-development-or-hosted" class="toc-h3">Web (development or hosted)</a>
+<a href="#main-interface" class="toc-h2">Main interface</a>
+<a href="#top-navbar" class="toc-h3">Top navbar</a>
+<a href="#editor-panes" class="toc-h3">Editor panes</a>
+<a href="#live-preview" class="toc-h3">Live preview</a>
+<a href="#floating-tools-bar" class="toc-h3">Floating tools bar</a>
+<a href="#projects-amp-persistence" class="toc-h2">Projects &amp; persistence</a>
+<a href="#web-mode" class="toc-h3">Web mode</a>
+<a href="#desktop-mode" class="toc-h3">Desktop mode</a>
+<a href="#sharing-projects" class="toc-h2">Sharing projects</a>
+<a href="#export" class="toc-h2">Export</a>
+<a href="#keyboard-shortcuts" class="toc-h2">Keyboard shortcuts</a>
+<a href="#themes-amp-appearance" class="toc-h2">Themes &amp; appearance</a>
+<a href="#cdn-libraries" class="toc-h2">CDN libraries</a>
+<a href="#templates" class="toc-h2">Templates</a>
+<a href="#tips" class="toc-h2">Tips</a>
+<a href="#getting-help" class="toc-h2">Getting help</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>User Guide</h2>
+        <p class="formats">Also available: <a href="USER_GUIDE.md">Markdown</a> · <a href="USER_GUIDE.txt">Plain text</a></p>
+      </header>
+      <h1 id="user-guide-liveview-notepad">User Guide — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0</p>
+<p>Studio: <a href="https://gnomadstudio.org">gnomadstudio.org</a></p>
+<hr>
+<h2 id="introduction">Introduction</h2><p>LiveView Notepad (also known as <strong>Gnomad Preview</strong>) is a live HTML/CSS/JS playground with a Monaco code editor and instant preview. Edit code in split panes, see results update in real time, and export or share your work.</p>
+<p>The app runs as:</p>
+<ul>
+<li>A <strong>desktop app</strong> (Tauri) with native Open/Save dialogs</li>
+<li>A <strong>web app</strong> (Vite) in the browser with localStorage persistence and URL sharing</li>
+</ul>
+<hr>
+<h2 id="installation">Installation</h2><h3 id="desktop-recommended">Desktop (recommended)</h3><p>Download the installer for your OS from GitHub Releases (when published):</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>macOS</strong></td>
+<td><code>.dmg</code> or <code>.app</code></td>
+</tr>
+<tr>
+<td><strong>Windows</strong></td>
+<td><code>.msi</code> or <code>.exe</code></td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td><code>.deb</code>, <code>.rpm</code>, or AppImage</td>
+</tr>
+</tbody></table>
+<p>First launch on macOS: if Gatekeeper blocks unsigned builds, right-click → <strong>Open</strong>.</p>
+<h3 id="web-development-or-hosted">Web (development or hosted)</h3><pre><code class="language-bash">npm install
+npm run dev
+</code></pre>
+<p>Open <code>http://localhost:5173</code> in a modern browser.</p>
+<hr>
+<h2 id="main-interface">Main interface</h2><pre><code>┌─────────────────────────────────────────────────────────────┐
+│  Top Navbar — projects, templates, libraries, export, share │
+├──────────────────────┬──────────────────────────────────────┤
+│  HTML / CSS / JS     │  Live Preview (iframe)               │
+│  Monaco editors      │  Viewport presets · Console          │
+├──────────────────────┴──────────────────────────────────────┤
+│  Floating Tools — Color Picker · CSS Generator · Fonts      │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="top-navbar">Top navbar</h3><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Projects</strong></td>
+<td>Create, rename, delete, switch between saved projects</td>
+</tr>
+<tr>
+<td><strong>Templates</strong></td>
+<td>Start from Blank, Landing Page, Dashboard, etc.</td>
+</tr>
+<tr>
+<td><strong>Libraries</strong></td>
+<td>Toggle CDN libraries (Tailwind, GSAP, Three.js, …)</td>
+</tr>
+<tr>
+<td><strong>Layout</strong></td>
+<td>Switch vertical ↔ horizontal editor stack</td>
+</tr>
+<tr>
+<td><strong>Pause / Refresh</strong></td>
+<td>Pause live preview or force reload</td>
+</tr>
+<tr>
+<td><strong>Fullscreen</strong></td>
+<td>Preview-only fullscreen mode</td>
+</tr>
+<tr>
+<td><strong>Export</strong></td>
+<td>Download project as <code>.zip</code> (HTML + CSS + JS)</td>
+</tr>
+<tr>
+<td><strong>Share</strong></td>
+<td>Copy URL with compressed project in hash</td>
+</tr>
+<tr>
+<td><strong>Theme / Font size</strong></td>
+<td>Editor appearance controls (dark, light, high contrast)</td>
+</tr>
+</tbody></table>
+<h3 id="editor-panes">Editor panes</h3><p>Three Monaco panes for <strong>HTML</strong>, <strong>CSS</strong>, and <strong>JavaScript</strong>:</p>
+<ul>
+<li>Click a pane header to focus it</li>
+<li>Double-click header or click <strong>⊞</strong> to maximize one pane</li>
+<li>Drag resize handles between panes</li>
+<li>Syntax highlighting, line numbers, and format-on-demand</li>
+</ul>
+<h3 id="live-preview">Live preview</h3><ul>
+<li>Updates automatically (500 ms debounce) unless paused</li>
+<li><strong>Viewport presets:</strong> Full, Mobile (375px), Tablet (768px), Desktop (1024px)</li>
+<li><strong>Background cycle:</strong> White → Dark → Checkerboard (for transparency testing)</li>
+<li><strong>Console panel:</strong> Captures <code>console.log</code>, <code>warn</code>, and <code>error</code> from preview iframe</li>
+</ul>
+<h3 id="floating-tools-bar">Floating tools bar</h3><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Color Picker</strong></td>
+<td>Pick a color and insert hex/rgb into active CSS pane</td>
+</tr>
+<tr>
+<td><strong>CSS Generator</strong></td>
+<td>Generate utility CSS snippets</td>
+</tr>
+<tr>
+<td><strong>Font Pairings</strong></td>
+<td>Apply curated Google Font heading/body pairs to preview</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="projects-amp-persistence">Projects &amp; persistence</h2><h3 id="web-mode">Web mode</h3><ul>
+<li>Projects saved to <strong>browser localStorage</strong> (debounced, 1 s)</li>
+<li>Multiple projects supported via the Projects menu</li>
+<li>Legacy storage is migrated automatically on first load</li>
+</ul>
+<h3 id="desktop-mode">Desktop mode</h3><ul>
+<li><strong>Open</strong> (<code>Ctrl/Cmd+O</code>): Load a single <code>.html</code> file; CSS/JS extracted from <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> tags</li>
+<li><strong>Save</strong> (<code>Ctrl/Cmd+S</code>): Write to current file path</li>
+<li><strong>Save As</strong> (<code>Ctrl/Cmd+Shift+S</code>): Pick a new path via native dialog</li>
+<li>Window title shows filename and dirty (<code>*</code>) indicator</li>
+</ul>
+<hr>
+<h2 id="sharing-projects">Sharing projects</h2><ol>
+<li>Click <strong>Share</strong> in the navbar</li>
+<li>The current project is compressed into the URL hash (<code>#...</code>)</li>
+<li>Link is copied to clipboard</li>
+<li>Recipients open the URL — project loads from hash (highest priority on startup)</li>
+</ol>
+<p><strong>Note:</strong> Very large projects may exceed URL length limits in some browsers.</p>
+<hr>
+<h2 id="export">Export</h2><p><strong>Export</strong> (navbar or <code>Ctrl/Cmd+Shift+E</code>) downloads a ZIP containing:</p>
+<pre><code>index.html    — assembled page with CDN library tags
+style.css     — your CSS
+script.js     — your JavaScript
+README.md     — generated attribution
+</code></pre>
+<hr>
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2><table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Ctrl/Cmd+S</code></td>
+<td>Save (desktop: file; web: localStorage)</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+S</code></td>
+<td>Save As (desktop) / Export ZIP (web)</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+O</code></td>
+<td>Open file (desktop only)</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Enter</code></td>
+<td>Force refresh preview</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+\</code></td>
+<td>Toggle layout orientation</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+1/2/3</code></td>
+<td>Focus HTML / CSS / JS pane</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd++</code> / <code>Ctrl/Cmd+-</code></td>
+<td>Increase / decrease editor font size</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+F</code></td>
+<td>Format active pane</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+C</code></td>
+<td>Toggle console panel</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd+Shift+E</code></td>
+<td>Export ZIP</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>Exit preview fullscreen</td>
+</tr>
+</tbody></table>
+<p>Press <strong>?</strong> or use the shortcuts button in the navbar for the full list.</p>
+<hr>
+<h2 id="themes-amp-appearance">Themes &amp; appearance</h2><p>Use the <strong>Theme</strong> dropdown in the navbar to switch between:</p>
+<table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Editor</th>
+<th>App shell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Dark</strong></td>
+<td>Monaco dark</td>
+<td>Dark gray chrome (default)</td>
+</tr>
+<tr>
+<td><strong>Light</strong></td>
+<td>Monaco light</td>
+<td>Light gray/white chrome</td>
+</tr>
+<tr>
+<td><strong>High contrast</strong></td>
+<td>Monaco hc-black</td>
+<td>Black/white high-contrast chrome</td>
+</tr>
+</tbody></table>
+<p>Your choice is saved automatically and restored on next visit.</p>
+<p>Preview background (white / dark / checkerboard) is separate — use the cycle button in the preview toolbar to test how your design looks on different surfaces.</p>
+<hr>
+<h2 id="cdn-libraries">CDN libraries</h2><p>Toggle libraries from the <strong>Libraries</strong> menu. Active libraries inject CDN <code>&lt;script&gt;</code> and <code>&lt;link&gt;</code> tags into the preview iframe and exported <code>index.html</code>.</p>
+<p>Available libraries include Tailwind CSS, Bootstrap, Font Awesome, Animate.css, GSAP, Three.js, Chart.js, and more. See <code>src/utils/cdnRegistry.ts</code> for the full list.</p>
+<hr>
+<h2 id="templates">Templates</h2><p>The <strong>Templates</strong> menu provides starter projects:</p>
+<ul>
+<li><strong>Blank</strong> — empty canvas</li>
+<li><strong>Landing Page</strong> — hero + CTA</li>
+<li><strong>Dashboard</strong> — sidebar layout</li>
+<li>Additional templates in <code>src/constants/templates.ts</code></li>
+</ul>
+<p>Applying a template replaces the current project&#39;s code. Save first if needed.</p>
+<hr>
+<h2 id="tips">Tips</h2><ul>
+<li><strong>Pause preview</strong> when editing large JS to avoid iframe reload churn</li>
+<li>Use <strong>checkerboard background</strong> to verify transparent elements</li>
+<li><strong>Mobile viewport</strong> helps test responsive layouts without leaving the app</li>
+<li>Desktop <strong>Open</strong> uses a standards-based HTML parser (handles files edited outside LiveView)</li>
+<li>Desktop <strong>Save</strong> writes a single self-contained <code>.html</code> file (inline CSS/JS assembled)</li>
+</ul>
+<hr>
+<h2 id="getting-help">Getting help</h2><ul>
+<li>Troubleshooting: <a href="TROUBLESHOOTING.md">TROUBLESHOOTING.md</a></li>
+<li>Build from source: <a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a></li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

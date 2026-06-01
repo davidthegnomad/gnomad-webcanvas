@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Build Narrative — LiveView Notepad</title>
+  <meta name="description" content="Build Narrative documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/BUILD.md</p>
+          <a href="#vision" class="toc-h2">Vision</a>
+<a href="#phase-1-web-mvp" class="toc-h2">Phase 1 — Web MVP ✓</a>
+<a href="#phase-2-preview-polish" class="toc-h2">Phase 2 — Preview polish ✓</a>
+<a href="#phase-3-tauri-desktop" class="toc-h2">Phase 3 — Tauri desktop ✓</a>
+<a href="#phase-4-documentation-amp-release-readiness" class="toc-h2">Phase 4 — Documentation &amp; release readiness ✓</a>
+<a href="#phase-5-quality-hardening" class="toc-h2">Phase 5 — Quality hardening ✓</a>
+<a href="#phase-6-v10-planned" class="toc-h2">Phase 6 — v1.0 (planned)</a>
+<a href="#technical-decisions" class="toc-h2">Technical decisions</a>
+<a href="#build-commands-reference" class="toc-h2">Build commands reference</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Build Narrative</h2>
+        <p class="formats">Also available: <a href="BUILD.md">Markdown</a> · <a href="BUILD.txt">Plain text</a></p>
+      </header>
+      <h1 id="build-narrative-liveview-notepad">Build Narrative — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="vision">Vision</h2><p>Deliver a <strong>zero-backend live code playground</strong> that feels native on desktop and works instantly in the browser — Monaco editing, real-time preview, one-click export, and shareable URLs.</p>
+<hr>
+<h2 id="phase-1-web-mvp">Phase 1 — Web MVP ✓</h2><p><strong>Goal:</strong> Prove the editor + preview loop in pure React.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Three-pane Monaco layout (HTML/CSS/JS)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Live iframe preview with debounce</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Resizable panels (vertical/horizontal)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Zustand state management</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>localStorage project persistence</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>CDN library registry</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Starter templates</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>ZIP export (JSZip)</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<p><strong>Outcome:</strong> Usable web playground at <code>npm run dev</code>.</p>
+<hr>
+<h2 id="phase-2-preview-polish">Phase 2 — Preview polish ✓</h2><p><strong>Goal:</strong> Production-quality preview and designer tooling.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Viewport presets (mobile/tablet/desktop)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Preview pause + force refresh</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Preview fullscreen mode</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Console panel (iframe postMessage)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Preview background modes (white/dark/checkerboard)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Font pairings + Google Fonts injection</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Floating tools (color picker, CSS generator)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>URL hash sharing (lz-string)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Keyboard shortcuts + modal</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<p><strong>Outcome:</strong> Feature-complete editor experience for demos and daily use.</p>
+<hr>
+<h2 id="phase-3-tauri-desktop">Phase 3 — Tauri desktop ✓</h2><p><strong>Goal:</strong> Native Open/Save without changing the React codebase.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tauri 2 scaffold</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Platform bridge (web vs desktop)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Native open/save dialogs</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Single-file HTML assemble/parse</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Window title + dirty indicator</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Tauri capabilities (fs, dialog)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>GitHub Actions release workflow</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<p><strong>Outcome:</strong> Same UI in browser and desktop; desktop adds file I/O.</p>
+<hr>
+<h2 id="phase-4-documentation-amp-release-readiness">Phase 4 — Documentation &amp; release readiness ✓</h2><p><strong>Goal:</strong> Portfolio-grade docs matching Gnomad Desktop Assistant standards.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>README overhaul</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>docs/ suite (MD + HTML + TXT)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>User guide, tech stack, architecture</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>QA checklist, release runbook</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>CHANGELOG, HUMAN.md</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="phase-5-quality-hardening">Phase 5 — Quality hardening ✓</h2><p><strong>Goal:</strong> Address review feedback — tests, robust parsing, accessibility themes.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vitest unit tests (19)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DOMParser-based <code>parseHtmlFile</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Shell UI themes (dark/light/hc)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Persisted theme preference</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="phase-6-v10-planned">Phase 6 — v1.0 (planned)</h2><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Playwright E2E smoke tests</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Auto-updater (Tauri plugin)</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>macOS notarization in CI</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>Multi-file project folders</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>GitHub Pages demo deploy</td>
+<td>P2</td>
+</tr>
+</tbody></table>
+<p>See <a href="ROADMAP.md">ROADMAP.md</a> for full timeline.</p>
+<hr>
+<h2 id="technical-decisions">Technical decisions</h2><table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Zustand over Redux</strong></td>
+<td>Minimal boilerplate for editor state</td>
+</tr>
+<tr>
+<td><strong>iframe srcDoc over eval</strong></td>
+<td>Sandboxed user JS; no DOM pollution</td>
+</tr>
+<tr>
+<td><strong>Platform bridge pattern</strong></td>
+<td>Single React bundle for web + desktop</td>
+</tr>
+<tr>
+<td><strong>Single HTML file on desktop</strong></td>
+<td>Simplest Open/Save UX for v0.1</td>
+</tr>
+<tr>
+<td><strong>DOMParser for file open</strong></td>
+<td>Robust HTML parsing vs regex</td>
+</tr>
+<tr>
+<td><strong>lz-string URL sharing</strong></td>
+<td>No server; instant share in browser mode</td>
+</tr>
+<tr>
+<td><strong>Thin Rust backend</strong></td>
+<td>File I/O via plugins; defer custom commands</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="build-commands-reference">Build commands reference</h2><pre><code class="language-bash">npm run dev          # Web dev server
+npm run tauri:dev    # Desktop dev (Vite + Tauri)
+npm run build        # Production frontend
+npm run tauri:build  # Desktop installer
+npm run lint         # ESLint
+npm run test         # Vitest unit tests
+npm run docs:export  # Regenerate HTML/TXT docs
+</code></pre>
+<p>Per-OS details: <a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a></p>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

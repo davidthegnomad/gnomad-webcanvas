@@ -1,0 +1,158 @@
+# Technology Stack — LiveView Notepad
+
+**Document owner:** Engineering  
+**Version:** 0.1.0  
+**Last updated:** June 2026
+
+---
+
+## Executive summary
+
+LiveView Notepad is a **cross-platform live code editor** built on **Tauri v2**, pairing a **React 19 + TypeScript** UI with a minimal **Rust** shell for native file dialogs and filesystem access. The same React bundle runs in the browser (Vite dev/preview) and inside the Tauri WebView, with a **platform bridge** abstracting Open/Save behavior.
+
+The product targets designers and developers who need a fast HTML/CSS/JS sandbox with Monaco editing, live iframe preview, project export, and URL-based sharing — without a backend server.
+
+---
+
+## Stack overview
+
+| Layer | Technology | Role |
+|-------|------------|------|
+| **Shell / runtime** | Tauri 2.11 | Native windowing, bundling, plugin host |
+| **UI** | React 19, TypeScript 6, Vite 8 | Component model, build pipeline, HMR |
+| **Editor** | Monaco Editor (`@monaco-editor/react`) | Syntax-highlighted HTML/CSS/JS panes |
+| **Layout** | react-resizable-panels | Draggable split panes for editors + preview |
+| **Styling** | Tailwind CSS 4 | Utility-first UI styling |
+| **State** | Zustand 5 | Editor state, projects, preview settings |
+| **Systems backend** | Rust 2021 (minimal) | Tauri plugins: fs, dialog, log |
+| **Export** | JSZip, FileSaver | ZIP project export in browser |
+| **Sharing** | lz-string | URL hash compression for share links |
+| **Testing** | Vitest 3 + jsdom | Unit tests for utils (19 tests) |
+| **CI/CD** | GitHub Actions + tauri-action | Matrix builds on version tags |
+
+---
+
+## Frontend (presentation layer)
+
+### React 19 + TypeScript
+
+Single-page application compiled by Vite. TypeScript enforces contracts for editor state, CDN libraries, and platform bridge interfaces.
+
+**Key frontend modules:**
+
+| Module | Responsibility |
+|--------|----------------|
+| `App.tsx` | Hydration, persistence, keyboard shortcuts, desktop file ops |
+| `components/Workspace.tsx` | Resizable editor + preview layout |
+| `components/CodeEditorPane.tsx` | Monaco wrapper per pane |
+| `components/PreviewFrame.tsx` | Debounced iframe preview + console relay |
+| `components/TopNavbar.tsx` | Projects, templates, libraries, export, share |
+| `store/editorStore.ts` | Zustand store — code, layout, projects, preview |
+| `utils/platformBridge.ts` | Web vs Tauri Open/Save abstraction |
+| `utils/parseHtmlFile.ts` | DOMParser-based HTML ↔ pane conversion |
+| `utils/preferences.ts` | Theme persistence (`localStorage`) |
+| `utils/exportProject.ts` | ZIP export |
+| `utils/shareUrl.ts` | LZ-compressed URL sharing |
+| `utils/assembleSource.ts` | Build preview iframe document |
+| `utils/projectManager.ts` | localStorage project index + data |
+
+### Design system
+
+Theme-aware shell using CSS custom properties on `[data-ui-theme]` (`dark`, `light`, `hc`). The navbar **Theme** selector syncs Monaco editor theme with app chrome. Default dark palette mirrors GitHub (`#0d1117` base); light and high-contrast variants defined in `src/app.css`. Pane accent colors distinguish HTML (orange), CSS (blue), JS (yellow).
+
+### State and persistence
+
+| Data | Storage |
+|------|---------|
+| Code, libraries, fonts | Zustand (in-memory) + debounced localStorage |
+| Project index | localStorage (`liveview-projects`) |
+| Editor + shell theme | localStorage (`liveview-preferences`) |
+| Desktop files | Native filesystem via Tauri plugin-fs |
+| Share links | URL hash (ephemeral, not persisted server-side) |
+
+---
+
+## Backend (systems layer)
+
+### Rust surface
+
+The Tauri backend is intentionally thin — no custom `#[tauri::command]` handlers yet. Native capabilities come from official plugins:
+
+```
+src-tauri/
+├── src/lib.rs          # Plugin registration (fs, dialog, log)
+├── src/main.rs         # Entry point
+├── tauri.conf.json     # Window, bundle, build config
+└── capabilities/default.json  # fs + dialog permissions
+```
+
+| Plugin | Purpose |
+|--------|---------|
+| `tauri-plugin-fs` | Read/write text files for Open/Save |
+| `tauri-plugin-dialog` | Native open/save file dialogs |
+| `tauri-plugin-log` | Debug logging (dev builds only) |
+
+Future Rust commands (e.g., recent files, workspace folders) would extend `lib.rs` without changing the frontend bridge contract.
+
+---
+
+## Preview architecture
+
+Preview runs in a **sandboxed iframe** with `srcDoc` assembled from:
+
+1. User HTML, CSS, JS (debounced 500 ms)
+2. Active CDN library tags
+3. Optional Google Font `<link>` from font pairings
+4. Console capture script (postMessage to parent)
+
+This keeps user JS isolated from the editor UI while allowing live updates.
+
+---
+
+## Dual-runtime strategy
+
+| Runtime | Detection | File I/O |
+|---------|-----------|----------|
+| **Web** | No `__TAURI_INTERNALS__` | localStorage + ZIP export |
+| **Desktop** | Tauri WebView present | Native dialogs + filesystem |
+
+`getPlatformBridge()` lazy-loads Tauri APIs only when available, keeping the web bundle free of hard Tauri imports at module scope.
+
+---
+
+## Build toolchain
+
+| Tool | Version | Notes |
+|------|---------|-------|
+| Node.js | 22 LTS (CI) | `npm ci` in release workflow |
+| Rust | stable | Via rustup |
+| Vite | 8.x | Frontend bundler |
+| Tauri CLI | 2.11 | `npm run tauri:dev` / `tauri:build` |
+| ESLint | 10.x | `npm run lint` |
+| Vitest | 3.x | `npm run test` — unit tests with jsdom |
+| TypeScript | 6.x | `tsc -b` strict build |
+
+---
+
+## Dependencies rationale
+
+| Package | Why |
+|---------|-----|
+| Monaco | Industry-standard code editor; HTML/CSS/JS language support |
+| react-resizable-panels | Accessible, performant split layouts |
+| Zustand | Minimal boilerplate for complex editor state |
+| JSZip + FileSaver | Client-side export without server |
+| lz-string | Compact URL sharing without backend |
+| Tailwind 4 | Fast UI iteration matching dark editor aesthetic |
+
+---
+
+## Related documents
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — data flow and component diagram
+- [BUILD.md](BUILD.md) — delivery phases
+- [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md) — per-OS build commands
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

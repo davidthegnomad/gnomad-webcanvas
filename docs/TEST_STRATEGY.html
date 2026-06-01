@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test Strategy — LiveView Notepad</title>
+  <meta name="description" content="Test Strategy documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/TEST_STRATEGY.md</p>
+          <a href="#overview" class="toc-h2">Overview</a>
+<a href="#layer-1-static-analysis-current" class="toc-h2">Layer 1 — Static analysis (current)</a>
+<a href="#layer-2-unit-tests" class="toc-h2">Layer 2 — Unit tests ✓</a>
+<a href="#layer-3-integration-e2e-planned" class="toc-h2">Layer 3 — Integration / E2E (planned)</a>
+<a href="#layer-4-manual-qa" class="toc-h2">Layer 4 — Manual QA</a>
+<a href="#layer-5-rust-backend" class="toc-h2">Layer 5 — Rust backend</a>
+<a href="#ci-gates" class="toc-h2">CI gates</a>
+<a href="#coverage-goals-v10" class="toc-h2">Coverage goals (v1.0)</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Test Strategy</h2>
+        <p class="formats">Also available: <a href="TEST_STRATEGY.md">Markdown</a> · <a href="TEST_STRATEGY.txt">Plain text</a></p>
+      </header>
+      <h1 id="test-strategy-liveview-notepad">Test Strategy — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="overview">Overview</h2><p>Testing layers progress from fast automated checks to manual cross-platform QA before release.</p>
+<pre><code>Unit tests (Vitest)     →  19 tests — parseHtmlFile, shareUrl, assembleSource
+Type check + lint       →  every commit / pre-release
+Production build        →  pre-release
+Manual QA checklist     →  every release
+</code></pre>
+<hr>
+<h2 id="layer-1-static-analysis-current">Layer 1 — Static analysis (current)</h2><pre><code class="language-bash">npm run lint              # ESLint
+npx tsc -b --noEmit       # TypeScript strict
+npm run test              # Vitest unit tests (19 tests)
+</code></pre>
+<p><strong>Covers:</strong> Type errors, unused imports, React hooks rules, parser/share/assembler behavior.</p>
+<hr>
+<h2 id="layer-2-unit-tests">Layer 2 — Unit tests ✓</h2><p><strong>Framework:</strong> Vitest + jsdom</p>
+<p><strong>Implemented suites</strong> (<code>src/utils/__tests__/</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Cases</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>parseHtmlFile.ts</code></td>
+<td>DOMParser extraction, multiple style/script tags, round-trip, edge cases</td>
+</tr>
+<tr>
+<td><code>shareUrl.ts</code></td>
+<td>LZ encode/decode round-trip, optional fields, invalid hash, unicode</td>
+</tr>
+<tr>
+<td><code>assembleSource.ts</code></td>
+<td>CDN injection, Google Fonts, deduplication, runtime error wrapper</td>
+</tr>
+</tbody></table>
+<pre><code class="language-bash">npm run test              # single run
+npm run test:watch        # watch mode
+</code></pre>
+<hr>
+<h2 id="layer-3-integration-e2e-planned">Layer 3 — Integration / E2E (planned)</h2><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Playwright</td>
+<td>Web mode: edit → preview update → export</td>
+</tr>
+<tr>
+<td>Tauri WebDriver</td>
+<td>Desktop: open/save dialogs (headless limited)</td>
+</tr>
+</tbody></table>
+<p>Not in v0.1 scope — manual QA covers critical paths.</p>
+<hr>
+<h2 id="layer-4-manual-qa">Layer 4 — Manual QA</h2><p><a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a> — required before every tagged release.</p>
+<p>Minimum smoke (5 min) documented in checklist.</p>
+<hr>
+<h2 id="layer-5-rust-backend">Layer 5 — Rust backend</h2><p>Current Rust surface is plugin-only (no custom commands).</p>
+<pre><code class="language-bash">cd src-tauri &amp;&amp; cargo check &amp;&amp; cargo test
+</code></pre>
+<p>Add command-specific tests when custom <code>#[tauri::command]</code> handlers land.</p>
+<hr>
+<h2 id="ci-gates">CI gates</h2><table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Checks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PR / push (future)</td>
+<td>lint, tsc, build</td>
+</tr>
+<tr>
+<td>Tag <code>v*</code></td>
+<td>Full Tauri matrix build</td>
+</tr>
+</tbody></table>
+<p>Release workflow (<code>.github/workflows/release.yml</code>) does not yet run lint — add a <code>build.yml</code> for PR gates.</p>
+<hr>
+<h2 id="coverage-goals-v10">Coverage goals (v1.0)</h2><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Target</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pure utils (<code>assembleSource</code>, <code>shareUrl</code>, <code>parseHtmlFile</code>)</td>
+<td>80%+</td>
+<td>✓ 19 tests shipped</td>
+</tr>
+<tr>
+<td>Zustand store actions</td>
+<td>Key paths covered</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>React components</td>
+<td>Smoke E2E only</td>
+<td>Planned (Playwright)</td>
+</tr>
+<tr>
+<td>Rust commands</td>
+<td>Per-command when added</td>
+<td>N/A (no custom commands)</td>
+</tr>
+</tbody></table>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

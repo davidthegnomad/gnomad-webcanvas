@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QA Checklist — LiveView Notepad</title>
+  <meta name="description" content="QA Checklist documentation for LiveView Notepad." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <p class="doc-path">docs/QA_CHECKLIST.md</p>
+          <a href="#install-amp-launch" class="toc-h2">Install &amp; launch</a>
+<a href="#editor" class="toc-h2">Editor</a>
+<a href="#preview" class="toc-h2">Preview</a>
+<a href="#projects-amp-templates" class="toc-h2">Projects &amp; templates</a>
+<a href="#libraries-amp-tools" class="toc-h2">Libraries &amp; tools</a>
+<a href="#export-amp-share" class="toc-h2">Export &amp; share</a>
+<a href="#desktop-file-io-tauri-only" class="toc-h2">Desktop file I/O (Tauri only)</a>
+<a href="#keyboard-shortcuts" class="toc-h2">Keyboard shortcuts</a>
+<a href="#regression-smoke-5-min" class="toc-h2">Regression smoke (5 min)</a>
+<a href="#sign-off" class="toc-h2">Sign-off</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>QA Checklist</h2>
+        <p class="formats">Also available: <a href="QA_CHECKLIST.md">Markdown</a> · <a href="QA_CHECKLIST.txt">Plain text</a></p>
+      </header>
+      <h1 id="qa-checklist-liveview-notepad">QA Checklist — LiveView Notepad</h1><p>Use before publishing a release. Check each item on <strong>at least one platform</strong>; full releases require macOS, Windows, and Linux passes.</p>
+<p><strong>Version under test:</strong> __________<br><strong>Tester:</strong> __________<br><strong>Date:</strong> __________</p>
+<hr>
+<h2 id="install-amp-launch">Install &amp; launch</h2><ul>
+<li><input disabled="" type="checkbox"> App launches without crash (desktop) or loads in browser (web)</li>
+<li><input disabled="" type="checkbox"> Default template renders in preview</li>
+<li><input disabled="" type="checkbox"> Window size respects minimum (800×500 desktop)</li>
+<li><input disabled="" type="checkbox"> No console errors on fresh launch</li>
+</ul>
+<hr>
+<h2 id="editor">Editor</h2><ul>
+<li><input disabled="" type="checkbox"> HTML/CSS/JS panes accept input with syntax highlighting</li>
+<li><input disabled="" type="checkbox"> Pane focus shortcuts (<code>Ctrl/Cmd+1/2/3</code>) work</li>
+<li><input disabled="" type="checkbox"> Maximize/restore pane (double-click header)</li>
+<li><input disabled="" type="checkbox"> Resize handles drag smoothly</li>
+<li><input disabled="" type="checkbox"> Layout toggle (vertical ↔ horizontal)</li>
+<li><input disabled="" type="checkbox"> Font size increase/decrease</li>
+<li><input disabled="" type="checkbox"> Editor theme switch (dark/light/high contrast)</li>
+<li><input disabled="" type="checkbox"> Shell UI updates with editor theme (navbar, panels, tools bar)</li>
+<li><input disabled="" type="checkbox"> Theme preference persists after reload</li>
+</ul>
+<hr>
+<h2 id="preview">Preview</h2><ul>
+<li><input disabled="" type="checkbox"> Live update after typing (500 ms debounce)</li>
+<li><input disabled="" type="checkbox"> Force refresh (<code>Ctrl/Cmd+Enter</code>)</li>
+<li><input disabled="" type="checkbox"> Pause preview stops updates</li>
+<li><input disabled="" type="checkbox"> Viewport presets (Full, Mobile, Tablet, Desktop)</li>
+<li><input disabled="" type="checkbox"> Background cycle (white/dark/checkerboard)</li>
+<li><input disabled="" type="checkbox"> Fullscreen preview + Escape to exit</li>
+<li><input disabled="" type="checkbox"> Console captures log/warn/error from iframe</li>
+</ul>
+<hr>
+<h2 id="projects-amp-templates">Projects &amp; templates</h2><ul>
+<li><input disabled="" type="checkbox"> Create new project</li>
+<li><input disabled="" type="checkbox"> Rename project</li>
+<li><input disabled="" type="checkbox"> Delete project (non-last)</li>
+<li><input disabled="" type="checkbox"> Switch between projects preserves code</li>
+<li><input disabled="" type="checkbox"> Apply template replaces code</li>
+<li><input disabled="" type="checkbox"> Reset project with confirmation</li>
+<li><input disabled="" type="checkbox"> Persistence survives app restart (web: localStorage; desktop: relaunch)</li>
+</ul>
+<hr>
+<h2 id="libraries-amp-tools">Libraries &amp; tools</h2><ul>
+<li><input disabled="" type="checkbox"> Toggle CDN library updates preview</li>
+<li><input disabled="" type="checkbox"> Export ZIP includes active library tags</li>
+<li><input disabled="" type="checkbox"> Color picker inserts into CSS</li>
+<li><input disabled="" type="checkbox"> Font pairing applies to preview</li>
+<li><input disabled="" type="checkbox"> CSS generator inserts snippet</li>
+</ul>
+<hr>
+<h2 id="export-amp-share">Export &amp; share</h2><ul>
+<li><input disabled="" type="checkbox"> Export ZIP downloads valid archive (index.html, style.css, script.js)</li>
+<li><input disabled="" type="checkbox"> Exported page opens correctly in browser</li>
+<li><input disabled="" type="checkbox"> Share copies URL to clipboard</li>
+<li><input disabled="" type="checkbox"> Shared URL loads project in new tab/window</li>
+</ul>
+<hr>
+<h2 id="desktop-file-io-tauri-only">Desktop file I/O (Tauri only)</h2><ul>
+<li><input disabled="" type="checkbox"> Open <code>.html</code> file populates panes (including externally edited files)</li>
+<li><input disabled="" type="checkbox"> Save writes file; dirty indicator clears</li>
+<li><input disabled="" type="checkbox"> Save As prompts dialog; updates path</li>
+<li><input disabled="" type="checkbox"> Window title shows filename and <code>*</code> when dirty</li>
+<li><input disabled="" type="checkbox"> <code>Ctrl/Cmd+O</code>, <code>Ctrl/Cmd+S</code>, <code>Ctrl/Cmd+Shift+S</code> shortcuts</li>
+</ul>
+<hr>
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2><ul>
+<li><input disabled="" type="checkbox"> Shortcuts modal opens from navbar</li>
+<li><input disabled="" type="checkbox"> All documented shortcuts functional</li>
+<li><input disabled="" type="checkbox"> No conflict with Monaco internal shortcuts (Save, etc.)</li>
+</ul>
+<hr>
+<h2 id="regression-smoke-5-min">Regression smoke (5 min)</h2><ol>
+<li>Edit HTML → preview updates</li>
+<li>Add CSS → styling appears</li>
+<li>Add JS click handler → works in preview</li>
+<li>Export ZIP → open in Chrome/Firefox</li>
+<li>Share URL → open in incognito</li>
+</ol>
+<hr>
+<h2 id="sign-off">Sign-off</h2><table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Pass/Fail</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Windows</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Linux</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Web (Chrome)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Web (Firefox)</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>
