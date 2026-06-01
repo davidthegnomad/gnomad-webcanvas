@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
   CROSS-PLATFORM CHECKLIST
-  LiveView Notepad · docs/CROSS_PLATFORM_CHECKLIST.md
+  Gnomad Webcanvas · docs/CROSS_PLATFORM_CHECKLIST.md
 ════════════════════════════════════════════════════════════════════════
 
-CROSS-PLATFORM CHECKLIST — LIVEVIEW NOTEPAD
+CROSS-PLATFORM CHECKLIST — GNOMAD WEBCANVAS
 ===========================================
 
 Use when adding or changing UI, file I/O, or OS-facing behavior.
@@ -58,7 +58,7 @@ Desktop file I/O uses Tauri plugin-dialog:
   • [ ] Paths with spaces handled
   • [ ] Cancel dialog → no error toast / crash
 
-Test parseHtmlFile() with files saved from Chrome, VS Code, and LiveView itself.
+Test parseHtmlFile() with files saved from Chrome, VS Code, and Webcanvas itself.
 
 ────────────────────────────────────────
 

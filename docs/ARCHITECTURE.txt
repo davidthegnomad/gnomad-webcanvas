@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   ARCHITECTURE
-  LiveView Notepad · docs/ARCHITECTURE.md
+  Gnomad Webcanvas · docs/ARCHITECTURE.md
 ════════════════════════════════════════════════════════════════════════
 
-ARCHITECTURE — LIVEVIEW NOTEPAD
+ARCHITECTURE — GNOMAD WEBCANVAS
 ===============================
 
-Version: 0.1.0  
+Version: 0.1.0-beta.2  
 Last updated: June 2026
 
 ────────────────────────────────────────
@@ -14,7 +14,7 @@ Last updated: June 2026
 SYSTEM CONTEXT
 --------------
 
-LiveView Notepad is a live HTML/CSS/JS editor with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.
+Gnomad Webcanvas is a live HTML/CSS/JS editor with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.
 
   [code]
     ┌──────────────────────────────────────────────────────────────────┐
@@ -199,7 +199,7 @@ TAURI CONFIGURATION
 -------------------
 
   Setting         |  Value                                 
-  Product name    |  LiveView Notepad                      
+  Product name    |  Gnomad Webcanvas                      
   Identifier      |  com.liveview.notepad                  
   Default window  |  1400×900, min 800×500                 
   Bundle targets  |  all (deb, rpm, msi, dmg, etc.)        

@@ -16,7 +16,7 @@ const MIN_FONT_SIZE = 10;
 const MAX_FONT_SIZE = 24;
 
 export const DEFAULT_HTML = `<div class="container">
-  <h1>Hello, LiveView!</h1>
+  <h1>Hello, Webcanvas!</h1>
   <p>Start editing to see live changes.</p>
   <button id="counter-btn">Click me: 0</button>
 </div>`;

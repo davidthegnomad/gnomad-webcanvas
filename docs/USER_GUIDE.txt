@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   USER GUIDE
-  LiveView Notepad · docs/USER_GUIDE.md
+  Gnomad Webcanvas · docs/USER_GUIDE.md
 ════════════════════════════════════════════════════════════════════════
 
-USER GUIDE — LIVEVIEW NOTEPAD
+USER GUIDE — GNOMAD WEBCANVAS
 =============================
 
-Version: 0.1.0
+Version: 0.1.0-beta.2
 
 Studio: gnomadstudio.org
 
@@ -15,7 +15,7 @@ Studio: gnomadstudio.org
 INTRODUCTION
 ------------
 
-LiveView Notepad (also known as Gnomad Preview) is a live HTML/CSS/JS playground with a Monaco code editor and instant preview. Edit code in split panes, see results update in real time, and export or share your work.
+Gnomad Webcanvas is a live HTML/CSS/JS playground with a Monaco code editor and instant preview. Edit code in split panes, see results update in real time, and export or share your work.
 
 The app runs as:
 
@@ -207,7 +207,7 @@ TIPS
   • Pause preview when editing large JS to avoid iframe reload churn
   • Use checkerboard background to verify transparent elements
   • Mobile viewport helps test responsive layouts without leaving the app
-  • Desktop Open uses a standards-based HTML parser (handles files edited outside LiveView)
+  • Desktop Open uses a standards-based HTML parser (handles files edited outside Webcanvas)
   • Desktop Save writes a single self-contained .html file (inline CSS/JS assembled)
 
 ────────────────────────────────────────

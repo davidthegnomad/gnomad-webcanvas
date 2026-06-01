@@ -1,8 +1,8 @@
 [package]
-name = "liveview-notepad"
-version = "0.1.0"
-description = "LiveView Notepad - A live code editor"
-authors = ["LiveView"]
+name = "gnomad-webcanvas"
+version = "0.1.0-beta.2"
+description = "Gnomad Webcanvas — live HTML/CSS/JS editor"
+authors = ["Gnomad Studio"]
 license = "MIT"
 edition = "2021"
 rust-version = "1.77.2"

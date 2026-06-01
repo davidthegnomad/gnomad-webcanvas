@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Architecture — LiveView Notepad</title>
-  <meta name="description" content="Architecture documentation for LiveView Notepad." />
+  <title>Architecture — Gnomad Webcanvas</title>
+  <meta name="description" content="Architecture documentation for Gnomad Webcanvas." />
   <style>:root {
   --bg-base: #0d1117;
   --bg-panel: rgba(22, 27, 34, 0.95);
@@ -221,7 +221,7 @@ body {
   <div class="mesh-bg" aria-hidden="true"></div>
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
-          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">docs/ARCHITECTURE.md</p>
           <a href="#system-context" class="toc-h2">System context</a>
 <a href="#layer-responsibilities" class="toc-h2">Layer responsibilities</a>
@@ -242,9 +242,9 @@ body {
         <h2>Architecture</h2>
         <p class="formats">Also available: <a href="ARCHITECTURE.md">Markdown</a> · <a href="ARCHITECTURE.txt">Plain text</a></p>
       </header>
-      <h1 id="architecture-liveview-notepad">Architecture — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+      <h1 id="architecture-gnomad-webcanvas">Architecture — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-beta.2<br><strong>Last updated:</strong> June 2026</p>
 <hr>
-<h2 id="system-context">System context</h2><p>LiveView Notepad is a <strong>live HTML/CSS/JS editor</strong> with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.</p>
+<h2 id="system-context">System context</h2><p>Gnomad Webcanvas is a <strong>live HTML/CSS/JS editor</strong> with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.</p>
 <pre><code>┌──────────────────────────────────────────────────────────────────┐
 │                     User (designer / developer)                   │
 └────────────────────────────┬─────────────────────────────────────┘
@@ -445,7 +445,7 @@ assembleFullHtml() → writeTextFile via Tauri fs plugin
 </thead>
 <tbody><tr>
 <td>Product name</td>
-<td>LiveView Notepad</td>
+<td>Gnomad Webcanvas</td>
 </tr>
 <tr>
 <td>Identifier</td>

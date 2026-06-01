@@ -1,16 +1,16 @@
 ════════════════════════════════════════════════════════════════════════
-  LIVEVIEW NOTEPAD (GNOMAD PREVIEW)
-  LiveView Notepad · README.md
+  GNOMAD WEBCANVAS
+  Gnomad Webcanvas · README.md
 ════════════════════════════════════════════════════════════════════════
 
-LIVEVIEW NOTEPAD (GNOMAD PREVIEW)
-=================================
+GNOMAD WEBCANVAS
+================
 
 Beta
 Version
 Platforms
 
-LiveView Notepad is a live HTML/CSS/JS playground with Monaco editing, instant iframe preview, project export, URL sharing, and native Open/Save on desktop — built with Tauri and React.
+Gnomad Webcanvas is a live HTML/CSS/JS playground with Monaco editing, instant iframe preview, project export, URL sharing, and native Open/Save on desktop — built with Tauri and React.
 
 Built with ❤️ by Gnomad Studio 🦙
 
@@ -21,7 +21,7 @@ Live project site: davidthegnomad.github.io/gnomad-webcanvas · Play in browser:
 WHY THIS EXISTS
 ---------------
 
-Quick UI experiments shouldn't require spinning up a dev server or switching to an online sandbox. LiveView Notepad gives you three synchronized editor panes, a live preview, designer tools (colors, fonts, CSS snippets), and one-click ZIP export — running locally in the browser or as a native desktop app.
+Quick UI experiments shouldn't require spinning up a dev server or switching to an online sandbox. Gnomad Webcanvas gives you three synchronized editor panes, a live preview, designer tools (colors, fonts, CSS snippets), and one-click ZIP export — running locally in the browser or as a native desktop app.
 
 ────────────────────────────────────────
 

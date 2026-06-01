@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Security Model — LiveView Notepad</title>
-  <meta name="description" content="Security Model documentation for LiveView Notepad." />
+  <title>Security Model — Gnomad Webcanvas</title>
+  <meta name="description" content="Security Model documentation for Gnomad Webcanvas." />
   <style>:root {
   --bg-base: #0d1117;
   --bg-panel: rgba(22, 27, 34, 0.95);
@@ -221,7 +221,7 @@ body {
   <div class="mesh-bg" aria-hidden="true"></div>
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
-          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">docs/SECURITY_MODEL.md</p>
           <a href="#trust-boundaries" class="toc-h2">Trust boundaries</a>
 <a href="#preview-sandbox" class="toc-h2">Preview sandbox</a>
@@ -237,9 +237,9 @@ body {
         <h2>Security Model</h2>
         <p class="formats">Also available: <a href="SECURITY_MODEL.md">Markdown</a> · <a href="SECURITY_MODEL.txt">Plain text</a></p>
       </header>
-      <h1 id="security-model-liveview-notepad">Security Model — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+      <h1 id="security-model-gnomad-webcanvas">Security Model — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-beta.2<br><strong>Last updated:</strong> June 2026</p>
 <hr>
-<h2 id="trust-boundaries">Trust boundaries</h2><p>LiveView Notepad executes <strong>user-authored HTML, CSS, and JavaScript</strong> in a preview iframe. The app itself is trusted; user code is untrusted.</p>
+<h2 id="trust-boundaries">Trust boundaries</h2><p>Gnomad Webcanvas executes <strong>user-authored HTML, CSS, and JavaScript</strong> in a preview iframe. The app itself is trusted; user code is untrusted.</p>
 <pre><code>┌─────────────────────────────────────────┐
 │  Trusted: React UI, Monaco, Zustand     │
 │  Trusted: Tauri shell, dialog, fs       │

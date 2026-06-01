@@ -1,13 +1,13 @@
-# Privacy — LiveView Notepad
+# Privacy — Gnomad Webcanvas
 
-**Version:** 0.1.0 (alpha)  
+**Version:** 0.1.0-beta.2 (alpha)  
 **Last updated:** June 2026
 
 ---
 
 ## Summary
 
-LiveView Notepad is **local-first**. Your code stays on your device unless you explicitly export, save to disk, or share a URL. There is no Gnomad-operated backend collecting editor content in v0.1.
+Gnomad Webcanvas is **local-first**. Your code stays on your device unless you explicitly export, save to disk, or share a URL. There is no Gnomad-operated backend collecting editor content in v0.1.
 
 ---
 
@@ -75,7 +75,7 @@ Share encodes your full project into the URL hash (`#...`):
 
 ## Children
 
-LiveView Notepad is a developer tool, not directed at children under 13.
+Gnomad Webcanvas is a developer tool, not directed at children under 13.
 
 ---
 

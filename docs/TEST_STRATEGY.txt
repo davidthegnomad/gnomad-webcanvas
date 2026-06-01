@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   TEST STRATEGY
-  LiveView Notepad · docs/TEST_STRATEGY.md
+  Gnomad Webcanvas · docs/TEST_STRATEGY.md
 ════════════════════════════════════════════════════════════════════════
 
-TEST STRATEGY — LIVEVIEW NOTEPAD
+TEST STRATEGY — GNOMAD WEBCANVAS
 ================================
 
-Version: 0.1.0  
+Version: 0.1.0-beta.2  
 Last updated: June 2026
 
 ────────────────────────────────────────

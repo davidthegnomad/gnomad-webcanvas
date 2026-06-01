@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   PRIVACY
-  LiveView Notepad · docs/PRIVACY.md
+  Gnomad Webcanvas · docs/PRIVACY.md
 ════════════════════════════════════════════════════════════════════════
 
-PRIVACY — LIVEVIEW NOTEPAD
+PRIVACY — GNOMAD WEBCANVAS
 ==========================
 
-Version: 0.1.0 (alpha)  
+Version: 0.1.0-beta.2 (alpha)  
 Last updated: June 2026
 
 ────────────────────────────────────────
@@ -14,7 +14,7 @@ Last updated: June 2026
 SUMMARY
 -------
 
-LiveView Notepad is local-first. Your code stays on your device unless you explicitly export, save to disk, or share a URL. There is no Gnomad-operated backend collecting editor content in v0.1.
+Gnomad Webcanvas is local-first. Your code stays on your device unless you explicitly export, save to disk, or share a URL. There is no Gnomad-operated backend collecting editor content in v0.1.
 
 ────────────────────────────────────────
 
@@ -85,7 +85,7 @@ YOUR CHOICES
 CHILDREN
 --------
 
-LiveView Notepad is a developer tool, not directed at children under 13.
+Gnomad Webcanvas is a developer tool, not directed at children under 13.
 
 ────────────────────────────────────────
 

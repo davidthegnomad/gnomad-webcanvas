@@ -1,6 +1,6 @@
-# Accessibility — LiveView Notepad
+# Accessibility — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026  
 **Status:** Partial — keyboard shortcuts, Monaco themes, and shell light/dark/hc modes shipped; full WCAG audit pending
 
@@ -23,7 +23,7 @@ Theme preference persists in `localStorage` (`liveview-preferences`).
 
 Preview background modes (white / dark / checkerboard) are independent and help test user content contrast.
 
-LiveView Notepad supports full keyboard workflows for common actions without requiring a pointer.
+Gnomad Webcanvas supports full keyboard workflows for common actions without requiring a pointer.
 
 | Shortcut | Action |
 |----------|--------|

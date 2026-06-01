@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
   CHANGELOG
-  LiveView Notepad · CHANGELOG.md
+  Gnomad Webcanvas · CHANGELOG.md
 ════════════════════════════════════════════════════════════════════════
 
-CHANGELOG — LIVEVIEW NOTEPAD
+CHANGELOG — GNOMAD WEBCANVAS
 ============================
 
 All notable changes to this project are documented here.
@@ -25,6 +25,7 @@ Added
 
 Changed
 
+  • Official product name unified to Gnomad Webcanvas across UI, docs, releases, and Tauri bundle metadata
   • parseHtmlFile extracted to src/utils/parseHtmlFile.ts for testability
   • App chrome uses CSS theme variables instead of hardcoded dark-only colors
   • GitHub Pages serves docs at site root and web app at /app/

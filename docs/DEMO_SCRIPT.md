@@ -1,8 +1,8 @@
-# Demo Script — LiveView Notepad
+# Demo Script — Gnomad Webcanvas
 
 **Duration:** 5–7 minutes  
 **Audience:** Designers, front-end developers, technical reviewers  
-**Version:** 0.1.0
+**Version:** 0.1.0-beta.2
 
 ---
 
@@ -10,14 +10,14 @@
 
 - [ ] App running: `npm run tauri:dev` (desktop) or `npm run dev` (web)
 - [ ] Browser zoom 100%; window ~1400×900
-- [ ] Default "Hello, LiveView!" template loaded
+- [ ] Default "Hello, Webcanvas!" template loaded
 - [ ] Close unrelated apps/notifications
 
 ---
 
 ## 1. Hook (30 sec)
 
-> "LiveView Notepad is a live HTML/CSS/JS playground — edit code on the left, see results instantly on the right. It runs in the browser and as a native desktop app with Open/Save."
+> "Gnomad Webcanvas is a live HTML/CSS/JS playground — edit code on the left, see results instantly on the right. It runs in the browser and as a native desktop app with Open/Save."
 
 Click the counter button in preview to show interactivity.
 
@@ -91,7 +91,7 @@ Skip this section in web-only demos.
 
 ## 9. Close (30 sec)
 
-> "LiveView Notepad is part of the Gnomad Studio apps portfolio — lightweight, local-first, and built with Tauri and React. Docs and roadmap are in the repo under `docs/`."
+> "Gnomad Webcanvas is part of the Gnomad Studio apps portfolio — lightweight, local-first, and built with Tauri and React. Docs and roadmap are in the repo under `docs/`."
 
 ---
 

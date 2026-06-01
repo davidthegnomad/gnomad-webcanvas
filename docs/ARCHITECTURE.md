@@ -1,13 +1,13 @@
-# Architecture — LiveView Notepad
+# Architecture — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---
 
 ## System context
 
-LiveView Notepad is a **live HTML/CSS/JS editor** with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.
+Gnomad Webcanvas is a **live HTML/CSS/JS editor** with instant preview. Users write code in Monaco panes, see output in a sandboxed iframe, and persist or share work via localStorage, native files, or URL hash.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -194,7 +194,7 @@ See [SECURITY_MODEL.md](SECURITY_MODEL.md) for details.
 
 | Setting | Value |
 |---------|-------|
-| Product name | LiveView Notepad |
+| Product name | Gnomad Webcanvas |
 | Identifier | `com.liveview.notepad` |
 | Default window | 1400×900, min 800×500 |
 | Bundle targets | all (deb, rpm, msi, dmg, etc.) |

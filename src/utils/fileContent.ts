@@ -1,3 +1,5 @@
+import { PRODUCT_NAME } from '../constants/branding';
+
 export const OPEN_FILE_EXTENSIONS = ['html', 'htm', 'txt', 'css', 'js', 'md'];
 
 export function parseHtmlFile(content: string): { html: string; css: string; js: string } {
@@ -68,7 +70,7 @@ export function assembleFullHtml(html: string, css: string, js: string): string 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcanvas Project</title>
+    <title>${PRODUCT_NAME} Project</title>
     <style>
 ${css}
     </style>

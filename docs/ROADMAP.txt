@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   PRODUCT ROADMAP
-  LiveView Notepad · docs/ROADMAP.md
+  Gnomad Webcanvas · docs/ROADMAP.md
 ════════════════════════════════════════════════════════════════════════
 
-PRODUCT ROADMAP — LIVEVIEW NOTEPAD
+PRODUCT ROADMAP — GNOMAD WEBCANVAS
 ==================================
 
-Version: 0.1.0  
+Version: 0.1.0-beta.2  
 Last updated: June 2026  
 Horizon: v1.0 GA (indicative)
 
@@ -15,7 +15,7 @@ Horizon: v1.0 GA (indicative)
 VISION
 ------
 
-LiveView Notepad becomes the default lightweight HTML/CSS/JS sandbox for Gnomad Studio workflows — instant preview, native file I/O on desktop, shareable demos in the browser, and export-ready project bundles.
+Gnomad Webcanvas becomes the default lightweight HTML/CSS/JS sandbox for Gnomad Studio workflows — instant preview, native file I/O on desktop, shareable demos in the browser, and export-ready project bundles.
 
 ────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-# Project SOP — gnomad-preview (LiveView Notepad)
+# Project SOP — gnomad-preview (Gnomad Webcanvas)
 
 > Tauri v2 + Vite + React + TypeScript desktop application — a live code editor with Monaco.
 > **Self-Evolving**: Agents update this file when processes change. See Self-Evolution Protocol.

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Building LiveView Notepad for macOS, Linux, and Windows — LiveView Notepad</title>
-  <meta name="description" content="Building LiveView Notepad for macOS, Linux, and Windows documentation for LiveView Notepad." />
+  <title>Building Gnomad Webcanvas for macOS, Linux, and Windows — Gnomad Webcanvas</title>
+  <meta name="description" content="Building Gnomad Webcanvas for macOS, Linux, and Windows documentation for Gnomad Webcanvas." />
   <style>:root {
   --bg-base: #0d1117;
   --bg-panel: rgba(22, 27, 34, 0.95);
@@ -221,7 +221,7 @@ body {
   <div class="mesh-bg" aria-hidden="true"></div>
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
-          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">docs/BUILD_PLATFORMS.md</p>
           <a href="#prerequisites-all-platforms" class="toc-h2">Prerequisites (all platforms)</a>
 <a href="#development" class="toc-h2">Development</a>
@@ -235,10 +235,10 @@ body {
         </nav>
     <main class="content doc-body">
       <header class="hero">
-        <h2>Building LiveView Notepad for macOS, Linux, and Windows</h2>
+        <h2>Building Gnomad Webcanvas for macOS, Linux, and Windows</h2>
         <p class="formats">Also available: <a href="BUILD_PLATFORMS.md">Markdown</a> · <a href="BUILD_PLATFORMS.txt">Plain text</a></p>
       </header>
-      <h1 id="building-liveview-notepad-for-macos-linux-and-windows">Building LiveView Notepad for macOS, Linux, and Windows</h1><h2 id="prerequisites-all-platforms">Prerequisites (all platforms)</h2><ul>
+      <h1 id="building-gnomad-webcanvas-for-macos-linux-and-windows">Building Gnomad Webcanvas for macOS, Linux, and Windows</h1><h2 id="prerequisites-all-platforms">Prerequisites (all platforms)</h2><ul>
 <li>Node.js LTS (22 recommended)</li>
 <li>Rust stable (<code>rustup</code>)</li>
 <li>Platform SDKs for the OS you are building <strong>on</strong> (cross-compiling is possible but not covered here)</li>
@@ -287,7 +287,7 @@ npm run test:watch   # watch mode
 <hr>
 <h2 id="macos">macOS</h2><pre><code class="language-bash">npm run tauri:build
 </code></pre>
-<p>Output: <code>src-tauri/target/release/bundle/macos/LiveView Notepad.app</code></p>
+<p>Output: <code>src-tauri/target/release/bundle/macos/Gnomad Webcanvas.app</code></p>
 <ul>
 <li>Window title reflects open filename and dirty state</li>
 <li>Open/Save use native AppKit dialogs</li>

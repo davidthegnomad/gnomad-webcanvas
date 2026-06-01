@@ -1,6 +1,6 @@
-# Gnomad Preview (LiveView Notepad) — Agent Swarm
+# Gnomad Webcanvas — Agent Swarm
 
-> Tier 2 (Focused Team) | Escalation: `02_ai_engineering/gnomad-swarm-core/`
+> Internal repo folder: `gnomad-preview` · Tier 2 (Focused Team) | Escalation: `02_ai_engineering/gnomad-swarm-core/`
 
 ## TAURI-CORE: Tauri/Rust Agent
 

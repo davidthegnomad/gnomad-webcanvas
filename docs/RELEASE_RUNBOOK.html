@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Release Runbook — LiveView Notepad</title>
-  <meta name="description" content="Release Runbook documentation for LiveView Notepad." />
+  <title>Release Runbook — Gnomad Webcanvas</title>
+  <meta name="description" content="Release Runbook documentation for Gnomad Webcanvas." />
   <style>:root {
   --bg-base: #0d1117;
   --bg-panel: rgba(22, 27, 34, 0.95);
@@ -221,7 +221,7 @@ body {
   <div class="mesh-bg" aria-hidden="true"></div>
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
-          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">docs/RELEASE_RUNBOOK.md</p>
           <a href="#overview" class="toc-h2">Overview</a>
 <a href="#pre-release-checklist" class="toc-h2">Pre-release checklist</a>
@@ -237,7 +237,7 @@ body {
         <h2>Release Runbook</h2>
         <p class="formats">Also available: <a href="RELEASE_RUNBOOK.md">Markdown</a> · <a href="RELEASE_RUNBOOK.txt">Plain text</a></p>
       </header>
-      <h1 id="release-runbook-liveview-notepad">Release Runbook — LiveView Notepad</h1><p><strong>Version:</strong> 0.1.0<br><strong>Last updated:</strong> June 2026</p>
+      <h1 id="release-runbook-gnomad-webcanvas">Release Runbook — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-beta.2<br><strong>Last updated:</strong> June 2026</p>
 <hr>
 <h2 id="overview">Overview</h2><p>Releases are triggered by pushing a <strong>version tag</strong> (<code>v*</code>). GitHub Actions builds macOS, Linux, and Windows installers and creates a <strong>draft</strong> GitHub Release.</p>
 <p>Workflow: <code>.github/workflows/release.yml</code></p>
@@ -289,7 +289,7 @@ npm run docs:export
 <h2 id="tag-and-release">Tag and release</h2><pre><code class="language-bash">git pull origin main
 git add -A
 git commit -m &quot;Release v0.1.0&quot;
-git tag -a v0.1.0 -m &quot;LiveView Notepad v0.1.0&quot;
+git tag -a v0.1.0 -m &quot;Gnomad Webcanvas v0.1.0&quot;
 git push origin main
 git push origin v0.1.0
 </code></pre>

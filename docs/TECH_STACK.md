@@ -1,14 +1,14 @@
-# Technology Stack — LiveView Notepad
+# Technology Stack — Gnomad Webcanvas
 
 **Document owner:** Engineering  
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---
 
 ## Executive summary
 
-LiveView Notepad is a **cross-platform live code editor** built on **Tauri v2**, pairing a **React 19 + TypeScript** UI with a minimal **Rust** shell for native file dialogs and filesystem access. The same React bundle runs in the browser (Vite dev/preview) and inside the Tauri WebView, with a **platform bridge** abstracting Open/Save behavior.
+Gnomad Webcanvas is a **cross-platform live code editor** built on **Tauri v2**, pairing a **React 19 + TypeScript** UI with a minimal **Rust** shell for native file dialogs and filesystem access. The same React bundle runs in the browser (Vite dev/preview) and inside the Tauri WebView, with a **platform bridge** abstracting Open/Save behavior.
 
 The product targets designers and developers who need a fast HTML/CSS/JS sandbox with Monaco editing, live iframe preview, project export, and URL-based sharing — without a backend server.
 

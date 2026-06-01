@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
-  BUILDING LIVEVIEW NOTEPAD FOR MACOS, LINUX, AND WINDOWS
-  LiveView Notepad · docs/BUILD_PLATFORMS.md
+  BUILDING GNOMAD WEBCANVAS FOR MACOS, LINUX, AND WINDOWS
+  Gnomad Webcanvas · docs/BUILD_PLATFORMS.md
 ════════════════════════════════════════════════════════════════════════
 
-BUILDING LIVEVIEW NOTEPAD FOR MACOS, LINUX, AND WINDOWS
+BUILDING GNOMAD WEBCANVAS FOR MACOS, LINUX, AND WINDOWS
 =======================================================
 
 PREREQUISITES (ALL PLATFORMS)
@@ -61,7 +61,7 @@ MACOS
   [bash]
     npm run tauri:build
 
-Output: src-tauri/target/release/bundle/macos/LiveView Notepad.app
+Output: src-tauri/target/release/bundle/macos/Gnomad Webcanvas.app
 
   • Window title reflects open filename and dirty state
   • Open/Save use native AppKit dialogs

@@ -1,4 +1,4 @@
-# Troubleshooting — LiveView Notepad
+# Troubleshooting — Gnomad Webcanvas
 
 Quick fixes for common issues. For full usage, see [USER_GUIDE.md](USER_GUIDE.md).
 

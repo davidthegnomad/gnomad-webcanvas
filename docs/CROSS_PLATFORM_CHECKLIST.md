@@ -1,4 +1,4 @@
-# Cross-Platform Checklist — LiveView Notepad
+# Cross-Platform Checklist — Gnomad Webcanvas
 
 Use when adding or changing UI, file I/O, or OS-facing behavior.
 
@@ -50,7 +50,7 @@ Desktop file I/O uses Tauri `plugin-dialog`:
 - [ ] Paths with spaces handled
 - [ ] Cancel dialog → no error toast / crash
 
-Test `parseHtmlFile()` with files saved from Chrome, VS Code, and LiveView itself.
+Test `parseHtmlFile()` with files saved from Chrome, VS Code, and Webcanvas itself.
 
 ---
 

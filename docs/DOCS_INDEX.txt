@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
   DOCUMENTATION INDEX (ALL FORMATS)
-  LiveView Notepad · docs/DOCS_INDEX.md
+  Gnomad Webcanvas · docs/DOCS_INDEX.md
 ════════════════════════════════════════════════════════════════════════
 
-DOCUMENTATION INDEX (ALL FORMATS) — LIVEVIEW NOTEPAD
+DOCUMENTATION INDEX (ALL FORMATS) — GNOMAD WEBCANVAS
 ====================================================
 
 Every document is available in three formats (where exported):

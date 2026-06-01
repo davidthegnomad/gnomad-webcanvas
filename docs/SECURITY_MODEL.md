@@ -1,13 +1,13 @@
-# Security Model — LiveView Notepad
+# Security Model — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---
 
 ## Trust boundaries
 
-LiveView Notepad executes **user-authored HTML, CSS, and JavaScript** in a preview iframe. The app itself is trusted; user code is untrusted.
+Gnomad Webcanvas executes **user-authored HTML, CSS, and JavaScript** in a preview iframe. The app itself is trusted; user code is untrusted.
 
 ```
 ┌─────────────────────────────────────────┐

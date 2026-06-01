@@ -1,4 +1,4 @@
-# Building LiveView Notepad for macOS, Linux, and Windows
+# Building Gnomad Webcanvas for macOS, Linux, and Windows
 
 ## Prerequisites (all platforms)
 
@@ -56,7 +56,7 @@ Build on the **target OS** for best results. CI (`.github/workflows/release.yml`
 npm run tauri:build
 ```
 
-Output: `src-tauri/target/release/bundle/macos/LiveView Notepad.app`
+Output: `src-tauri/target/release/bundle/macos/Gnomad Webcanvas.app`
 
 - Window title reflects open filename and dirty state
 - Open/Save use native AppKit dialogs

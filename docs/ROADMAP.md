@@ -1,6 +1,6 @@
-# Product Roadmap — LiveView Notepad
+# Product Roadmap — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026  
 **Horizon:** v1.0 GA (indicative)
 
@@ -8,7 +8,7 @@
 
 ## Vision
 
-LiveView Notepad becomes the **default lightweight HTML/CSS/JS sandbox** for Gnomad Studio workflows — instant preview, native file I/O on desktop, shareable demos in the browser, and export-ready project bundles.
+Gnomad Webcanvas becomes the **default lightweight HTML/CSS/JS sandbox** for Gnomad Studio workflows — instant preview, native file I/O on desktop, shareable demos in the browser, and export-ready project bundles.
 
 ---
 

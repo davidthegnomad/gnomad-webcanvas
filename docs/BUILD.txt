@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   BUILD NARRATIVE
-  LiveView Notepad · docs/BUILD.md
+  Gnomad Webcanvas · docs/BUILD.md
 ════════════════════════════════════════════════════════════════════════
 
-BUILD NARRATIVE — LIVEVIEW NOTEPAD
+BUILD NARRATIVE — GNOMAD WEBCANVAS
 ==================================
 
-Version: 0.1.0  
+Version: 0.1.0-beta.2  
 Last updated: June 2026
 
 ────────────────────────────────────────

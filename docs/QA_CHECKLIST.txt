@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
   QA CHECKLIST
-  LiveView Notepad · docs/QA_CHECKLIST.md
+  Gnomad Webcanvas · docs/QA_CHECKLIST.md
 ════════════════════════════════════════════════════════════════════════
 
-QA CHECKLIST — LIVEVIEW NOTEPAD
+QA CHECKLIST — GNOMAD WEBCANVAS
 ===============================
 
 Use before publishing a release. Check each item on at least one platform; full releases require macOS, Windows, and Linux passes.

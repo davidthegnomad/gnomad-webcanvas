@@ -1,13 +1,13 @@
-# UI Design — LiveView Notepad
+# UI Design — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---
 
 ## Design intent
 
-LiveView Notepad follows a **GitHub-inspired editor aesthetic** — familiar to developers, low distraction, high information density. The UI prioritizes code and preview over chrome. Three shell themes (dark, light, high contrast) adapt the entire app chrome, not just the Monaco editor.
+Gnomad Webcanvas follows a **GitHub-inspired editor aesthetic** — familiar to developers, low distraction, high information density. The UI prioritizes code and preview over chrome. Three shell themes (dark, light, high contrast) adapt the entire app chrome, not just the Monaco editor.
 
 ---
 

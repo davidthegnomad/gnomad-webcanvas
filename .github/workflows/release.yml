@@ -48,7 +48,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: LiveView Notepad ${{ github.ref_name }}
-          releaseBody: 'Desktop beta release for LiveView Notepad (Gnomad Webcanvas)'
+          releaseName: Gnomad Webcanvas ${{ github.ref_name }}
+          releaseBody: 'Beta desktop release for Gnomad Webcanvas'
           releaseDraft: true
           prerelease: true

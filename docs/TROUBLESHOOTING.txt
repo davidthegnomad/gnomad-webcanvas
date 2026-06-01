@@ -1,9 +1,9 @@
 ════════════════════════════════════════════════════════════════════════
   TROUBLESHOOTING
-  LiveView Notepad · docs/TROUBLESHOOTING.md
+  Gnomad Webcanvas · docs/TROUBLESHOOTING.md
 ════════════════════════════════════════════════════════════════════════
 
-TROUBLESHOOTING — LIVEVIEW NOTEPAD
+TROUBLESHOOTING — GNOMAD WEBCANVAS
 ==================================
 
 Quick fixes for common issues. For full usage, see USER_GUIDE.md.

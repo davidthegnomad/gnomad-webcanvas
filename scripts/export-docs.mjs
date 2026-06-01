@@ -10,7 +10,7 @@ import { marked } from "marked";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
-const PRODUCT = "LiveView Notepad";
+const PRODUCT = "Gnomad Webcanvas";
 
 const CSS = readFileSync(join(ROOT, "docs", "_assets", "doc-theme.css"), "utf8");
 

@@ -1,6 +1,6 @@
 # HUMAN.md — Actions only you can take
 
-**Project:** LiveView Notepad (Gnomad Preview) · **Version on main:** 0.1.0  
+**Project:** Gnomad Webcanvas · **Version on main:** 0.1.0  
 **Last updated:** June 2026
 
 Everything else (code, docs, CI) can be automated on `main`. This file is the **owner checklist** for release tags, signing keys, and legal sign-off that require a human.
@@ -31,7 +31,7 @@ npm run lint
 npx tsc -b --noEmit
 npm run build
 npm run docs:export
-git tag -a v0.1.0 -m "LiveView Notepad v0.1.0"
+git tag -a v0.1.0 -m "Gnomad Webcanvas v0.1.0"
 git push origin v0.1.0
 ```
 

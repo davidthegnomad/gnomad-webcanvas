@@ -1,6 +1,6 @@
-# Release Runbook — LiveView Notepad
+# Release Runbook — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---
@@ -57,7 +57,7 @@ Align these files:
 git pull origin main
 git add -A
 git commit -m "Release v0.1.0"
-git tag -a v0.1.0 -m "LiveView Notepad v0.1.0"
+git tag -a v0.1.0 -m "Gnomad Webcanvas v0.1.0"
 git push origin main
 git push origin v0.1.0
 ```

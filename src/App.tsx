@@ -10,6 +10,7 @@ import { decodeProjectFromHash } from './utils/shareUrl';
 import { migrateLegacyStorage, loadProjectsIndex, loadProjectData, saveProjectData } from './utils/projectManager';
 import { getPlatformBridge, isDesktop } from './utils/platformBridge';
 import { CDN_REGISTRY } from './utils/cdnRegistry';
+import { PRODUCT_NAME } from './constants/branding';
 import { editorThemeToUiTheme } from './utils/preferences';
 import type { PaneType } from './types/editor.types';
 
@@ -134,7 +135,7 @@ export default function App() {
     const name = currentFilePath
       ? currentFilePath.split(/[/\\]/).pop() ?? 'Untitled'
       : 'Untitled';
-    document.title = `LiveView Notepad - ${name}${isDirty ? ' *' : ''}`;
+    document.title = `${PRODUCT_NAME} — ${name}${isDirty ? ' *' : ''}`;
   }, [currentFilePath, isDirty]);
 
   // Desktop file operations

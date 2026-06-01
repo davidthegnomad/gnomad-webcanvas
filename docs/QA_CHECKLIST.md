@@ -1,4 +1,4 @@
-# QA Checklist — LiveView Notepad
+# QA Checklist — Gnomad Webcanvas
 
 Use before publishing a release. Check each item on **at least one platform**; full releases require macOS, Windows, and Linux passes.
 

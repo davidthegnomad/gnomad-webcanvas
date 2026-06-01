@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cross-Platform Checklist — LiveView Notepad</title>
-  <meta name="description" content="Cross-Platform Checklist documentation for LiveView Notepad." />
+  <title>Cross-Platform Checklist — Gnomad Webcanvas</title>
+  <meta name="description" content="Cross-Platform Checklist documentation for Gnomad Webcanvas." />
   <style>:root {
   --bg-base: #0d1117;
   --bg-panel: rgba(22, 27, 34, 0.95);
@@ -221,7 +221,7 @@ body {
   <div class="mesh-bg" aria-hidden="true"></div>
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
-          <div class="brand"><span class="brand-icon">⚡</span><h1>LiveView Notepad</h1></div>
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">docs/CROSS_PLATFORM_CHECKLIST.md</p>
           <a href="#shared-react-bundle" class="toc-h2">Shared React bundle</a>
 <a href="#platform-matrix" class="toc-h2">Platform matrix</a>
@@ -235,7 +235,7 @@ body {
         <h2>Cross-Platform Checklist</h2>
         <p class="formats">Also available: <a href="CROSS_PLATFORM_CHECKLIST.md">Markdown</a> · <a href="CROSS_PLATFORM_CHECKLIST.txt">Plain text</a></p>
       </header>
-      <h1 id="cross-platform-checklist-liveview-notepad">Cross-Platform Checklist — LiveView Notepad</h1><p>Use when adding or changing UI, file I/O, or OS-facing behavior.</p>
+      <h1 id="cross-platform-checklist-gnomad-webcanvas">Cross-Platform Checklist — Gnomad Webcanvas</h1><p>Use when adding or changing UI, file I/O, or OS-facing behavior.</p>
 <hr>
 <h2 id="shared-react-bundle">Shared React bundle</h2><p>The same <code>src/</code> code runs in <strong>web</strong> and <strong>desktop</strong> (Tauri WebView). Verify:</p>
 <ul>
@@ -339,7 +339,7 @@ body {
 <li><input disabled="" type="checkbox"> Paths with spaces handled</li>
 <li><input disabled="" type="checkbox"> Cancel dialog → no error toast / crash</li>
 </ul>
-<p>Test <code>parseHtmlFile()</code> with files saved from Chrome, VS Code, and LiveView itself.</p>
+<p>Test <code>parseHtmlFile()</code> with files saved from Chrome, VS Code, and Webcanvas itself.</p>
 <hr>
 <h2 id="before-merge">Before merge</h2><pre><code class="language-bash">npm run lint
 npx tsc -b --noEmit

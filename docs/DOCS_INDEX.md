@@ -1,4 +1,4 @@
-# Documentation Index (all formats) — LiveView Notepad
+# Documentation Index (all formats) — Gnomad Webcanvas
 
 Every document is available in **three formats** (where exported):
 

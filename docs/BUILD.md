@@ -1,6 +1,6 @@
-# Build Narrative — LiveView Notepad
+# Build Narrative — Gnomad Webcanvas
 
-**Version:** 0.1.0  
+**Version:** 0.1.0-beta.2  
 **Last updated:** June 2026
 
 ---

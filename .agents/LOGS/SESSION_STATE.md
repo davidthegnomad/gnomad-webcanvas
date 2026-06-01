@@ -1,24 +1,27 @@
 # Session State
-> Last updated: 2026-05-30
+> Last updated: 2026-06-01
 
 ## Current Focus
-Rebrand to Gnomad Studio Webcanvas and publish to GitHub as `gnomad-webcanvas`.
+Customer-facing branding unified as **Gnomad Webcanvas** (docs, UI, releases, Tauri bundle).
 
 ## Recent Changes
-- Renamed from LiveView Notepad → Gnomad Studio Webcanvas (menu bar: Webcanvas)
-- Updated package IDs: npm `gnomad-webcanvas`, Tauri `com.gnomadstudio.webcanvas`
-- Added GitHub Actions: desktop release + web deploy (GitHub Pages)
-- Initialized standalone git repo and pushed to GitHub
+- Added `src/constants/branding.ts` as single source for product name
+- Rebranded all docs (MD/HTML/TXT), README, CHANGELOG, landing pages
+- Tauri: `productName` / window title → Gnomad Webcanvas; identifier `com.gnomad.webcanvas`
+- Release workflow: `releaseName: Gnomad Webcanvas ${{ github.ref_name }}`
+- Default template: `Hello, Webcanvas!`; export prefix `webcanvas-project`
+- Vitest 19/19 passing; docs export regenerated
 
 ## Open TODOs
-- [ ] Enable GitHub Pages (Actions source) in repo settings
-- [ ] Tag `v0.1.0` to trigger first desktop release build
-- [ ] Install Linux WebKitGTK deps locally if building desktop on Fedora/Nobara
+- [ ] Tag `v0.1.0-beta.2` (or beta.3) to publish desktop installers with new name
+- [ ] Re-integrate desktop file-association features from earlier beta if needed
 
 ## Last Git
 - Branch: main
 - Remote: https://github.com/davidthegnomad/gnomad-webcanvas
-- Repo: gnomad-webcanvas (standalone, not in gnomad-workspace monorepo)
+- Version: 0.1.0-beta.2
+- Pages: https://davidthegnomad.github.io/gnomad-webcanvas/
 
 ## Blockers / Notes
-- `05_apps_and_extensions/` is gitignored in the parent gnomad-workspace meta repo — this project has its own repo.
+- Internal codename / folder: `gnomad-preview` (not customer-facing)
+- localStorage keys and custom events still use `liveview-*` for backward compatibility
