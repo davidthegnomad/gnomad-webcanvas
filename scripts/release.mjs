@@ -77,26 +77,66 @@ function publishRelease(versionTag) {
   }
 }
 
-function waitForWorkflow(versionTag) {
+function sleepMs(ms) {
+  if (!dryRun) execSync(`sleep ${Math.ceil(ms / 1000)}`);
+}
+
+function waitForWorkflow(versionTag, pushedAtMs) {
   console.log("\n⏳ Waiting for Release Desktop Builds workflow…");
-  const runs = runCapture(
-    `gh run list --repo ${REPO} --workflow "${WORKFLOW}" --json databaseId,headBranch,status,conclusion --limit 10`,
-  );
-  const match = JSON.parse(runs).find((r) => r.headBranch === versionTag);
+
+  let match = null;
+  for (let attempt = 0; attempt < 36; attempt++) {
+    const runs = runCapture(
+      `gh run list --repo ${REPO} --workflow "${WORKFLOW}" --json databaseId,headBranch,status,conclusion,createdAt,headSha --limit 15`,
+    );
+    const forTag = JSON.parse(runs)
+      .filter((r) => r.headBranch === versionTag)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const newest = forTag[0];
+    if (newest && new Date(newest.createdAt).getTime() >= pushedAtMs - 10_000) {
+      match = newest;
+      if (newest.status === "queued" || newest.status === "in_progress") {
+        break;
+      }
+      if (newest.status === "completed") {
+        break;
+      }
+    }
+
+    if (attempt === 0) {
+      console.log("   …waiting for GitHub Actions to pick up the tag");
+    }
+    sleepMs(5000);
+  }
+
   if (!match) {
     console.error(`❌ No workflow run found for tag ${versionTag}. Check Actions manually.`);
     process.exit(1);
   }
 
-  const watch = spawnSync("gh", ["run", "watch", String(match.databaseId), "--repo", REPO, "--exit-status"], {
-    cwd: ROOT,
-    stdio: "inherit",
-  });
-  if (watch.status !== 0) {
-    console.error("\n❌ Release workflow failed. Logs:");
-    run(`gh run view ${match.databaseId} --repo ${REPO} --log-failed`);
-    process.exit(1);
+  if (match.status === "queued" || match.status === "in_progress") {
+    const watch = spawnSync(
+      "gh",
+      ["run", "watch", String(match.databaseId), "--repo", REPO, "--exit-status"],
+      { cwd: ROOT, stdio: "inherit" },
+    );
+    if (watch.status !== 0) {
+      console.error("\n❌ Release workflow failed. Logs:");
+      run(`gh run view ${match.databaseId} --repo ${REPO} --log-failed`);
+      process.exit(1);
+    }
+    return;
   }
+
+  if (match.conclusion === "success") {
+    console.log(`\n✅ Workflow ${match.databaseId} completed successfully.`);
+    return;
+  }
+
+  console.error("\n❌ Release workflow failed. Logs:");
+  run(`gh run view ${match.databaseId} --repo ${REPO} --log-failed`);
+  process.exit(1);
 }
 
 function deleteTag(versionTag) {
@@ -170,9 +210,10 @@ function createAndPushTag(version) {
 
   console.log(`\n🏷️  Creating tag ${versionTag}…`);
   run(`git tag -a ${versionTag} -m "${message.replace(/"/g, '\\"')}"`);
+  const pushedAtMs = Date.now();
   run(`git push origin ${versionTag}`);
 
-  return versionTag;
+  return { versionTag, pushedAtMs };
 }
 
 function printAssets(versionTag) {
@@ -205,7 +246,7 @@ function main() {
   assertCleanMain();
   assertVersionsAligned(version);
   qualityGates();
-  createAndPushTag(version);
+  const { versionTag, pushedAtMs } = createAndPushTag(version);
 
   if (noWait) {
     console.log("\n✅ Tag pushed. CI will build installers (--no-wait).");
@@ -213,7 +254,7 @@ function main() {
     return;
   }
 
-  waitForWorkflow(versionTag);
+  waitForWorkflow(versionTag, pushedAtMs);
   publishRelease(versionTag);
   printAssets(versionTag);
   console.log("\n✅ Done — no GitHub UI login required.");
