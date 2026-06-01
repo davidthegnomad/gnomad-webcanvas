@@ -7,9 +7,16 @@
 
 ## Overview
 
-Releases are triggered by pushing a **version tag** (`v*`). GitHub Actions builds macOS, Linux, and Windows installers and creates a **draft** GitHub Release.
+Releases are triggered by pushing a **version tag** (`v*`). GitHub Actions builds macOS, Linux, and Windows installers and **publishes** a GitHub Release automatically (no manual publish step).
 
-Workflow: `.github/workflows/release.yml`
+**From Cursor:** ask the agent to release, or run:
+
+```bash
+npm run release              # full flow: test → tag → CI → publish
+npm run release -- --retag   # rebuild after CI fix (same version)
+```
+
+Workflow: `.github/workflows/release.yml` · Skill: `.cursor/skills/release-gnomad-webcanvas/SKILL.md`
 
 ---
 
@@ -55,14 +62,16 @@ Align these files:
 
 ```bash
 git pull origin main
-git add -A
-git commit -m "Release v0.1.0"
-git tag -a v0.1.0 -m "Gnomad Webcanvas v0.1.0"
-git push origin main
-git push origin v0.1.0
+npm run release
 ```
 
-Monitor **Actions → Release Desktop Builds**. Expect three matrix jobs:
+The script runs tests, creates `v{version}` from `package.json`, pushes the tag, waits for CI, and verifies the release is published.
+
+To rebuild the same version after a CI fix:
+
+```bash
+npm run release -- --retag
+```
 
 | Job | Artifact |
 |-----|----------|
@@ -74,11 +83,10 @@ Monitor **Actions → Release Desktop Builds**. Expect three matrix jobs:
 
 ## Post-CI steps
 
-1. Open the **draft release** on GitHub
-2. Verify attached assets per platform
-3. Edit release notes (copy from CHANGELOG)
-4. Publish release (or keep draft for internal QA)
-5. Smoke-install one artifact per OS
+Automated by `npm run release`. Optional manual smoke test:
+
+1. Download one artifact per platform from the GitHub Release
+2. Walk [docs/QA_CHECKLIST.md](QA_CHECKLIST.md) on at least one platform
 
 ---
 

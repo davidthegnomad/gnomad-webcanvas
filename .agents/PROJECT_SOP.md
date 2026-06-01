@@ -88,7 +88,13 @@ npm run tauri:build
 ### Deployment Targets
 | Environment | Platform | Branch/Trigger |
 |-------------|----------|----------------|
-| Desktop | Tauri (Linux/macOS/Windows) | Manual build |
+| Desktop | Tauri (Linux/macOS/Windows) | `npm run release` → `v*` tag |
+| Web docs + app | GitHub Pages | push to `main` |
+
+```bash
+npm run release              # tag, wait for CI, publish GitHub Release
+npm run release -- --retag   # rebuild same version after CI fix
+```
 
 ### Post-Deploy Checklist
 - [ ] Verify installer/binary works

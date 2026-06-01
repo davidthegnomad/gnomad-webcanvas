@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -42,6 +43,16 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Prepare release notes
+        id: release_notes
+        shell: bash
+        run: |
+          {
+            echo 'body<<RELEASE_BODY_EOF'
+            node scripts/release-notes.mjs
+            echo 'RELEASE_BODY_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -49,6 +60,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Gnomad Webcanvas ${{ github.ref_name }}
-          releaseBody: 'Beta desktop release for Gnomad Webcanvas'
-          releaseDraft: true
+          releaseBody: ${{ steps.release_notes.outputs.body }}
+          releaseDraft: false
           prerelease: true

@@ -19,25 +19,20 @@ Everything else (code, docs, CI) can be automated on `main`. This file is the **
 
 ---
 
-## 1. First release tag (v0.1.0)
+## 1. Desktop release (automated)
 
-**Why:** CI release workflow only runs on `v*` tags. Without a tag, no GitHub Release artifacts exist.
+**Why:** CI release workflow only runs on `v*` tags.
 
-**When ready:**
+**From Cursor:** say *"release Gnomad Webcanvas"* or *"ship beta"* — the agent runs `npm run release`.
+
+**Manual (same command):**
 
 ```bash
 cd 05_apps_and_extensions/gnomad-preview
-npm run lint
-npx tsc -b --noEmit
-npm run build
-npm run docs:export
-git tag -a v0.1.0 -m "Gnomad Webcanvas v0.1.0"
-git push origin v0.1.0
+npm run release
 ```
 
-Monitor **Actions → Release Desktop Builds**. Expect three matrix jobs (macOS, Linux, Windows).
-
-**After CI:** Walk [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md) on at least one platform, then publish the draft release.
+No GitHub website login needed after one-time `gh auth login` on this machine.
 
 **Docs:** [docs/RELEASE_RUNBOOK.md](docs/RELEASE_RUNBOOK.md)
 
@@ -106,7 +101,7 @@ Not configured in v0.1. When adding Tauri updater plugin:
 ## What agents already handle
 
 - Code, docs export, lint/typecheck guidance
-- Release workflow when **you** push a `v*` tag
+- **Full desktop release** via `npm run release` (tag → CI → published GitHub Release)
 - Documentation in `docs/` (MD source)
 
 ---
@@ -115,6 +110,7 @@ Not configured in v0.1. When adding Tauri updater plugin:
 
 ```bash
 npm run docs:export     # regenerate HTML/TXT from Markdown
+npm run release         # ship desktop beta (tag + CI + publish)
 npm run tauri:dev       # local desktop dev
 npm run tauri:build     # local production build
 npm run lint            # ESLint
