@@ -246,7 +246,7 @@ function main() {
   assertCleanMain();
   assertVersionsAligned(version);
   qualityGates();
-  const { versionTag, pushedAtMs } = createAndPushTag(version);
+  const pushed = createAndPushTag(version);
 
   if (noWait) {
     console.log("\n✅ Tag pushed. CI will build installers (--no-wait).");
@@ -254,9 +254,9 @@ function main() {
     return;
   }
 
-  waitForWorkflow(versionTag, pushedAtMs);
-  publishRelease(versionTag);
-  printAssets(versionTag);
+  waitForWorkflow(pushed.versionTag, pushed.pushedAtMs);
+  publishRelease(pushed.versionTag);
+  printAssets(pushed.versionTag);
   console.log("\n✅ Done — no GitHub UI login required.");
 }
 
