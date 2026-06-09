@@ -9,7 +9,36 @@ permissions:
   contents: write
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Create draft release
+        id: create_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOTES=$(node scripts/release-notes.mjs)
+          ID=$(gh release create "${{ github.ref_name }}" \
+            --repo davidthegnomad/gnomad-webcanvas \
+            --draft \
+            --prerelease \
+            --title "Gnomad Webcanvas ${{ github.ref_name }}" \
+            --notes "$NOTES" \
+            --json id \
+            --jq .id)
+          echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: create-release
     strategy:
       fail-fast: false
       matrix:
@@ -46,16 +75,6 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Prepare release notes
-        id: release_notes
-        shell: bash
-        run: |
-          {
-            echo 'body<<RELEASE_BODY_EOF'
-            node scripts/release-notes.mjs
-            echo 'RELEASE_BODY_EOF'
-          } >> "$GITHUB_OUTPUT"
-
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -63,16 +82,26 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Gnomad Webcanvas ${{ github.ref_name }}
-          releaseBody: ${{ steps.release_notes.outputs.body }}
-          releaseDraft: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+          releaseDraft: true
           prerelease: true
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
 
+  publish-release:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ github.ref_name }}" \
+            --repo davidthegnomad/gnomad-webcanvas \
+            --draft=false
+
   publish-updater-manifest:
-    needs: build
+    needs: [create-release, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
