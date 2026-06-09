@@ -1,7 +1,7 @@
 # Gnomad Webcanvas
 
 [![Beta](https://img.shields.io/badge/status-beta-818cf8)](https://davidthegnomad.github.io/gnomad-webcanvas/)
-[![Version](https://img.shields.io/badge/version-0.1.0--beta.2-818cf8)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.0--beta.3-818cf8)](CHANGELOG.md)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20Web-333)](docs/BUILD_PLATFORMS.md)
 
 **Gnomad Webcanvas** is a live HTML/CSS/JS playground with Monaco editing, instant iframe preview, project export, URL sharing, and native Open/Save on desktop — built with Tauri and React.

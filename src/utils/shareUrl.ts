@@ -1,4 +1,6 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import { PUBLIC_APP_URL } from '../constants/branding';
+import { isDesktop } from './platformBridge';
 
 interface ShareableState {
   html: string;
@@ -47,14 +49,29 @@ export function decodeProjectFromHash(hash: string): ShareableState | null {
   }
 }
 
-export function copyShareUrl(): void {
-  navigator.clipboard.writeText(window.location.href).catch(() => {
-    // Fallback for older browsers
+export function buildShareUrl(hash: string): string {
+  const cleaned = hash.startsWith('#') ? hash : `#${hash}`;
+  if (isDesktop()) {
+    return `${PUBLIC_APP_URL}${cleaned}`;
+  }
+  const { origin, pathname } = window.location;
+  return `${origin}${pathname}${cleaned}`;
+}
+
+export async function copyTextToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
     const input = document.createElement('input');
-    input.value = window.location.href;
+    input.value = text;
     document.body.appendChild(input);
     input.select();
     document.execCommand('copy');
     document.body.removeChild(input);
-  });
+  }
+}
+
+export async function copyShareUrl(hash: string): Promise<void> {
+  await copyTextToClipboard(buildShareUrl(hash));
 }

@@ -2,7 +2,7 @@
   "name": "gnomad-webcanvas",
   "description": "Gnomad Webcanvas — live HTML/CSS/JS playground with Monaco editor and instant preview.",
   "private": true,
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,6 +25,7 @@
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "@tauri-apps/plugin-fs": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2.5.4",
     "@types/file-saver": "^2.0.7",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
@@ -50,8 +51,8 @@
     "jsdom": "^26.1.0",
     "marked": "^15.0.12",
     "typescript": "~6.0.2",
-    "vitest": "^3.2.4",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^3.2.4"
   }
 }

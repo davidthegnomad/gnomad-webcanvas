@@ -16,7 +16,7 @@ const MIN_FONT_SIZE = 10;
 const MAX_FONT_SIZE = 24;
 
 export const DEFAULT_HTML = `<div class="container">
-  <h1>Hello, Webcanvas!</h1>
+  <h1>Welcome to Webcanvas!</h1>
   <p>Start editing to see live changes.</p>
   <button id="counter-btn">Click me: 0</button>
 </div>`;
@@ -134,6 +134,7 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
           ? s.activeLibraries.filter((l) => l.id !== library.id)
           : [...s.activeLibraries, library],
         isDirty: true,
+        previewKey: s.previewKey + 1,
       };
     }),
 
@@ -153,7 +154,12 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
       isDirty: true,
     }),
 
-  initializeStore: (data) => set({ ...data, isDirty: false }),
+  initializeStore: (data) =>
+    set((s) => ({
+      ...data,
+      isDirty: false,
+      previewKey: s.previewKey + 1,
+    })),
 
   togglePreviewPaused: () => set((s) => ({ previewPaused: !s.previewPaused })),
   forceRefreshPreview: () =>

@@ -29,6 +29,7 @@ export default function TopNavbar() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [shareToast, setShareToast] = useState(false);
+  const [exportToast, setExportToast] = useState<string | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const htmlCode = useEditorStore((s) => s.htmlCode);
@@ -60,8 +61,10 @@ export default function TopNavbar() {
 
   const currentProject = projects.find((p) => p.id === currentProjectId);
 
-  const handleExport = useCallback(() => {
-    exportProject(htmlCode, cssCode, jsCode, activeLibraries);
+  const handleExport = useCallback(async () => {
+    const ok = await exportProject(htmlCode, cssCode, jsCode, activeLibraries);
+    setExportToast(ok ? 'ZIP exported!' : 'Export cancelled');
+    setTimeout(() => setExportToast(null), 2000);
   }, [htmlCode, cssCode, jsCode, activeLibraries]);
 
   const handleReset = useCallback(() => {
@@ -79,11 +82,10 @@ export default function TopNavbar() {
     window.dispatchEvent(new CustomEvent('liveview-format', { detail: { pane } }));
   }, []);
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     const s = useEditorStore.getState();
     const hash = encodeProjectToHash(s);
-    window.location.hash = hash;
-    copyShareUrl();
+    await copyShareUrl(hash);
     setShareToast(true);
     setTimeout(() => setShareToast(false), 2000);
   }, []);
@@ -106,6 +108,14 @@ export default function TopNavbar() {
     });
     bumpProjectVersion();
     setTemplateMenuOpen(false);
+
+    const updated = useEditorStore.getState();
+    saveProjectData(updated.currentProjectId, {
+      htmlCode: updated.htmlCode,
+      cssCode: updated.cssCode,
+      jsCode: updated.jsCode,
+      activeLibraries: updated.activeLibraries,
+    });
   }, [initializeStore, bumpProjectVersion]);
 
   const handleSwitchProject = useCallback((id: string) => {
@@ -171,8 +181,8 @@ export default function TopNavbar() {
     <nav className="flex items-center justify-between px-3 py-1.5 ui-bg-panel border-b border ui-border shrink-0 z-20 gap-2">
       {/* Left: Logo + Project Selector */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[10px] font-bold shrink-0">
-          LV
+        <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[9px] font-bold shrink-0">
+          WC
         </div>
 
         {/* Project Selector */}
@@ -367,7 +377,7 @@ export default function TopNavbar() {
 
         {/* Share */}
         <div className="relative">
-          <button onClick={handleShare}
+          <button onClick={() => void handleShare()}
             className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors"
             title="Copy shareable link"
           >Share</button>
@@ -379,10 +389,17 @@ export default function TopNavbar() {
         </div>
 
         {/* Export */}
-        <button onClick={handleExport}
-          className="px-2 py-1 text-[11px] rounded-md bg-indigo-600 text-white hover:bg-indigo-500 transition-colors whitespace-nowrap"
-          title="Export ZIP (Ctrl+Shift+E)"
-        >Export</button>
+        <div className="relative">
+          <button onClick={() => void handleExport()}
+            className="px-2 py-1 text-[11px] rounded-md bg-indigo-600 text-white hover:bg-indigo-500 transition-colors whitespace-nowrap"
+            title="Export ZIP (Ctrl+Shift+E)"
+          >Export</button>
+          {exportToast && (
+            <div className="absolute right-0 top-full mt-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] rounded shadow-lg z-50 whitespace-nowrap">
+              {exportToast}
+            </div>
+          )}
+        </div>
 
         {/* Reset */}
         <button onClick={handleReset}

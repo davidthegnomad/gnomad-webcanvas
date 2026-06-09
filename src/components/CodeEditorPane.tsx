@@ -18,12 +18,20 @@ const CODE_SELECTORS = {
 
 function CodeEditorPaneInner({ pane }: CodeEditorPaneProps) {
   const code = useEditorStore(CODE_SELECTORS[pane]);
+  const projectVersion = useEditorStore((s) => s.projectVersion);
   const setCode = useEditorStore((s) => s.setCode);
   const setActivePane = useEditorStore((s) => s.setActivePane);
   const editorTheme = useEditorStore((s) => s.editorTheme);
   const fontSize = useEditorStore((s) => s.fontSize);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const initialValueRef = useRef(code);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+    const current = editorRef.current.getValue();
+    if (current !== code) {
+      editorRef.current.setValue(code);
+    }
+  }, [code, projectVersion]);
 
   const debouncedSetCode = useDebouncedCallback(
     (value: string) => setCode(pane, value),
@@ -89,7 +97,8 @@ function CodeEditorPaneInner({ pane }: CodeEditorPaneProps) {
   return (
     <div className="flex-1 overflow-hidden">
       <Editor
-        defaultValue={initialValueRef.current}
+        key={`${pane}-${projectVersion}`}
+        defaultValue={code}
         language={LANGUAGE_MAP[pane]}
         theme={editorTheme}
         options={editorOptions}

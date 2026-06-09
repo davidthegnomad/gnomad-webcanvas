@@ -6,6 +6,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.1.0-beta.3] — 2026-06-09
+
+### Added
+
+- Custom WC app icon (Tauri bundle + web favicon)
+- Native macOS menu bar with About modal and in-app updater
+- Desktop export via native Save dialog (ZIP)
+- Share copies public GitHub Pages URL on desktop
+
+### Fixed
+
+- Templates and CDN libs now update Monaco editor and live preview
+- Cmd+Tab app switcher (activation policy, single-instance focus, dock reopen)
+- Default HTML template: `Welcome to Webcanvas!`
+
+---
+
 ## [0.1.0-beta.2] — 2026-06-01
 
 ### Added

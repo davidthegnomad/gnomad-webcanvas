@@ -3,4 +3,5 @@ export const PRODUCT_NAME = 'Gnomad Webcanvas';
 export const PRODUCT_NAME_SHORT = 'Webcanvas';
 export const STUDIO_NAME = 'Gnomad Studio';
 export const STUDIO_URL = 'https://gnomadstudio.org';
+export const PUBLIC_APP_URL = 'https://davidthegnomad.github.io/gnomad-webcanvas/app/';
 export const DEFAULT_EXPORT_PREFIX = 'webcanvas-project';

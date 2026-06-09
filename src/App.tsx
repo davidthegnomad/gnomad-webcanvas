@@ -1,6 +1,7 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import TopNavbar from './components/TopNavbar';
 import Workspace from './components/Workspace';
+import AboutModal from './components/AboutModal';
 import ColorPicker from './components/FloatingTools/ColorPicker';
 import CssGenerator from './components/FloatingTools/CssGenerator';
 import FontPairings from './components/FloatingTools/FontPairings';
@@ -41,6 +42,7 @@ export default function App() {
   const editorTheme = useEditorStore((s) => s.editorTheme);
 
   const hydrated = useRef(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // Hydrate: URL hash > project manager > legacy localStorage
   useEffect(() => {
@@ -192,6 +194,11 @@ export default function App() {
     }
   }, [setCurrentFilePath, setDirty]);
 
+  const handleExport = useCallback(async () => {
+    const s = useEditorStore.getState();
+    await exportProject(s.htmlCode, s.cssCode, s.jsCode, s.activeLibraries);
+  }, []);
+
   // Global keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -208,8 +215,7 @@ export default function App() {
       if (e.shiftKey) {
         if (e.key === 'E' || e.key === 'e') {
           e.preventDefault();
-          const s = useEditorStore.getState();
-          exportProject(s.htmlCode, s.cssCode, s.jsCode, s.activeLibraries);
+          void handleExport();
           return;
         }
         if (e.key === 'F' || e.key === 'f') {
@@ -267,13 +273,36 @@ export default function App() {
         decreaseFontSize();
       }
     },
-    [forceRefreshPreview, toggleLayout, setActivePane, increaseFontSize, decreaseFontSize, togglePreviewFullscreen, previewFullscreen, toggleConsole, handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs],
+    [forceRefreshPreview, toggleLayout, setActivePane, increaseFontSize, decreaseFontSize, togglePreviewFullscreen, previewFullscreen, toggleConsole, handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs, handleExport],
   );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
+
+  useEffect(() => {
+    if (!isDesktop()) return;
+
+    let cancelled = false;
+    const unlisteners: Array<() => void> = [];
+
+    void import('@tauri-apps/api/event').then(async (mod) => {
+      if (cancelled) return;
+      unlisteners.push(
+        await mod.listen('webcanvas:show-about', () => setAboutOpen(true)),
+        await mod.listen('webcanvas:file-open', () => void handleDesktopOpen()),
+        await mod.listen('webcanvas:file-save', () => void handleDesktopSave()),
+        await mod.listen('webcanvas:file-save-as', () => void handleDesktopSaveAs()),
+        await mod.listen('webcanvas:file-export', () => void handleExport()),
+      );
+    });
+
+    return () => {
+      cancelled = true;
+      unlisteners.forEach((off) => off());
+    };
+  }, [handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs, handleExport]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-ui-theme', editorThemeToUiTheme(editorTheme));
@@ -293,6 +322,7 @@ export default function App() {
           <FontPairings />
         </div>
       )}
+      {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
     </div>
   );
 }
