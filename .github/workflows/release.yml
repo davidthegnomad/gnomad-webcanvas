@@ -27,13 +27,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           NOTES=$(node scripts/release-notes.mjs)
-          gh release create "${{ github.ref_name }}" \
-            --repo davidthegnomad/gnomad-webcanvas \
+          TAG="${{ github.ref_name }}"
+          REPO="davidthegnomad/gnomad-webcanvas"
+
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release delete "$TAG" --repo "$REPO" --yes --cleanup-tag=false
+          fi
+
+          gh release create "$TAG" \
+            --repo "$REPO" \
+            --verify-tag \
             --draft \
             --prerelease \
-            --title "Gnomad Webcanvas ${{ github.ref_name }}" \
+            --title "Gnomad Webcanvas $TAG" \
             --notes "$NOTES"
-          ID=$(gh api "repos/davidthegnomad/gnomad-webcanvas/releases/tags/${{ github.ref_name }}" --jq .id)
+
+          ID=$(gh api "repos/$REPO/releases/tags/$TAG" --jq .id)
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
 
   build:
