@@ -1,10 +1,23 @@
+use serde::Deserialize;
 use serde::Serialize;
 use tauri::AppHandle;
 use tauri_plugin_updater::UpdaterExt;
 use url::Url;
 
-const BETA_ENDPOINT: &str =
+const GITHUB_RELEASES_API: &str =
+    "https://api.github.com/repos/davidthegnomad/gnomad-webcanvas/releases?per_page=20";
+const GH_PAGES_ENDPOINT: &str =
+    "https://davidthegnomad.github.io/gnomad-webcanvas/updater/latest.json";
+const LEGACY_LATEST_ENDPOINT: &str =
     "https://github.com/davidthegnomad/gnomad-webcanvas/releases/latest/download/latest.json";
+
+#[derive(Debug, Deserialize)]
+struct GhRelease {
+    tag_name: String,
+    prerelease: bool,
+    draft: bool,
+    published_at: Option<String>,
+}
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -17,13 +30,58 @@ pub struct UpdateCheckResult {
     pub channel: String,
 }
 
-fn endpoint_for_channel(channel: &str) -> Result<Url, String> {
-    let raw = if channel.eq_ignore_ascii_case("beta") {
-        BETA_ENDPOINT
-    } else {
-        BETA_ENDPOINT
-    };
-    Url::parse(raw).map_err(|e| format!("Invalid updater endpoint: {e}"))
+async fn latest_beta_manifest_url() -> Result<Url, String> {
+    let client = reqwest::Client::builder()
+        .user_agent("gnomad-webcanvas-updater")
+        .build()
+        .map_err(|e| format!("HTTP client error: {e}"))?;
+
+    let releases: Vec<GhRelease> = client
+        .get(GITHUB_RELEASES_API)
+        .send()
+        .await
+        .map_err(|e| format!("Could not reach GitHub releases API: {e}"))?
+        .json()
+        .await
+        .map_err(|e| format!("Invalid GitHub releases response: {e}"))?;
+
+    let tag = releases
+        .into_iter()
+        .filter(|r| r.prerelease && !r.draft)
+        .max_by(|a, b| a.published_at.cmp(&b.published_at))
+        .map(|r| r.tag_name)
+        .ok_or_else(|| "No published beta release found on GitHub.".to_string())?;
+
+    let raw = format!(
+        "https://github.com/davidthegnomad/gnomad-webcanvas/releases/download/{tag}/latest.json"
+    );
+    Url::parse(&raw).map_err(|e| format!("Invalid updater endpoint: {e}"))
+}
+
+async fn updater_endpoints(channel: &str) -> Result<Vec<Url>, String> {
+    let mut endpoints = Vec::new();
+
+    // beta.4 builds shipped with this URL; keep as first fallback.
+    if let Ok(url) = Url::parse(LEGACY_LATEST_ENDPOINT) {
+        endpoints.push(url);
+    }
+
+    if let Ok(url) = Url::parse(GH_PAGES_ENDPOINT) {
+        endpoints.push(url);
+    }
+
+    if channel.eq_ignore_ascii_case("beta") {
+        match latest_beta_manifest_url().await {
+            Ok(url) => endpoints.push(url),
+            Err(err) => log::warn!("Beta manifest URL lookup failed: {err}"),
+        }
+    }
+
+    if endpoints.is_empty() {
+        return Err("No updater endpoints configured.".to_string());
+    }
+
+    Ok(endpoints)
 }
 
 #[tauri::command]
@@ -33,11 +91,11 @@ pub async fn check_for_updates(
 ) -> Result<UpdateCheckResult, String> {
     let channel = channel.unwrap_or_else(|| "beta".into());
     let current_version = app.package_info().version.to_string();
-    let endpoint = endpoint_for_channel(&channel)?;
+    let endpoints = updater_endpoints(&channel).await?;
 
     let update = app
         .updater_builder()
-        .endpoints(vec![endpoint])
+        .endpoints(endpoints)
         .map_err(|e| format!("Updater misconfigured: {e}"))?
         .build()
         .map_err(|e| format!("Updater build failed: {e}"))?
@@ -68,10 +126,10 @@ pub async fn check_for_updates(
 #[tauri::command]
 pub async fn install_update(app: AppHandle, channel: Option<String>) -> Result<(), String> {
     let channel = channel.unwrap_or_else(|| "beta".into());
-    let endpoint = endpoint_for_channel(&channel)?;
+    let endpoints = updater_endpoints(&channel).await?;
     let update = app
         .updater_builder()
-        .endpoints(vec![endpoint])
+        .endpoints(endpoints)
         .map_err(|e| format!("Updater misconfigured: {e}"))?
         .build()
         .map_err(|e| format!("Updater build failed: {e}"))?

@@ -45,6 +45,7 @@ jobs:
           cp -r docs/. _site/
           cp README.html README.txt CHANGELOG.html CHANGELOG.txt HUMAN.html HUMAN.txt _site/ 2>/dev/null || true
           cp -r public/get _site/get 2>/dev/null || true
+          cp -r public/updater _site/updater 2>/dev/null || true
           cp -r dist _site/app
 
       - name: Upload Pages artifact

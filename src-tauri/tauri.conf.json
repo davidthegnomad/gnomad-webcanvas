@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Gnomad Webcanvas",
-  "version": "0.1.0-beta.4",
+  "version": "0.1.0-beta.5",
   "identifier": "com.gnomad.webcanvas",
   "build": {
     "frontendDist": "../dist",
@@ -27,6 +27,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["app", "dmg", "deb", "rpm", "appimage", "nsis"],
     "icon": [
       "icons/32x32.png",
@@ -40,9 +41,9 @@
     "updater": {
       "active": true,
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ1RTQ3QTNBMzI5MDE5RTUKUldUbEdaQXlPbnJrMWNFeTFrenNhdjhJaEVjcmdFa1BINFd5eXl4NTRDZGsrM2RUYmpRMUxiMm4K",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFQkFBMEIxNkQyNUNDOUMKUldTY3pDVnRzYUM2TGlCbzV6SDgvWU5nL1h0bFl4TU9sbktEU0FaWHFOOUdPSXViWURRbXZzVmQK",
       "endpoints": [
-        "https://github.com/davidthegnomad/gnomad-webcanvas/releases/latest/download/latest.json"
+        "https://davidthegnomad.github.io/gnomad-webcanvas/updater/latest.json"
       ]
     }
   }

@@ -60,9 +60,43 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Gnomad Webcanvas ${{ github.ref_name }}
           releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: false
           prerelease: true
+          includeUpdaterJson: true
+          updaterJsonPreferNsis: true
+
+  publish-updater-manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download latest.json from release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          mkdir -p public/updater
+          gh release download "$TAG" \
+            --repo davidthegnomad/gnomad-webcanvas \
+            --pattern 'latest.json' \
+            --dir public/updater \
+            --clobber
+          test -f public/updater/latest.json
+
+      - name: Commit updater manifest for GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/updater/latest.json
+          git diff --staged --quiet || git commit -m "chore(updater): publish manifest for ${GITHUB_REF_NAME}"
+          git push origin main
