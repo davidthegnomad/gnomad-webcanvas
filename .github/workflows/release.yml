@@ -33,10 +33,7 @@ jobs:
             --prerelease \
             --title "Gnomad Webcanvas ${{ github.ref_name }}" \
             --notes "$NOTES"
-          ID=$(gh release view "${{ github.ref_name }}" \
-            --repo davidthegnomad/gnomad-webcanvas \
-            --json id \
-            --jq .id)
+          ID=$(gh api "repos/davidthegnomad/gnomad-webcanvas/releases/tags/${{ github.ref_name }}" --jq .id)
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
 
   build:
@@ -84,6 +81,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          tagName: ${{ github.ref_name }}
           releaseId: ${{ needs.create-release.outputs.release_id }}
           releaseDraft: true
           prerelease: true
@@ -104,6 +102,7 @@ jobs:
 
   publish-updater-manifest:
     needs: [create-release, build]
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
