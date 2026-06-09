@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { TipButton } from './HoverTip';
+import { NAV_HINTS } from '../constants/uiHints';
 
 const SHORTCUTS = [
   { keys: 'Ctrl + Enter', action: 'Force refresh preview' },
@@ -32,12 +34,14 @@ export default function ShortcutsModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border ui-border">
           <h2 className="text-sm font-semibold ui-text">Keyboard Shortcuts</h2>
-          <button
+          <TipButton
+            tip={NAV_HINTS.modalClose}
+            shortcut="Escape"
             onClick={onClose}
             className="ui-text-faint hover:ui-text transition-colors text-sm"
           >
             Esc
-          </button>
+          </TipButton>
         </div>
         <div className="px-5 py-3 max-h-[60vh] overflow-y-auto">
           {SHORTCUTS.map((s) => (

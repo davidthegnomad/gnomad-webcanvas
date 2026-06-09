@@ -159,6 +159,7 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
       ...data,
       isDirty: false,
       previewKey: s.previewKey + 1,
+      projectVersion: s.projectVersion + 1,
     })),
 
   togglePreviewPaused: () => set((s) => ({ previewPaused: !s.previewPaused })),

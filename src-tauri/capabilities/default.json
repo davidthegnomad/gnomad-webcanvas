@@ -13,6 +13,7 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "opener:default",
-    "updater:default"
+    "updater:default",
+    "clipboard-manager:default"
   ]
 }

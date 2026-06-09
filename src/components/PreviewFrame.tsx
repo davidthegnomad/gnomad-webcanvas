@@ -6,6 +6,8 @@ import { assembleSource } from '../utils/assembleSource';
 import { FONT_PAIRINGS } from '../constants/fontPairings';
 import ConsolePanel from './ConsolePanel';
 import ResizeHandle from './ResizeHandle';
+import { HoverTip, TipButton } from './HoverTip';
+import { NAV_HINTS } from '../constants/uiHints';
 import type { ActiveFontPairing, PreviewBackground } from '../types/editor.types';
 
 const BG_CLASSES: Record<PreviewBackground, string> = {
@@ -18,6 +20,13 @@ const BG_LABELS: Record<PreviewBackground, string> = {
   white: '☀',
   dark: '☾',
   checkerboard: '▦',
+};
+
+const VIEWPORT_HINTS: Record<string, string> = {
+  Full: NAV_HINTS.viewportFull,
+  Mobile: NAV_HINTS.viewportMobile,
+  Tablet: NAV_HINTS.viewportTablet,
+  Desktop: NAV_HINTS.viewportDesktop,
 };
 
 const VIEWPORT_PRESETS = [
@@ -181,14 +190,17 @@ function PreviewHeader({
   return (
     <div className="flex items-center justify-between px-3 py-1.5 ui-bg-panel border-b border ui-border shrink-0">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span className="text-xs font-medium ui-text-muted">Preview</span>
-        </div>
+        <HoverTip tip={NAV_HINTS.preview}>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-xs font-medium ui-text-muted">Preview</span>
+          </div>
+        </HoverTip>
         <div className="flex items-center gap-0.5 ml-2">
           {VIEWPORT_PRESETS.map((vp) => (
-            <button
+            <TipButton
               key={vp.label}
+              tip={VIEWPORT_HINTS[vp.label]}
               onClick={() => onViewportChange(vp.value)}
               className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
                 viewport === vp.value
@@ -198,21 +210,22 @@ function PreviewHeader({
             >
               {vp.label}
               {vp.value && <span className="ml-0.5 text-[9px] opacity-60">{vp.value}</span>}
-            </button>
+            </TipButton>
           ))}
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <button
+        <TipButton
+          tip={NAV_HINTS.previewBackground}
           onClick={onCycleBackground}
           className="px-2 py-0.5 text-[10px] rounded ui-text-faint hover:ui-text-muted transition-colors"
-          title={`Preview background: ${background}`}
         >
           {BG_LABELS[background]}
-        </button>
+        </TipButton>
       </div>
 
-      <button
+      <TipButton
+        tip={NAV_HINTS.console}
         onClick={onToggleConsole}
         className={`flex items-center gap-1 px-2 py-0.5 text-[10px] rounded transition-colors ${
           consoleOpen
@@ -226,7 +239,7 @@ function PreviewHeader({
             {errorCount}
           </span>
         )}
-      </button>
+      </TipButton>
     </div>
   );
 }

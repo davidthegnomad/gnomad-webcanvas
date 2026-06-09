@@ -6,8 +6,16 @@ import ErrorBoundary from './ErrorBoundary';
 import ResizeHandle from './ResizeHandle';
 import type { PaneType } from '../types/editor.types';
 import { PANE_LABELS, PANE_COLORS } from '../constants/editorConfig';
+import { HoverTip, TipButton } from './HoverTip';
+import { NAV_HINTS } from '../constants/uiHints';
 
 const PANES: PaneType[] = ['html', 'css', 'js'];
+
+const PANE_HINTS: Record<PaneType, string> = {
+  html: NAV_HINTS.paneHtml,
+  css: NAV_HINTS.paneCss,
+  js: NAV_HINTS.paneJs,
+};
 
 function PaneHeader({
   pane,
@@ -31,20 +39,22 @@ function PaneHeader({
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: PANE_COLORS[pane] }}
         />
-        <span className="text-xs font-medium ui-text-muted">
-          {PANE_LABELS[pane]}
-        </span>
+        <HoverTip tip={PANE_HINTS[pane]}>
+          <span className="text-xs font-medium ui-text-muted">
+            {PANE_LABELS[pane]}
+          </span>
+        </HoverTip>
       </div>
-      <button
+      <TipButton
+        tip={isMaximized ? NAV_HINTS.paneRestore : NAV_HINTS.paneMaximize}
         onClick={(e) => {
           e.stopPropagation();
           onMaximize();
         }}
         className="text-[10px] ui-text-faint hover:ui-text transition-colors"
-        title={isMaximized ? 'Restore' : 'Maximize'}
       >
         {isMaximized ? '⊟' : '⊞'}
-      </button>
+      </TipButton>
     </div>
   );
 }
@@ -106,8 +116,9 @@ export default function Workspace() {
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex ui-bg-panel border-b border ui-border shrink-0">
         {PANES.map((pane) => (
-          <button
+          <TipButton
             key={pane}
+            tip={PANE_HINTS[pane]}
             onClick={() => setActivePane(pane)}
             className={`px-4 py-2 text-xs font-medium transition-colors relative ${
               activePane === pane
@@ -123,7 +134,7 @@ export default function Workspace() {
             {activePane === pane && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />
             )}
-          </button>
+          </TipButton>
         ))}
       </div>
       <div className="flex-1 overflow-hidden relative">
@@ -175,12 +186,14 @@ export default function Workspace() {
 
       {/* Fullscreen exit overlay */}
       {previewFullscreen && (
-        <button
+        <TipButton
+          tip={NAV_HINTS.exitFullscreenOverlay}
+          shortcut="Escape"
           onClick={togglePreviewFullscreen}
           className="absolute top-12 right-3 z-30 px-2 py-1 text-[10px] rounded ui-bg-elevated/80 ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors backdrop-blur-sm"
         >
           Exit Fullscreen
-        </button>
+        </TipButton>
       )}
     </div>
   );

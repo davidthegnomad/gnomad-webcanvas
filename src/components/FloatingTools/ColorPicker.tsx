@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useEditorStore } from '../../store/editorStore';
+import { HoverTip, TipButton } from '../HoverTip';
+import { TOOL_HINTS } from '../../constants/uiHints';
 
 export default function ColorPicker() {
   const [color, setColor] = useState('#6366f1');
@@ -58,30 +60,37 @@ export default function ColorPicker() {
 
   return (
     <div className="flex items-center gap-2">
-      <input
-        type="color"
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-        className="w-7 h-7 rounded cursor-pointer border ui-border bg-transparent"
-      />
-      <select
-        value={format}
-        onChange={(e) => setFormat(e.target.value as 'hex' | 'rgb' | 'hsl')}
-        className="text-[10px] ui-bg-elevated border ui-border rounded px-1.5 py-1 ui-text-muted outline-none"
-      >
-        <option value="hex">HEX</option>
-        <option value="rgb">RGB</option>
-        <option value="hsl">HSL</option>
-      </select>
+      <HoverTip tip={TOOL_HINTS.colorPicker}>
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          title={TOOL_HINTS.colorPicker}
+          className="w-7 h-7 rounded cursor-pointer border ui-border bg-transparent"
+        />
+      </HoverTip>
+      <HoverTip tip={TOOL_HINTS.colorFormat}>
+        <select
+          value={format}
+          onChange={(e) => setFormat(e.target.value as 'hex' | 'rgb' | 'hsl')}
+          title={TOOL_HINTS.colorFormat}
+          className="text-[10px] ui-bg-elevated border ui-border rounded px-1.5 py-1 ui-text-muted outline-none"
+        >
+          <option value="hex">HEX</option>
+          <option value="rgb">RGB</option>
+          <option value="hsl">HSL</option>
+        </select>
+      </HoverTip>
       <span className="text-[10px] ui-text-faint font-mono min-w-[100px]">
         {getFormattedColor()}
       </span>
-      <button
+      <TipButton
+        tip={TOOL_HINTS.colorInsert}
         onClick={insertColor}
         className="text-[10px] px-2 py-1 rounded bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 transition-colors"
       >
         Insert
-      </button>
+      </TipButton>
     </div>
   );
 }

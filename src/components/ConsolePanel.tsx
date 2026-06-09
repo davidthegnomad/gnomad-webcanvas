@@ -1,5 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { useEditorStore } from '../store/editorStore';
+import { TipButton } from './HoverTip';
+import { NAV_HINTS } from '../constants/uiHints';
 
 const METHOD_STYLES: Record<string, { border: string; text: string; bg: string }> = {
   log: { border: 'border-l-neutral-600', text: 'ui-text', bg: '' },
@@ -39,19 +41,20 @@ export default function ConsolePanel() {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <button
+          <TipButton
+            tip={NAV_HINTS.consoleClear}
             onClick={clearConsole}
             className="text-[10px] px-2 py-0.5 ui-text-faint hover:ui-text transition-colors"
           >
             Clear
-          </button>
-          <button
+          </TipButton>
+          <TipButton
+            tip={NAV_HINTS.consoleClose}
             onClick={toggleConsole}
             className="text-[10px] px-1 ui-text-faint hover:ui-text transition-colors"
-            title="Close console"
           >
             ✕
-          </button>
+          </TipButton>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto font-mono text-[11px] leading-relaxed">

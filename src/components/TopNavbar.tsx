@@ -1,8 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useEditorStore } from '../store/editorStore';
 import ShortcutsModal from './ShortcutsModal';
+import DropdownPortal from './DropdownPortal';
+import MenuHintHeader from './MenuHintHeader';
+import { HoverTip, TipButton } from './HoverTip';
 import { exportProject } from '../utils/exportProject';
 import { encodeProjectToHash, copyShareUrl } from '../utils/shareUrl';
+import { NAV_HINTS, LIB_HINTS } from '../constants/uiHints';
 import {
   createProject,
   deleteProject,
@@ -28,9 +32,12 @@ export default function TopNavbar() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const [shareToast, setShareToast] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
   const [exportToast, setExportToast] = useState<string | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const templateBtnRef = useRef<HTMLButtonElement>(null);
+  const libBtnRef = useRef<HTMLButtonElement>(null);
 
   const htmlCode = useEditorStore((s) => s.htmlCode);
   const cssCode = useEditorStore((s) => s.cssCode);
@@ -85,9 +92,9 @@ export default function TopNavbar() {
   const handleShare = useCallback(async () => {
     const s = useEditorStore.getState();
     const hash = encodeProjectToHash(s);
-    await copyShareUrl(hash);
-    setShareToast(true);
-    setTimeout(() => setShareToast(false), 2000);
+    const ok = await copyShareUrl(hash);
+    setShareToast(ok ? 'Link copied!' : 'Could not copy link');
+    setTimeout(() => setShareToast(null), 2500);
   }, []);
 
   const handleTemplateSelect = useCallback((templateId: string) => {
@@ -107,6 +114,7 @@ export default function TopNavbar() {
       activeLibraries: template.libraries,
     });
     bumpProjectVersion();
+    forceRefreshPreview();
     setTemplateMenuOpen(false);
 
     const updated = useEditorStore.getState();
@@ -116,7 +124,7 @@ export default function TopNavbar() {
       jsCode: updated.jsCode,
       activeLibraries: updated.activeLibraries,
     });
-  }, [initializeStore, bumpProjectVersion]);
+  }, [initializeStore, bumpProjectVersion, forceRefreshPreview]);
 
   const handleSwitchProject = useCallback((id: string) => {
     const s = useEditorStore.getState();
@@ -178,32 +186,42 @@ export default function TopNavbar() {
   }, [renameValue, updateProjectsMeta]);
 
   return (
-    <nav className="flex items-center justify-between px-3 py-1.5 ui-bg-panel border-b border ui-border shrink-0 z-20 gap-2">
+    <nav className="flex items-center justify-between px-3 py-1.5 ui-bg-panel border-b border ui-border shrink-0 z-50 gap-2 overflow-visible">
       {/* Left: Logo + Project Selector */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[9px] font-bold shrink-0">
-          WC
-        </div>
+        <HoverTip tip="Gnomad Webcanvas — live HTML/CSS/JS editor.">
+          <div
+            className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[9px] font-bold shrink-0"
+            title="Gnomad Webcanvas"
+          >
+            WC
+          </div>
+        </HoverTip>
 
         {/* Project Selector */}
         <div className="relative">
-          <button
-            onClick={() => setProjectMenuOpen(!projectMenuOpen)}
-            className="flex items-center gap-1 px-2 py-1 text-sm font-medium ui-text hover:text-neutral-100 rounded hover:ui-bg-elevated transition-colors max-w-[160px]"
-          >
+          <HoverTip tip={NAV_HINTS.project}>
+            <button
+              type="button"
+              onClick={() => setProjectMenuOpen(!projectMenuOpen)}
+              title={NAV_HINTS.project}
+              className="flex items-center gap-1 px-2 py-1 text-sm font-medium ui-text hover:text-neutral-100 rounded hover:ui-bg-elevated transition-colors max-w-[160px]"
+            >
             <span className="truncate">{currentProject?.name ?? 'My Project'}</span>
             {isDirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Unsaved changes" />}
             {!isDirty && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" title="Saved" />}
             <span className="text-[8px] ui-text-faint">▼</span>
-          </button>
+            </button>
+          </HoverTip>
 
           {projectMenuOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => { setProjectMenuOpen(false); setRenamingId(null); }} />
-              <div className="absolute left-0 top-full mt-1 w-56 ui-bg-menu border ui-border rounded-lg shadow-xl z-40 overflow-hidden">
-                <div className="px-3 py-2 border-b border ui-border text-xs font-medium ui-text-muted">
-                  Projects ({projects.length}/10)
-                </div>
+              <div className="absolute left-0 top-full mt-1 w-64 ui-bg-menu border ui-border rounded-lg shadow-xl z-40 overflow-hidden">
+                <MenuHintHeader
+                  title={`Projects (${projects.length}/10)`}
+                  hint={NAV_HINTS.project}
+                />
                 <div className="max-h-52 overflow-y-auto">
                   {projects.map((proj) => (
                     <div
@@ -223,7 +241,9 @@ export default function TopNavbar() {
                         />
                       ) : (
                         <button
+                          type="button"
                           onClick={() => proj.id !== currentProjectId && handleSwitchProject(proj.id)}
+                          title={NAV_HINTS.projectSwitch}
                           className="truncate text-left flex-1"
                         >
                           {proj.name}
@@ -231,17 +251,19 @@ export default function TopNavbar() {
                       )}
                       <div className="flex items-center gap-1 shrink-0 ml-1">
                         <button
+                          type="button"
                           onClick={(e) => { e.stopPropagation(); setRenamingId(proj.id); setRenameValue(proj.name); }}
                           className="text-[9px] ui-text-faint hover:ui-text"
-                          title="Rename"
+                          title={NAV_HINTS.projectRename}
                         >
                           ✎
                         </button>
                         {projects.length > 1 && (
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj.id); }}
                             className="text-[9px] ui-text-faint hover:text-red-400"
-                            title="Delete"
+                            title={NAV_HINTS.projectDelete}
                           >
                             ✕
                           </button>
@@ -252,8 +274,10 @@ export default function TopNavbar() {
                 </div>
                 <div className="border-t border ui-border">
                   <button
+                    type="button"
                     onClick={handleNewProject}
                     disabled={projects.length >= 10}
+                    title={NAV_HINTS.projectNew}
                     className="w-full px-3 py-2 text-xs text-indigo-400 hover:bg-[#262c36] transition-colors disabled:opacity-30 text-left"
                   >
                     + New Project
@@ -266,134 +290,231 @@ export default function TopNavbar() {
       </div>
 
       {/* Right: Controls */}
-      <div className="flex items-center gap-1.5 overflow-x-auto">
+      <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto overflow-y-visible">
         {/* Preview Controls */}
-        <button onClick={togglePreviewPaused}
+        <TipButton
+          tip={previewPaused ? NAV_HINTS.resume : NAV_HINTS.pause}
+          onClick={togglePreviewPaused}
           className={`px-2 py-1 text-[11px] rounded-md transition-colors whitespace-nowrap ${previewPaused ? 'bg-amber-500/20 text-amber-400' : 'ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)]'}`}
-          title={previewPaused ? 'Resume' : 'Pause'}
         >
           {previewPaused ? '▶' : '⏸'}
-        </button>
+        </TipButton>
 
-        <button onClick={forceRefreshPreview}
+        <TipButton
+          tip={NAV_HINTS.refresh}
+          shortcut="Ctrl+Enter"
+          onClick={forceRefreshPreview}
           className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors"
-          title="Refresh (Ctrl+Enter)"
-        >↻</button>
+        >
+          ↻
+        </TipButton>
 
         <div className="w-px h-4 bg-[#30363d]" />
 
-        <button onClick={handleFormat}
+        <TipButton
+          tip={NAV_HINTS.format}
+          shortcut="Ctrl+Shift+F"
+          onClick={handleFormat}
           className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors"
-          title="Format (Ctrl+Shift+F)"
-        >Format</button>
+        >
+          Format
+        </TipButton>
 
         {/* Font Size */}
         <div className="flex items-center">
-          <button onClick={decreaseFontSize} className="px-1 py-1 text-[10px] rounded-l-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors border-r border ui-border" title="Ctrl+-">A-</button>
-          <span className="text-[9px] ui-text-faint ui-bg-elevated px-1 py-1">{fontSize}</span>
-          <button onClick={increaseFontSize} className="px-1 py-1 text-[10px] rounded-r-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors border-l border ui-border" title="Ctrl+=">A+</button>
+          <TipButton
+            tip={NAV_HINTS.fontDecrease}
+            shortcut="Ctrl+-"
+            onClick={decreaseFontSize}
+            className="px-1 py-1 text-[10px] rounded-l-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors border-r border ui-border"
+          >
+            A-
+          </TipButton>
+          <HoverTip tip={NAV_HINTS.fontSize}>
+            <span className="text-[9px] ui-text-faint ui-bg-elevated px-1 py-1">{fontSize}</span>
+          </HoverTip>
+          <TipButton
+            tip={NAV_HINTS.fontIncrease}
+            shortcut="Ctrl+="
+            onClick={increaseFontSize}
+            className="px-1 py-1 text-[10px] rounded-r-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors border-l border ui-border"
+          >
+            A+
+          </TipButton>
         </div>
 
         {/* Theme */}
-        <select value={editorTheme} onChange={(e) => setEditorTheme(e.target.value as EditorTheme)}
-          className="text-[10px] ui-bg-elevated border ui-border rounded-md px-1.5 py-1 ui-text-muted outline-none cursor-pointer"
-        >
-          {THEME_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
+        <HoverTip tip={NAV_HINTS.theme}>
+          <select
+            value={editorTheme}
+            onChange={(e) => setEditorTheme(e.target.value as EditorTheme)}
+            title={NAV_HINTS.theme}
+            className="text-[10px] ui-bg-elevated border ui-border rounded-md px-1.5 py-1 ui-text-muted outline-none cursor-pointer"
+          >
+            {THEME_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </HoverTip>
 
         <div className="w-px h-4 bg-[#30363d]" />
 
         {/* Layout + Fullscreen */}
-        <button onClick={toggleLayout}
+        <TipButton
+          tip={NAV_HINTS.layout}
+          shortcut="Ctrl+\\"
+          onClick={toggleLayout}
           className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors whitespace-nowrap"
-          title="Toggle layout (Ctrl+\\)"
-        >{layoutOrientation === 'vertical' ? '⬒' : '⬓'}</button>
+        >
+          {layoutOrientation === 'vertical' ? '⬒' : '⬓'}
+        </TipButton>
 
-        <button onClick={togglePreviewFullscreen}
+        <TipButton
+          tip={previewFullscreen ? NAV_HINTS.exitFullscreen : NAV_HINTS.fullscreen}
+          shortcut="Escape"
+          onClick={togglePreviewFullscreen}
           className={`px-2 py-1 text-[11px] rounded-md transition-colors ${previewFullscreen ? 'bg-indigo-500/20 text-indigo-300' : 'ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)]'}`}
-          title={previewFullscreen ? 'Exit fullscreen' : 'Fullscreen preview'}
-        >{previewFullscreen ? '⊟' : '⊞'}</button>
+        >
+          {previewFullscreen ? '⊟' : '⊞'}
+        </TipButton>
 
         <div className="w-px h-4 bg-[#30363d]" />
 
         {/* Templates */}
-        <div className="relative">
-          <button onClick={() => setTemplateMenuOpen(!templateMenuOpen)}
-            className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors whitespace-nowrap"
-          >Templates</button>
-          {templateMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setTemplateMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 w-56 ui-bg-menu border ui-border rounded-lg shadow-xl z-40 overflow-hidden">
-                <div className="px-3 py-2 border-b border ui-border text-xs font-medium ui-text-muted">Starter Templates</div>
-                {TEMPLATES.map((t) => (
-                  <button key={t.id} onClick={() => handleTemplateSelect(t.id)}
-                    className="w-full px-3 py-2 text-left text-xs ui-text-muted hover:bg-[#262c36] hover:ui-text transition-colors"
-                  >
-                    <span className="font-medium">{t.name}</span>
-                    <span className="text-[10px] ui-text-faint ml-1.5">{t.description}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+        <div className="relative shrink-0">
+          <HoverTip tip={NAV_HINTS.templates}>
+            <button
+              ref={templateBtnRef}
+              type="button"
+              title={NAV_HINTS.templates}
+              onClick={() => {
+                setLibMenuOpen(false);
+                setTemplateMenuOpen((open) => !open);
+              }}
+              className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors whitespace-nowrap"
+            >
+              Templates
+            </button>
+          </HoverTip>
+          <DropdownPortal
+            open={templateMenuOpen}
+            onClose={() => setTemplateMenuOpen(false)}
+            anchorRef={templateBtnRef}
+            width={260}
+          >
+            <MenuHintHeader title="Starter Templates" hint={NAV_HINTS.templatesMenu} />
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => handleTemplateSelect(t.id)}
+                title={t.description}
+                className="w-full px-3 py-2 text-left text-xs ui-text-muted hover:bg-[#262c36] hover:ui-text transition-colors"
+              >
+                <span className="block font-medium">{t.name}</span>
+                <span className="block text-[10px] ui-text-faint mt-0.5 leading-snug">{t.description}</span>
+              </button>
+            ))}
+          </DropdownPortal>
         </div>
 
         {/* Libraries */}
-        <div className="relative">
-          <button onClick={() => setLibMenuOpen(!libMenuOpen)}
-            className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors whitespace-nowrap"
+        <div className="relative shrink-0">
+          <HoverTip tip={NAV_HINTS.libs}>
+            <button
+              ref={libBtnRef}
+              type="button"
+              title={NAV_HINTS.libs}
+              onClick={() => {
+                setTemplateMenuOpen(false);
+                setLibMenuOpen((open) => !open);
+              }}
+              className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors whitespace-nowrap"
+            >
+              Libs{activeLibraries.length > 0 && (
+                <span className="ml-1 px-1 text-[9px] rounded-full bg-indigo-500/30 text-indigo-300">{activeLibraries.length}</span>
+              )}
+            </button>
+          </HoverTip>
+          <DropdownPortal
+            open={libMenuOpen}
+            onClose={() => setLibMenuOpen(false)}
+            anchorRef={libBtnRef}
+            width={280}
           >
-            Libs{activeLibraries.length > 0 && (
-              <span className="ml-1 px-1 text-[9px] rounded-full bg-indigo-500/30 text-indigo-300">{activeLibraries.length}</span>
-            )}
-          </button>
-          {libMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setLibMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 w-60 ui-bg-menu border ui-border rounded-lg shadow-xl z-40 overflow-hidden">
-                <div className="px-3 py-2 border-b border ui-border text-xs font-medium ui-text-muted">CDN Libraries</div>
-                <div className="max-h-64 overflow-y-auto">
-                  {CDN_REGISTRY.map((lib: CDNLibrary) => {
-                    const isActive = activeLibraries.some((l) => l.id === lib.id);
-                    return (
-                      <button key={lib.id} onClick={() => toggleLibrary(lib)}
-                        className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between hover:bg-[#262c36] transition-colors ${isActive ? 'text-indigo-300' : 'ui-text-muted'}`}
-                      >
-                        <span>{lib.name} <span className="text-[10px] ui-text-faint">v{lib.version}</span></span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${lib.category === 'css' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                          {lib.category.toUpperCase()}
+            <MenuHintHeader title="CDN Libraries" hint={NAV_HINTS.libsMenu} />
+            <div className="max-h-64 overflow-y-auto">
+              {CDN_REGISTRY.map((lib: CDNLibrary) => {
+                const isActive = activeLibraries.some((l) => l.id === lib.id);
+                const libHint = LIB_HINTS[lib.id];
+                return (
+                  <button
+                    key={lib.id}
+                    type="button"
+                    title={libHint}
+                    onClick={() => {
+                      toggleLibrary(lib);
+                      forceRefreshPreview();
+                    }}
+                    className={`w-full px-3 py-2 text-left text-xs hover:bg-[#262c36] transition-colors ${isActive ? 'text-indigo-300' : 'ui-text-muted'}`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="block font-medium">
+                          {lib.name}{' '}
+                          <span className="text-[10px] ui-text-faint font-normal">v{lib.version}</span>
                         </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
+                        {libHint && (
+                          <span className="block text-[10px] ui-text-faint mt-0.5 leading-snug">{libHint}</span>
+                        )}
+                      </div>
+                      <span
+                        className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded ${lib.category === 'css' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}`}
+                      >
+                        {isActive ? 'ON' : lib.category.toUpperCase()}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </DropdownPortal>
         </div>
 
         <div className="w-px h-4 bg-[#30363d]" />
 
         {/* Share */}
-        <div className="relative">
-          <button onClick={() => void handleShare()}
+        <div className="relative shrink-0">
+          <TipButton
+            tip={NAV_HINTS.share}
+            onClick={() => void handleShare()}
             className="px-2 py-1 text-[11px] rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors"
-            title="Copy shareable link"
-          >Share</button>
+          >
+            Share
+          </TipButton>
           {shareToast && (
-            <div className="absolute right-0 top-full mt-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] rounded shadow-lg z-50 whitespace-nowrap">
-              Link copied!
+            <div
+              className={`fixed z-[10000] px-3 py-1.5 text-white text-[10px] rounded shadow-lg whitespace-nowrap pointer-events-none ${
+                shareToast === 'Link copied!' ? 'bg-emerald-600' : 'bg-red-600'
+              }`}
+              style={{
+                top: (libBtnRef.current?.getBoundingClientRect().bottom ?? 48) + 6,
+                right: 16,
+              }}
+            >
+              {shareToast}
             </div>
           )}
         </div>
 
         {/* Export */}
-        <div className="relative">
-          <button onClick={() => void handleExport()}
+        <div className="relative shrink-0">
+          <TipButton
+            tip={NAV_HINTS.export}
+            shortcut="Ctrl+Shift+E"
+            onClick={() => void handleExport()}
             className="px-2 py-1 text-[11px] rounded-md bg-indigo-600 text-white hover:bg-indigo-500 transition-colors whitespace-nowrap"
-            title="Export ZIP (Ctrl+Shift+E)"
-          >Export</button>
+          >
+            Export
+          </TipButton>
           {exportToast && (
             <div className="absolute right-0 top-full mt-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] rounded shadow-lg z-50 whitespace-nowrap">
               {exportToast}
@@ -402,20 +523,24 @@ export default function TopNavbar() {
         </div>
 
         {/* Reset */}
-        <button onClick={handleReset}
+        <TipButton
+          tip={showResetConfirm ? NAV_HINTS.resetConfirm : NAV_HINTS.reset}
+          onClick={handleReset}
           className={`px-2 py-1 text-[11px] rounded-md transition-colors whitespace-nowrap ${showResetConfirm ? 'bg-red-600 text-white' : 'ui-bg-elevated ui-text-muted hover:text-red-400 hover:bg-[var(--ui-border)]'}`}
-        >{showResetConfirm ? 'Confirm?' : 'Reset'}</button>
+        >
+          {showResetConfirm ? 'Confirm?' : 'Reset'}
+        </TipButton>
 
         <div className="w-px h-4 bg-[#30363d]" />
 
         {/* Help */}
-        <button
+        <TipButton
+          tip={NAV_HINTS.help}
           onClick={() => setShortcutsOpen(true)}
           className="w-6 h-6 text-[11px] rounded-md ui-bg-elevated ui-text-faint hover:ui-text hover:bg-[var(--ui-border)] transition-colors flex items-center justify-center"
-          title="Keyboard shortcuts"
         >
           ?
-        </button>
+        </TipButton>
       </div>
 
       {shortcutsOpen && <ShortcutsModal onClose={() => setShortcutsOpen(false)} />}

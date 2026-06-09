@@ -87,6 +87,12 @@ export async function getPlatformBridge(): Promise<PlatformBridge> {
   return _bridge;
 }
 
+import { isTauri } from '@tauri-apps/api/core';
+
 export function isDesktop(): boolean {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  try {
+    return typeof window !== 'undefined' && isTauri();
+  } catch {
+    return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  }
 }

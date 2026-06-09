@@ -1,6 +1,6 @@
 [package]
 name = "gnomad-webcanvas"
-version = "0.1.0-beta.3"
+version = "0.1.0-beta.4"
 description = "Gnomad Webcanvas — live HTML/CSS/JS editor"
 authors = ["Gnomad Studio"]
 license = "MIT"
@@ -25,4 +25,5 @@ tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-single-instance = "2"
+tauri-plugin-clipboard-manager = "2"
 url = "2"

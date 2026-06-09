@@ -58,20 +58,38 @@ export function buildShareUrl(hash: string): string {
   return `${origin}${pathname}${cleaned}`;
 }
 
-export async function copyTextToClipboard(text: string): Promise<void> {
+export async function copyTextToClipboard(text: string): Promise<boolean> {
+  if (isDesktop()) {
+    try {
+      const { writeText } = await import('@tauri-apps/plugin-clipboard-manager');
+      await writeText(text);
+      return true;
+    } catch {
+      // fall through to web APIs
+    }
+  }
+
   try {
     await navigator.clipboard.writeText(text);
-    return;
+    return true;
   } catch {
-    const input = document.createElement('input');
-    input.value = text;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
+    try {
+      const input = document.createElement('textarea');
+      input.value = text;
+      input.style.position = 'fixed';
+      input.style.left = '-9999px';
+      document.body.appendChild(input);
+      input.focus();
+      input.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(input);
+      return ok;
+    } catch {
+      return false;
+    }
   }
 }
 
-export async function copyShareUrl(hash: string): Promise<void> {
-  await copyTextToClipboard(buildShareUrl(hash));
+export async function copyShareUrl(hash: string): Promise<boolean> {
+  return copyTextToClipboard(buildShareUrl(hash));
 }

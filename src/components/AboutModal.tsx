@@ -11,6 +11,8 @@ import {
 } from '../constants/appInfo';
 import { checkForUpdates, installUpdate } from '../lib/updater';
 import { isDesktop } from '../utils/platformBridge';
+import { TipButton } from './HoverTip';
+import { NAV_HINTS } from '../constants/uiHints';
 
 interface AboutModalProps {
   onClose: () => void;
@@ -95,21 +97,23 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         </div>
 
         <div className="px-6 py-4 border-t ui-border ui-bg-base/50 space-y-2">
-          <button
+          <TipButton
+            tip={NAV_HINTS.aboutCheckUpdates}
             onClick={() => void handleCheckUpdate()}
             disabled={updateBusy}
             className="w-full px-4 py-2.5 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors disabled:opacity-50"
           >
             {updateBusy ? 'Please wait…' : 'Check for Updates'}
-          </button>
+          </TipButton>
           {updateStatus?.startsWith('Update available') && (
-            <button
+            <TipButton
+              tip={NAV_HINTS.aboutInstallUpdate}
               onClick={() => void handleInstallUpdate()}
               disabled={updateBusy}
               className="w-full px-4 py-2 text-xs font-medium rounded-lg ui-bg-elevated ui-text hover:bg-[var(--ui-border)] transition-colors disabled:opacity-50"
             >
               Download & Install
-            </button>
+            </TipButton>
           )}
           {updateStatus && (
             <p className="text-[10px] ui-text-faint text-center">{updateStatus}</p>
@@ -120,6 +124,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           <p className="text-xs ui-text-muted text-center mb-3">Found a bug or have feedback?</p>
           <a
             href={buildBugReportMailto()}
+            title={NAV_HINTS.aboutBugReport}
             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-medium rounded-lg ui-bg-elevated ui-text hover:bg-[var(--ui-border)] transition-colors"
           >
             Report a Bug
@@ -128,12 +133,13 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         </div>
 
         <div className="px-6 py-3 border-t ui-border flex justify-end">
-          <button
+          <TipButton
+            tip={NAV_HINTS.modalClose}
             onClick={onClose}
             className="px-3 py-1.5 text-xs rounded-md ui-bg-elevated ui-text-muted hover:ui-text hover:bg-[var(--ui-border)] transition-colors"
           >
             Close
-          </button>
+          </TipButton>
         </div>
       </div>
     </div>

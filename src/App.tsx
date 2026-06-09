@@ -5,6 +5,8 @@ import AboutModal from './components/AboutModal';
 import ColorPicker from './components/FloatingTools/ColorPicker';
 import CssGenerator from './components/FloatingTools/CssGenerator';
 import FontPairings from './components/FloatingTools/FontPairings';
+import ToolSection from './components/ToolSection';
+import { TOOL_HINTS } from './constants/uiHints';
 import { useEditorStore } from './store/editorStore';
 import { exportProject } from './utils/exportProject';
 import { decodeProjectFromHash } from './utils/shareUrl';
@@ -315,11 +317,17 @@ export default function App() {
       {/* Floating Tools Bar */}
       {!previewFullscreen && (
         <div className="flex items-center gap-4 px-4 py-1.5 ui-bg-panel border-t border ui-border shrink-0 overflow-x-auto">
-          <ColorPicker />
+          <ToolSection label="Color Picker" hint={TOOL_HINTS.colors}>
+            <ColorPicker />
+          </ToolSection>
           <div className="w-px h-4 shrink-0" style={{ backgroundColor: 'var(--ui-border)' }} />
-          <CssGenerator />
+          <ToolSection label="CSS Generator" hint={TOOL_HINTS.cssGen}>
+            <CssGenerator />
+          </ToolSection>
           <div className="w-px h-4 shrink-0" style={{ backgroundColor: 'var(--ui-border)' }} />
-          <FontPairings />
+          <ToolSection label="Font Pairings" hint={TOOL_HINTS.fonts}>
+            <FontPairings />
+          </ToolSection>
         </div>
       )}
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}

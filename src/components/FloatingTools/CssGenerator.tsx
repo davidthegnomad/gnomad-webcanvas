@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { HoverTip, TipButton } from '../HoverTip';
+import { TOOL_HINTS } from '../../constants/uiHints';
 
 interface CssPreset {
   label: string;
@@ -84,52 +86,62 @@ export default function CssGenerator() {
 
   return (
     <div className="flex items-center gap-2">
-      <select
-        value={selectedPreset}
-        onChange={(e) => handlePresetChange(Number(e.target.value))}
-        className="text-[10px] ui-bg-elevated border ui-border rounded px-1.5 py-1 ui-text-muted outline-none"
-      >
-        {CSS_PRESETS.map((p, i) => (
-          <option key={p.label} value={i}>
-            {p.label}
-          </option>
-        ))}
-      </select>
-
-      {preset.type === 'range' ? (
-        <input
-          type="range"
-          min={preset.min}
-          max={preset.max}
-          step={preset.step}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="w-20 h-1 accent-indigo-500"
-        />
-      ) : (
+      <HoverTip tip={TOOL_HINTS.cssPreset}>
         <select
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={selectedPreset}
+          onChange={(e) => handlePresetChange(Number(e.target.value))}
+          title={TOOL_HINTS.cssPreset}
           className="text-[10px] ui-bg-elevated border ui-border rounded px-1.5 py-1 ui-text-muted outline-none"
         >
-          {preset.options?.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
+          {CSS_PRESETS.map((p, i) => (
+            <option key={p.label} value={i}>
+              {p.label}
             </option>
           ))}
         </select>
+      </HoverTip>
+
+      {preset.type === 'range' ? (
+        <HoverTip tip={TOOL_HINTS.cssPreset}>
+          <input
+            type="range"
+            min={preset.min}
+            max={preset.max}
+            step={preset.step}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            title={TOOL_HINTS.cssPreset}
+            className="w-20 h-1 accent-indigo-500"
+          />
+        </HoverTip>
+      ) : (
+        <HoverTip tip={TOOL_HINTS.cssPreset}>
+          <select
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            title={TOOL_HINTS.cssPreset}
+            className="text-[10px] ui-bg-elevated border ui-border rounded px-1.5 py-1 ui-text-muted outline-none"
+          >
+            {preset.options?.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </HoverTip>
       )}
 
       <span className="text-[10px] ui-text-faint font-mono max-w-[160px] truncate">
         {generated.split('\n')[0]}
       </span>
 
-      <button
+      <TipButton
+        tip={TOOL_HINTS.cssInsert}
         onClick={insertCss}
         className="text-[10px] px-2 py-1 rounded bg-blue-600/30 text-blue-300 hover:bg-blue-600/50 transition-colors"
       >
         Insert
-      </button>
+      </TipButton>
     </div>
   );
 }
