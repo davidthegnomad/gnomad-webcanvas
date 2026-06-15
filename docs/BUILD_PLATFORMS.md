@@ -12,7 +12,7 @@ npm install
 npm run build
 ```
 
-[Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) — install WebView2 (Windows), Xcode CLT (macOS), webkit2gtk (Linux).
+[Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) — install WebView2 (Windows), Xcode CLT (macOS), webkit2gtk 4.1 (Linux).
 
 ---
 
@@ -22,12 +22,15 @@ npm run build
 # Web only (browser at http://localhost:5173)
 npm run dev
 
-# Desktop (Vite + Tauri shell)
+# Desktop (Vite + Tauri shell) — Wayland default on modern Linux
 npm run tauri:dev
 
-# Unit tests (Vitest — 19 tests)
+# Linux fallback if WebKit/GPU issues (forces X11)
+npm run tauri:dev:x11
+
+# Unit tests (Vitest)
 npm run test
-npm run test:watch   # watch mode
+npm run test:watch
 ```
 
 ---
@@ -36,6 +39,8 @@ npm run test:watch   # watch mode
 
 ```bash
 npm run tauri:build
+# CI variant (same build; signing via env — see .env.example)
+npm run tauri:build:ci
 ```
 
 Output under `src-tauri/target/release/bundle/`:
@@ -46,7 +51,11 @@ Output under `src-tauri/target/release/bundle/`:
 | **Windows** | `.msi`, `.exe` (NSIS) |
 | **Linux** | `.deb`, `.rpm`, AppImage |
 
-Build on the **target OS** for best results. CI (`.github/workflows/release.yml`) builds all three on tagged releases.
+Checksums after a local build:
+
+```bash
+bash scripts/sha256-bundles.sh
+```
 
 ---
 
@@ -58,45 +67,50 @@ npm run tauri:build
 
 Output: `src-tauri/target/release/bundle/macos/Gnomad Webcanvas.app`
 
-- Window title reflects open filename and dirty state
-- Open/Save use native AppKit dialogs
-- **Notarization:** Not yet configured in CI — see future `MACOS_NOTARIZATION.md`
+- Native File menu (Open / Save / Save As / Quit)
+- Window title reflects filename and dirty state
+- **Signing / notarization:** optional — configure GitHub secrets in `.env.example` when ready
+
+Minimum macOS version: **10.15** (set in `tauri.conf.json`).
 
 ---
 
 ## Linux
 
-Install dependencies first (Ubuntu/Debian):
+Install dependencies:
 
 ```bash
+# Fedora / Nobara
+bash scripts/install-linux-deps.sh
+
+# Ubuntu / Debian
 sudo apt-get update
-sudo apt-get install -y \
-  libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 ```
 
-Then:
+On **Wayland**, use `npm run tauri:dev`. For WebKit/GPU issues, use `npm run tauri:dev:x11`.
 
 ```bash
 npm run tauri:build
 ```
 
-Output under `src-tauri/target/release/bundle/`:
+Artifacts: `.deb`, `.rpm`, AppImage.
 
-- **`.deb`** — Debian, Ubuntu, Mint
-- **`.rpm`** — Fedora, RHEL, openSUSE
-- **AppImage** — distro-agnostic
+**Release QA:** test AppImage on Fedora/Nobara and `.deb` on Ubuntu before marking a release stable.
 
 ---
 
 ## Windows
 
-Build on Windows with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) runtime installed:
+Build on Windows with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (Evergreen bootstrapper in `tauri.conf.json`):
 
 ```bash
 npm run tauri:build
 ```
 
-Output: `.msi` and/or NSIS `.exe` under `src-tauri/target/release/bundle/`
+Output: `.msi` and NSIS `.exe`.
+
+**Code signing:** optional — `WINDOWS_CERTIFICATE` secrets in CI (see `.env.example`).
 
 ---
 
@@ -106,11 +120,13 @@ Tagged pushes (`v*`) trigger `.github/workflows/release.yml`:
 
 | Runner | Target |
 |--------|--------|
-| `macos-latest` | `aarch64-apple-darwin` |
+| `macos-latest` | `aarch64-apple-darwin`, `x86_64-apple-darwin` |
 | `ubuntu-latest` | `x86_64-unknown-linux-gnu` |
 | `windows-latest` | `x86_64-pc-windows-msvc` |
 
-Releases are created as **drafts** — publish manually after QA.
+Releases publish automatically as **pre-releases** (`prerelease: true`). Flip to stable in the workflow when ready.
+
+Each matrix job uploads `SHA256SUMS-<target>.txt` artifacts.
 
 See [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md).
 
@@ -131,15 +147,15 @@ Before tagging: walk [QA_CHECKLIST.md](QA_CHECKLIST.md) on at least one platform
 
 ## Cross-platform parity
 
-The **same React bundle** ships in web and desktop builds. Platform differences:
-
 | Feature | Web | Desktop |
 |---------|-----|---------|
-| Open/Save file | — | Native dialogs |
-| Project persistence | localStorage | File + localStorage |
-| Export ZIP | ✓ | ✓ |
+| Open/Save file | — | Native dialogs + File menu |
+| Recent files | — | File menu (desktop) |
+| Project persistence | localStorage | File on disk when saved; localStorage for scratch projects |
+| Export ZIP | Browser download | Native save dialog |
 | Share URL | ✓ | ✓ |
-| Window title dirty state | — | ✓ |
+| System UI theme | — | Optional “System UI” toggle |
+| Preview sandbox | Strict default | Strict / Relaxed toggle |
 
 Use [CROSS_PLATFORM_CHECKLIST.md](CROSS_PLATFORM_CHECKLIST.md) when adding OS-facing features.
 

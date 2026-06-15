@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { TipButton } from './HoverTip';
-import { NAV_HINTS } from '../constants/uiHints';
+import { formatShortcut, isMacOS } from '../utils/modKeyLabel';
 
-const SHORTCUTS = [
+const SHORTCUT_DEFS = [
   { keys: 'Ctrl + Enter', action: 'Force refresh preview' },
   { keys: 'Ctrl + \\', action: 'Toggle layout orientation' },
   { keys: 'Ctrl + 1 / 2 / 3', action: 'Focus HTML / CSS / JS pane' },
@@ -34,31 +33,31 @@ export default function ShortcutsModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border ui-border">
           <h2 className="text-sm font-semibold ui-text">Keyboard Shortcuts</h2>
-          <TipButton
-            tip={NAV_HINTS.modalClose}
-            shortcut="Escape"
+          <button
             onClick={onClose}
             className="ui-text-faint hover:ui-text transition-colors text-sm"
           >
             Esc
-          </TipButton>
+          </button>
         </div>
         <div className="px-5 py-3 max-h-[60vh] overflow-y-auto">
-          {SHORTCUTS.map((s) => (
+          {SHORTCUT_DEFS.map((s) => (
             <div
               key={s.keys}
               className="flex items-center justify-between py-2 border-b border-[#1b1f27] last:border-b-0"
             >
               <span className="text-xs ui-text-muted">{s.action}</span>
               <kbd className="text-[10px] font-mono px-2 py-1 rounded ui-bg-base border ui-border ui-text shrink-0 ml-3">
-                {s.keys}
+                {formatShortcut(s.keys)}
               </kbd>
             </div>
           ))}
         </div>
-        <div className="px-5 py-2 border-t border ui-border text-[10px] ui-text-faint text-center">
-          On macOS, use Cmd instead of Ctrl
-        </div>
+        {!isMacOS() && (
+          <div className="px-5 py-2 border-t border ui-border text-[10px] ui-text-faint text-center">
+            On macOS, use ⌘ instead of Ctrl
+          </div>
+        )}
       </div>
     </div>
   );

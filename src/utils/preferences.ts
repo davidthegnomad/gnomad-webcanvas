@@ -4,10 +4,12 @@ const PREFS_KEY = 'liveview-preferences';
 
 export interface UserPreferences {
   editorTheme: EditorTheme;
+  uiFollowSystem: boolean;
 }
 
 const DEFAULT_PREFS: UserPreferences = {
   editorTheme: 'vs-dark',
+  uiFollowSystem: false,
 };
 
 export function loadPreferences(): UserPreferences {
@@ -17,7 +19,10 @@ export function loadPreferences(): UserPreferences {
     const parsed = JSON.parse(raw) as Partial<UserPreferences>;
     const theme = parsed.editorTheme;
     if (theme === 'vs-dark' || theme === 'vs-light' || theme === 'hc-black') {
-      return { editorTheme: theme };
+      return {
+        editorTheme: theme,
+        uiFollowSystem: parsed.uiFollowSystem === true,
+      };
     }
     return DEFAULT_PREFS;
   } catch {
@@ -25,9 +30,10 @@ export function loadPreferences(): UserPreferences {
   }
 }
 
-export function savePreferences(prefs: UserPreferences): void {
+export function savePreferences(prefs: Partial<UserPreferences>): void {
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    const current = loadPreferences();
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...current, ...prefs }));
   } catch {
     // quota exceeded or private mode
   }

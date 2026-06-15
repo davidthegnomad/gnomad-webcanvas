@@ -8,6 +8,7 @@ import type {
   ConsoleEntry,
   ProjectMeta,
   PreviewBackground,
+  PreviewSandboxMode,
 } from '../types/editor.types';
 import { loadPreferences, savePreferences } from '../utils/preferences';
 
@@ -95,6 +96,8 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
   previewViewport: null,
   previewFullscreen: false,
   previewBackground: 'white' as PreviewBackground,
+  previewSandbox: 'strict' as PreviewSandboxMode,
+  uiFollowSystem: savedPrefs.uiFollowSystem,
 
   consoleOpen: false,
   consoleEntries: [],
@@ -171,6 +174,11 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
     set({ editorTheme: theme });
   },
 
+  setUiFollowSystem: (follow: boolean) => {
+    savePreferences({ uiFollowSystem: follow });
+    set({ uiFollowSystem: follow });
+  },
+
   setFontSize: (size: number) =>
     set({ fontSize: Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, size)) }),
 
@@ -191,6 +199,8 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
       const idx = order.indexOf(s.previewBackground);
       return { previewBackground: order[(idx + 1) % order.length] };
     }),
+
+  setPreviewSandbox: (mode: PreviewSandboxMode) => set({ previewSandbox: mode }),
 
   toggleConsole: () => set((s) => ({ consoleOpen: !s.consoleOpen })),
 

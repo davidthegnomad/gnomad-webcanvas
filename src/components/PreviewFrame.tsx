@@ -6,9 +6,8 @@ import { assembleSource } from '../utils/assembleSource';
 import { FONT_PAIRINGS } from '../constants/fontPairings';
 import ConsolePanel from './ConsolePanel';
 import ResizeHandle from './ResizeHandle';
-import { HoverTip, TipButton } from './HoverTip';
-import { NAV_HINTS } from '../constants/uiHints';
-import type { ActiveFontPairing, PreviewBackground } from '../types/editor.types';
+import type { ActiveFontPairing, PreviewBackground, PreviewSandboxMode } from '../types/editor.types';
+import { modShortcut } from '../utils/modKeyLabel';
 
 const BG_CLASSES: Record<PreviewBackground, string> = {
   white: 'bg-white',
@@ -20,13 +19,6 @@ const BG_LABELS: Record<PreviewBackground, string> = {
   white: '☀',
   dark: '☾',
   checkerboard: '▦',
-};
-
-const VIEWPORT_HINTS: Record<string, string> = {
-  Full: NAV_HINTS.viewportFull,
-  Mobile: NAV_HINTS.viewportMobile,
-  Tablet: NAV_HINTS.viewportTablet,
-  Desktop: NAV_HINTS.viewportDesktop,
 };
 
 const VIEWPORT_PRESETS = [
@@ -52,11 +44,18 @@ export default function PreviewFrame() {
   const customBodyFont = useEditorStore((s) => s.customBodyFont);
 
   const previewBackground = useEditorStore((s) => s.previewBackground);
+  const previewSandbox = useEditorStore((s) => s.previewSandbox);
 
   const setPreviewViewport = useEditorStore((s) => s.setPreviewViewport);
   const toggleConsole = useEditorStore((s) => s.toggleConsole);
   const addConsoleEntry = useEditorStore((s) => s.addConsoleEntry);
   const cyclePreviewBackground = useEditorStore((s) => s.cyclePreviewBackground);
+  const setPreviewSandbox = useEditorStore((s) => s.setPreviewSandbox);
+
+  const sandboxAttr =
+    previewSandbox === 'relaxed'
+      ? 'allow-scripts allow-forms allow-modals allow-popups allow-same-origin'
+      : 'allow-scripts';
 
   const debouncedHtml = useDebounce(htmlCode, 500);
   const debouncedCss = useDebounce(cssCode, 500);
@@ -105,13 +104,17 @@ export default function PreviewFrame() {
           errorCount={errorCount}
           background={previewBackground}
           onCycleBackground={cyclePreviewBackground}
+          sandboxMode={previewSandbox}
+          onToggleSandbox={() =>
+            setPreviewSandbox(previewSandbox === 'strict' ? 'relaxed' : 'strict')
+          }
         />
         <div className="flex-1 flex items-center justify-center ui-bg-base">
           <div className="text-center">
             <div className="text-3xl mb-3 opacity-40">||</div>
             <p className="text-sm ui-text-faint">Preview paused</p>
             <p className="text-xs ui-text-faint mt-1">
-              Press <kbd className="px-1.5 py-0.5 ui-bg-elevated rounded text-[10px]">Ctrl+Enter</kbd> to force refresh
+              Press <kbd className="px-1.5 py-0.5 ui-bg-elevated rounded text-[10px]">{modShortcut('Enter')}</kbd> to force refresh
             </p>
           </div>
         </div>
@@ -129,6 +132,10 @@ export default function PreviewFrame() {
         errorCount={errorCount}
         background={previewBackground}
         onCycleBackground={cyclePreviewBackground}
+        sandboxMode={previewSandbox}
+        onToggleSandbox={() =>
+          setPreviewSandbox(previewSandbox === 'strict' ? 'relaxed' : 'strict')
+        }
       />
       <Group orientation="vertical" id="lv-preview-console">
         <Panel id="preview-iframe" defaultSize="70%" minSize="30%">
@@ -142,7 +149,7 @@ export default function PreviewFrame() {
                   key={previewKey}
                   title="Live Preview"
                   srcDoc={assembledSource ?? ''}
-                  sandbox="allow-scripts"
+                  sandbox={sandboxAttr}
                   className="w-full h-full border-none"
                 />
               </div>
@@ -151,7 +158,7 @@ export default function PreviewFrame() {
                 key={previewKey}
                 title="Live Preview"
                 srcDoc={assembledSource ?? ''}
-                sandbox="allow-scripts"
+                sandbox={sandboxAttr}
                 className="w-full h-full border-none"
               />
             )}
@@ -178,6 +185,8 @@ function PreviewHeader({
   errorCount,
   background,
   onCycleBackground,
+  sandboxMode,
+  onToggleSandbox,
 }: {
   viewport: number | null;
   onViewportChange: (v: number | null) => void;
@@ -186,21 +195,20 @@ function PreviewHeader({
   errorCount: number;
   background: PreviewBackground;
   onCycleBackground: () => void;
+  sandboxMode: PreviewSandboxMode;
+  onToggleSandbox: () => void;
 }) {
   return (
     <div className="flex items-center justify-between px-3 py-1.5 ui-bg-panel border-b border ui-border shrink-0">
       <div className="flex items-center gap-3">
-        <HoverTip tip={NAV_HINTS.preview}>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-medium ui-text-muted">Preview</span>
-          </div>
-        </HoverTip>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-xs font-medium ui-text-muted">Preview</span>
+        </div>
         <div className="flex items-center gap-0.5 ml-2">
           {VIEWPORT_PRESETS.map((vp) => (
-            <TipButton
+            <button
               key={vp.label}
-              tip={VIEWPORT_HINTS[vp.label]}
               onClick={() => onViewportChange(vp.value)}
               className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
                 viewport === vp.value
@@ -210,22 +218,36 @@ function PreviewHeader({
             >
               {vp.label}
               {vp.value && <span className="ml-0.5 text-[9px] opacity-60">{vp.value}</span>}
-            </TipButton>
+            </button>
           ))}
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <TipButton
-          tip={NAV_HINTS.previewBackground}
+        <button
+          onClick={onToggleSandbox}
+          className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
+            sandboxMode === 'relaxed'
+              ? 'bg-amber-500/20 text-amber-400'
+              : 'ui-text-faint hover:ui-text-muted'
+          }`}
+          title={
+            sandboxMode === 'strict'
+              ? 'Strict sandbox (scripts only). Click for relaxed mode (forms, popups).'
+              : 'Relaxed sandbox — less isolation; use only with trusted HTML.'
+          }
+        >
+          {sandboxMode === 'strict' ? 'Sandbox' : 'Relaxed'}
+        </button>
+        <button
           onClick={onCycleBackground}
           className="px-2 py-0.5 text-[10px] rounded ui-text-faint hover:ui-text-muted transition-colors"
+          title={`Preview background: ${background}`}
         >
           {BG_LABELS[background]}
-        </TipButton>
+        </button>
       </div>
 
-      <TipButton
-        tip={NAV_HINTS.console}
+      <button
         onClick={onToggleConsole}
         className={`flex items-center gap-1 px-2 py-0.5 text-[10px] rounded transition-colors ${
           consoleOpen
@@ -239,7 +261,7 @@ function PreviewHeader({
             {errorCount}
           </span>
         )}
-      </TipButton>
+      </button>
     </div>
   );
 }

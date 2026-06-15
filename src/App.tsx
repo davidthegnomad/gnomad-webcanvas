@@ -7,19 +7,29 @@ import CssGenerator from './components/FloatingTools/CssGenerator';
 import FontPairings from './components/FloatingTools/FontPairings';
 import ToolSection from './components/ToolSection';
 import { TOOL_HINTS } from './constants/uiHints';
+import UnsavedChangesModal from './components/UnsavedChangesModal';
 import { useEditorStore } from './store/editorStore';
 import { exportProject } from './utils/exportProject';
 import { decodeProjectFromHash } from './utils/shareUrl';
 import { migrateLegacyStorage, loadProjectsIndex, loadProjectData, saveProjectData } from './utils/projectManager';
-import { getPlatformBridge, isDesktop } from './utils/platformBridge';
+import { getPlatformBridge, isDesktop, isFileBackedSession } from './utils/platformBridge';
 import { CDN_REGISTRY } from './utils/cdnRegistry';
 import { PRODUCT_NAME } from './constants/branding';
+import { basename } from './utils/pathUtils';
+import { addRecentFile } from './utils/recentFiles';
+import { useAppTheme } from './hooks/useAppTheme';
 import { editorThemeToUiTheme } from './utils/preferences';
 import type { PaneType } from './types/editor.types';
 
 const SAVE_DEBOUNCE_MS = 1000;
 
+function fileDisplayName(filePath: string | null): string {
+  if (!filePath) return 'Untitled';
+  return basename(filePath);
+}
+
 export default function App() {
+  useAppTheme();
   const htmlCode = useEditorStore((s) => s.htmlCode);
   const cssCode = useEditorStore((s) => s.cssCode);
   const jsCode = useEditorStore((s) => s.jsCode);
@@ -45,6 +55,8 @@ export default function App() {
 
   const hydrated = useRef(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [closePromptOpen, setClosePromptOpen] = useState(false);
+  const pendingWindowClose = useRef(false);
 
   // Hydrate: URL hash > project manager > legacy localStorage
   useEffect(() => {
@@ -112,8 +124,10 @@ export default function App() {
   // Debounced persistence — save current project to localStorage
   useEffect(() => {
     const timer = setTimeout(() => {
+      const s = useEditorStore.getState();
+      if (isFileBackedSession(s.currentFilePath)) return;
+
       try {
-        const s = useEditorStore.getState();
         saveProjectData(s.currentProjectId, {
           htmlCode: s.htmlCode,
           cssCode: s.cssCode,
@@ -136,17 +150,19 @@ export default function App() {
   // Window title (desktop)
   useEffect(() => {
     if (!isDesktop()) return;
-    const name = currentFilePath
-      ? currentFilePath.split(/[/\\]/).pop() ?? 'Untitled'
-      : 'Untitled';
+    const name = fileDisplayName(currentFilePath);
     document.title = `${PRODUCT_NAME} — ${name}${isDirty ? ' *' : ''}`;
   }, [currentFilePath, isDirty]);
 
-  // Desktop file operations
-  const handleDesktopOpen = useCallback(async () => {
+  const destroyWindow = useCallback(async () => {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().destroy();
+  }, []);
+
+  const handleDesktopOpen = useCallback(async (presetPath?: string) => {
     const bridge = await getPlatformBridge();
     if (!bridge.isDesktop) return;
-    const result = await bridge.openProject();
+    const result = await bridge.openProject(presetPath);
     if (result) {
       initializeStore({
         htmlCode: result.html,
@@ -154,7 +170,9 @@ export default function App() {
         jsCode: result.js,
         activeLibraries: [],
       });
-      setCurrentFilePath(result.filePath ?? null);
+      const path = result.filePath ?? null;
+      setCurrentFilePath(path);
+      if (path) addRecentFile(path);
       setDirty(false);
       bumpProjectVersion();
     }
@@ -167,19 +185,24 @@ export default function App() {
       const path = await bridge.saveProject(s.htmlCode, s.cssCode, s.jsCode, s.currentFilePath ?? undefined);
       if (path) {
         setCurrentFilePath(path);
+        addRecentFile(path);
         setDirty(false);
+        return true;
       }
-    } else {
-      // Web: force localStorage save
-      saveProjectData(s.currentProjectId, {
-        htmlCode: s.htmlCode, cssCode: s.cssCode, jsCode: s.jsCode,
-        activeLibraries: s.activeLibraries,
-        fontPairingId: s.fontPairingId,
-        customHeadingFont: s.customHeadingFont,
-        customBodyFont: s.customBodyFont,
-      });
-      setDirty(false);
+      return false;
     }
+
+    saveProjectData(s.currentProjectId, {
+      htmlCode: s.htmlCode,
+      cssCode: s.cssCode,
+      jsCode: s.jsCode,
+      activeLibraries: s.activeLibraries,
+      fontPairingId: s.fontPairingId,
+      customHeadingFont: s.customHeadingFont,
+      customBodyFont: s.customBodyFont,
+    });
+    setDirty(false);
+    return true;
   }, [setCurrentFilePath, setDirty]);
 
   const handleDesktopSaveAs = useCallback(async () => {
@@ -189,17 +212,54 @@ export default function App() {
       const path = await bridge.saveProjectAs(s.htmlCode, s.cssCode, s.jsCode);
       if (path) {
         setCurrentFilePath(path);
+        addRecentFile(path);
         setDirty(false);
+        return true;
       }
-    } else {
-      exportProject(s.htmlCode, s.cssCode, s.jsCode, s.activeLibraries);
+      return false;
     }
+
+    exportProject(s.htmlCode, s.cssCode, s.jsCode, s.activeLibraries);
+    return true;
   }, [setCurrentFilePath, setDirty]);
 
   const handleExport = useCallback(async () => {
     const s = useEditorStore.getState();
     await exportProject(s.htmlCode, s.cssCode, s.jsCode, s.activeLibraries);
   }, []);
+
+  const requestWindowClose = useCallback(async () => {
+    if (!isDesktop()) return;
+    if (!useEditorStore.getState().isDirty) {
+      await destroyWindow();
+      return;
+    }
+    pendingWindowClose.current = true;
+    setClosePromptOpen(true);
+  }, [destroyWindow]);
+
+  const dismissClosePrompt = useCallback(() => {
+    pendingWindowClose.current = false;
+    setClosePromptOpen(false);
+  }, []);
+
+  const handleClosePromptSave = useCallback(async () => {
+    const saved = await handleDesktopSave();
+    if (!saved) return;
+    if (pendingWindowClose.current) {
+      pendingWindowClose.current = false;
+      setClosePromptOpen(false);
+      await destroyWindow();
+    } else {
+      dismissClosePrompt();
+    }
+  }, [handleDesktopSave, destroyWindow, dismissClosePrompt]);
+
+  const handleClosePromptDiscard = useCallback(async () => {
+    pendingWindowClose.current = false;
+    setClosePromptOpen(false);
+    await destroyWindow();
+  }, [destroyWindow]);
 
   // Global keyboard shortcuts
   const handleKeyDown = useCallback(
@@ -297,6 +357,7 @@ export default function App() {
         await mod.listen('webcanvas:file-save', () => void handleDesktopSave()),
         await mod.listen('webcanvas:file-save-as', () => void handleDesktopSaveAs()),
         await mod.listen('webcanvas:file-export', () => void handleExport()),
+        await mod.listen('window-close-requested', () => void requestWindowClose()),
       );
     });
 
@@ -304,7 +365,7 @@ export default function App() {
       cancelled = true;
       unlisteners.forEach((off) => off());
     };
-  }, [handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs, handleExport]);
+  }, [handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs, handleExport, requestWindowClose]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-ui-theme', editorThemeToUiTheme(editorTheme));
@@ -331,6 +392,18 @@ export default function App() {
         </div>
       )}
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
+      {closePromptOpen && (
+        <UnsavedChangesModal
+          fileName={fileDisplayName(currentFilePath)}
+          onSave={() => {
+            void handleClosePromptSave();
+          }}
+          onDiscard={() => {
+            void handleClosePromptDiscard();
+          }}
+          onCancel={dismissClosePrompt}
+        />
+      )}
     </div>
   );
 }

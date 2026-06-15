@@ -21,6 +21,8 @@ jobs:
             target: x86_64-pc-windows-msvc
           - platform: macos-latest
             target: aarch64-apple-darwin
+          - platform: macos-latest
+            target: x86_64-apple-darwin
 
     runs-on: ${{ matrix.platform }}
 
@@ -63,6 +65,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Gnomad Webcanvas ${{ github.ref_name }}
@@ -71,3 +81,21 @@ jobs:
           prerelease: true
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
+
+      - name: SHA256 checksums
+        shell: bash
+        run: |
+          cd src-tauri/target/release/bundle
+          find . -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.appimage' -o -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \) -print0 \
+            | sort -z | xargs -0 sha256sum > "SHA256SUMS-${{ matrix.target }}.txt" || true
+          if [[ -s "SHA256SUMS-${{ matrix.target }}.txt" ]]; then
+            cat "SHA256SUMS-${{ matrix.target }}.txt"
+          fi
+
+      - name: Upload checksum artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums-${{ matrix.target }}
+          path: src-tauri/target/release/bundle/SHA256SUMS-${{ matrix.target }}.txt
+          if-no-files-found: ignore

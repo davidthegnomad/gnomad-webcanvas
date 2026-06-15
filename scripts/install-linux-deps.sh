@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
-# Tauri 2 dev/build dependencies for Fedora, Nobara, RHEL
+# Install Tauri 2 Linux build dependencies (Fedora/Nobara or Debian/Ubuntu).
 set -euo pipefail
 
-echo "Installing Tauri Linux dependencies (requires sudo)..."
-sudo dnf install -y \
-  webkit2gtk4.1-devel \
-  javascriptcoregtk4.1-devel \
-  libsoup3-devel \
-  libappindicator-gtk3-devel \
-  librsvg2-devel \
-  openssl-devel \
-  gtk3-devel \
-  pkg-config
+if command -v dnf >/dev/null 2>&1; then
+  echo "Installing via dnf (Fedora/Nobara)…"
+  sudo dnf install -y \
+    webkit2gtk4.1-devel \
+    openssl-devel \
+    curl \
+    wget \
+    file \
+    libappindicator-gtk3-devel \
+    librsvg2-devel \
+    patchelf
+  exit 0
+fi
 
-echo ""
-echo "Done. You can now run:"
-echo "  npm run tauri:dev    # desktop dev"
-echo "  npm run tauri:build  # desktop release build"
-echo ""
-echo "Web-only (no Tauri deps needed):"
-echo "  npm run dev          # http://localhost:5173"
+if command -v apt-get >/dev/null 2>&1; then
+  echo "Installing via apt (Debian/Ubuntu)…"
+  sudo apt-get update
+  sudo apt-get install -y \
+    libwebkit2gtk-4.1-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    patchelf \
+    build-essential \
+    curl \
+    wget \
+    file \
+    libssl-dev
+  exit 0
+fi
+
+echo "Unsupported distro: install webkit2gtk-4.1 dev packages manually." >&2
+echo "See https://v2.tauri.app/start/prerequisites/" >&2
+exit 1

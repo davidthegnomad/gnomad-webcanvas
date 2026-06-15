@@ -1,29 +1,8 @@
-import { PRODUCT_NAME } from '../constants/branding';
+import { parseHtmlFile, assembleFullHtml } from './parseHtmlFile';
+
+export { assembleFullHtml };
 
 export const OPEN_FILE_EXTENSIONS = ['html', 'htm', 'txt', 'css', 'js', 'md'];
-
-export function parseHtmlFile(content: string): { html: string; css: string; js: string } {
-  let css = '';
-  let js = '';
-  let html = '';
-
-  const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-  if (styleMatch) css = styleMatch[1].trim();
-
-  const scriptMatch = content.match(/<script(?![^>]*\bsrc\b)[^>]*>([\s\S]*?)<\/script>/i);
-  if (scriptMatch) js = scriptMatch[1].trim();
-
-  const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  if (bodyMatch) {
-    html = bodyMatch[1].replace(/<script[\s\S]*?<\/script>/gi, '').trim();
-  } else if (/<html[\s>]/i.test(content)) {
-    html = content.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<script[\s\S]*?<\/script>/gi, '').trim();
-  } else {
-    html = content.trim();
-  }
-
-  return { html, css, js };
-}
 
 export function parseFileContent(
   content: string,
@@ -62,24 +41,4 @@ function escapeHtml(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-}
-
-export function assembleFullHtml(html: string, css: string, js: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${PRODUCT_NAME} Project</title>
-    <style>
-${css}
-    </style>
-</head>
-<body>
-${html}
-    <script>
-${js}
-    <\/script>
-</body>
-</html>`;
 }

@@ -41,6 +41,8 @@ export interface ActiveFontPairing {
 
 export type PreviewBackground = 'white' | 'dark' | 'checkerboard';
 
+export type PreviewSandboxMode = 'strict' | 'relaxed';
+
 export interface EditorState {
   htmlCode: string;
   cssCode: string;
@@ -57,6 +59,9 @@ export interface EditorState {
   previewViewport: number | null;
   previewFullscreen: boolean;
   previewBackground: PreviewBackground;
+  previewSandbox: PreviewSandboxMode;
+
+  uiFollowSystem: boolean;
 
   consoleOpen: boolean;
   consoleEntries: ConsoleEntry[];
@@ -93,6 +98,8 @@ export interface EditorActions {
   setPreviewViewport: (width: number | null) => void;
   togglePreviewFullscreen: () => void;
   cyclePreviewBackground: () => void;
+  setPreviewSandbox: (mode: PreviewSandboxMode) => void;
+  setUiFollowSystem: (follow: boolean) => void;
 
   toggleConsole: () => void;
   addConsoleEntry: (method: ConsoleEntry['method'], args: string[]) => void;

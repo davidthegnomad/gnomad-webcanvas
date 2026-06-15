@@ -5,7 +5,12 @@ import './app.css';
 import { editorThemeToUiTheme, loadPreferences } from './utils/preferences';
 
 const prefs = loadPreferences();
-document.documentElement.setAttribute('data-ui-theme', editorThemeToUiTheme(prefs.editorTheme));
+if (prefs.uiFollowSystem && typeof window !== 'undefined') {
+  const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-ui-theme', system);
+} else {
+  document.documentElement.setAttribute('data-ui-theme', editorThemeToUiTheme(prefs.editorTheme));
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

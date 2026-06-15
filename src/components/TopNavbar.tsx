@@ -69,8 +69,8 @@ export default function TopNavbar() {
   const currentProject = projects.find((p) => p.id === currentProjectId);
 
   const handleExport = useCallback(async () => {
-    const ok = await exportProject(htmlCode, cssCode, jsCode, activeLibraries);
-    setExportToast(ok ? 'ZIP exported!' : 'Export cancelled');
+    await exportProject(htmlCode, cssCode, jsCode, activeLibraries);
+    setExportToast('ZIP exported!');
     setTimeout(() => setExportToast(null), 2000);
   }, [htmlCode, cssCode, jsCode, activeLibraries]);
 

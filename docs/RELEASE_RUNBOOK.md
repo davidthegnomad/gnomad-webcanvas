@@ -39,7 +39,7 @@ npm run docs:export
 ```
 
 - [ ] [CHANGELOG.md](../CHANGELOG.md) updated
-- [ ] `npm run test` passes (19 unit tests)
+- [ ] `npm run test` passes (unit tests)
 - [ ] Version bumped in `package.json` and `src-tauri/tauri.conf.json`
 - [ ] [QA_CHECKLIST.md](QA_CHECKLIST.md) completed for target platforms
 - [ ] No secrets in diff
@@ -75,9 +75,11 @@ npm run release -- --retag
 
 | Job | Artifact |
 |-----|----------|
-| macOS (aarch64) | `.dmg`, `.app` |
+| macOS (aarch64 + x86_64) | `.dmg`, `.app` |
 | Ubuntu (x86_64) | `.deb`, `.rpm`, AppImage |
 | Windows (x86_64) | `.msi`, `.exe` |
+
+CI uploads per-target `SHA256SUMS-*.txt` artifacts.
 
 ---
 
