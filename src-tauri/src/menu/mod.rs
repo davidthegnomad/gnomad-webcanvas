@@ -1,5 +1,6 @@
 //! Native menu bar — platform-specific implementations.
 
+mod desktop;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "linux")]
