@@ -6,6 +6,27 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.1.0-beta.6] — 2026-06-23
+
+### Added
+
+- Linux/macOS platform split (menus, build configs, runtime hooks)
+- Bundled Monaco editor (offline; no CDN dependency under CSP)
+- Robust File/Help menu bar with Close, About, and Check for Updates
+- `finish_close` flow for reliable Quit on Linux
+- `scripts/launch-linux.sh` — kills stale AppImage extracts before launch
+- Path guard for desktop file reads (blocks system paths)
+- Unit tests for update status helpers and path guard
+
+### Fixed
+
+- HTML/CSS/JS editors stuck on “Loading editor…” (CSP blocked jsDelivr Monaco CDN)
+- Window Quit/Close blocked after unsaved-changes hook (`prevent_close` without release)
+- Stale AppImage extract pointing at `localhost:5173` instead of bundled assets
+- Linux AppImage build on Fedora 43+ (`NO_STRIP=1`)
+
+---
+
 ## [0.1.0-beta.3] — 2026-06-09
 
 ### Added

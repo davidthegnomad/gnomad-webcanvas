@@ -8,6 +8,7 @@ export interface UpdateCheckResult {
   notes?: string;
   date?: string;
   channel: string;
+  warning?: string;
 }
 
 export async function checkForUpdates(channel = 'beta'): Promise<UpdateCheckResult> {

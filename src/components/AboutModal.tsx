@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   APP_NAME,
   APP_CHANNEL,
@@ -10,27 +10,21 @@ import {
   buildBugReportMailto,
 } from '../constants/appInfo';
 import { checkForUpdates, installUpdate } from '../lib/updater';
+import { formatUpdateCheckMessage } from '../lib/updateStatus';
 import { isDesktop } from '../utils/platformBridge';
 import { TipButton } from './HoverTip';
 import { NAV_HINTS } from '../constants/uiHints';
 
 interface AboutModalProps {
   onClose: () => void;
+  autoCheckUpdates?: boolean;
 }
 
-export default function AboutModal({ onClose }: AboutModalProps) {
+export default function AboutModal({ onClose, autoCheckUpdates = false }: AboutModalProps) {
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
   const [updateBusy, setUpdateBusy] = useState(false);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  const handleCheckUpdate = async () => {
+  const handleCheckUpdate = useCallback(async () => {
     if (!isDesktop()) {
       setUpdateStatus('Updates are available in the desktop app.');
       return;
@@ -40,17 +34,27 @@ export default function AboutModal({ onClose }: AboutModalProps) {
     setUpdateStatus('Checking for updates…');
     try {
       const result = await checkForUpdates('beta');
-      if (result.available && result.version) {
-        setUpdateStatus(`Update available: v${result.version}`);
-      } else {
-        setUpdateStatus(`You're on the latest version (${result.currentVersion}).`);
-      }
+      setUpdateStatus(formatUpdateCheckMessage(result));
     } catch (err) {
       setUpdateStatus(err instanceof Error ? err.message : 'Update check failed.');
     } finally {
       setUpdateBusy(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (autoCheckUpdates) {
+      void handleCheckUpdate();
+    }
+  }, [autoCheckUpdates, handleCheckUpdate]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   const handleInstallUpdate = async () => {
     setUpdateBusy(true);

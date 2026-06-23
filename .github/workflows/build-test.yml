@@ -37,7 +37,10 @@ jobs:
 
       - run: npm ci
       - run: npm run test
-      - run: npm run tauri:build
+      - run: npm run tauri:build:linux
+        env:
+          NO_STRIP: "1"
+          APPIMAGE_EXTRACT_AND_RUN: "1"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -88,7 +91,7 @@ jobs:
 
       - run: npm ci
       - run: npm run test
-      - run: npm run tauri:build -- --target aarch64-apple-darwin
+      - run: npm run tauri:build:macos
 
       - uses: actions/upload-artifact@v4
         with:

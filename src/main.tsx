@@ -1,8 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import './lib/monacoSetup';
 import App from './App';
 import './app.css';
+import { initPlatform } from './platform';
 import { editorThemeToUiTheme, loadPreferences } from './utils/preferences';
+
+initPlatform();
 
 const prefs = loadPreferences();
 if (prefs.uiFollowSystem && typeof window !== 'undefined') {

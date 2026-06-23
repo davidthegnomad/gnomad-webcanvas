@@ -1,6 +1,6 @@
 [package]
 name = "gnomad-webcanvas"
-version = "0.1.0-beta.5"
+version = "0.1.0-beta.6"
 description = "Gnomad Webcanvas — live HTML/CSS/JS editor"
 authors = ["Gnomad Studio"]
 license = "MIT"

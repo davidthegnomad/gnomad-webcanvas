@@ -91,12 +91,36 @@ sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev 
 On **Wayland**, use `npm run tauri:dev`. For WebKit/GPU issues, use `npm run tauri:dev:x11`.
 
 ```bash
-npm run tauri:build
+npm run tauri:build:linux
+# or full local prep (deps + npm ci + build):
+bash scripts/build-linux-local.sh
 ```
 
-Artifacts: `.deb`, `.rpm`, AppImage.
+On **Fedora 43 / Nobara / Arch** and other distros with modern glibc, use `npm run tauri:build:linux` — it sets `NO_STRIP=1` and `APPIMAGE_EXTRACT_AND_RUN=1` so linuxdeploy can bundle AppImages without failing on `.relr.dyn` ELF sections.
 
-**Release QA:** test AppImage on Fedora/Nobara and `.deb` on Ubuntu before marking a release stable.
+Plain `npm run tauri:build` still works for `.deb` and `.rpm`; AppImage may fail unless those env vars are set.
+
+### Do I need a build per Linux kernel?
+
+**No.** One **x86_64** build covers all common desktop distros (Fedora, Nobara, Ubuntu, Debian, Arch, etc.) regardless of kernel version. Ship three Linux formats and users pick what fits:
+
+| Format | Best for |
+|--------|----------|
+| **`.rpm`** | Fedora, Nobara, RHEL, openSUSE |
+| **`.deb`** | Ubuntu, Debian, Pop!\_OS, Mint |
+| **AppImage** | Portable / unknown distro (avoid stale extracts in `~/.local/opt/`) |
+
+You only need **separate builds per CPU architecture** (e.g. `x86_64` vs `aarch64`/ARM). Kernel updates on the same machine do not require a new installer.
+
+Launch on Wayland/KDE if the window is blank:
+
+```bash
+GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 gnomad-webcanvas
+```
+
+Or use `scripts/launch-linux.sh` after installing the RPM.
+
+On **Wayland**, use `npm run tauri:dev`. For WebKit/GPU issues, use `npm run tauri:dev:x11`.
 
 ---
 

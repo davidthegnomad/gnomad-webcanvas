@@ -16,6 +16,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
+          if (id.includes('monaco-editor')) return 'vendor-monaco';
           if (id.includes('jszip')) return 'vendor-jszip';
           if (id.includes('react') || id.includes('scheduler')) return 'vendor-react';
           if (id.includes('lz-string') || id.includes('file-saver')) return 'vendor-utils';

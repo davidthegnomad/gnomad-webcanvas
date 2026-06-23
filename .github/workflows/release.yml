@@ -17,12 +17,20 @@ jobs:
         include:
           - platform: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            tauriArgs: '--config src-tauri/tauri.linux.conf.json'
+            noStrip: '1'
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
+            tauriArgs: ''
+            noStrip: ''
           - platform: macos-latest
             target: aarch64-apple-darwin
+            tauriArgs: '--config src-tauri/tauri.macos.conf.json'
+            noStrip: ''
           - platform: macos-latest
             target: x86_64-apple-darwin
+            tauriArgs: '--config src-tauri/tauri.macos.conf.json'
+            noStrip: ''
 
     runs-on: ${{ matrix.platform }}
 
@@ -44,7 +52,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm
 
       - name: Install npm dependencies
         run: npm ci
@@ -73,6 +81,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          NO_STRIP: ${{ matrix.noStrip }}
+          APPIMAGE_EXTRACT_AND_RUN: ${{ matrix.noStrip }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Gnomad Webcanvas ${{ github.ref_name }}
@@ -81,6 +91,7 @@ jobs:
           prerelease: true
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
+          args: ${{ matrix.tauriArgs }}
 
       - name: SHA256 checksums
         shell: bash

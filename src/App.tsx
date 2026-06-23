@@ -18,6 +18,7 @@ import { PRODUCT_NAME } from './constants/branding';
 import { basename } from './utils/pathUtils';
 import { addRecentFile } from './utils/recentFiles';
 import { useAppTheme } from './hooks/useAppTheme';
+import { finishWindowClose } from './lib/windowClose';
 import { editorThemeToUiTheme } from './utils/preferences';
 import type { PaneType } from './types/editor.types';
 
@@ -55,6 +56,7 @@ export default function App() {
 
   const hydrated = useRef(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [aboutAutoCheck, setAboutAutoCheck] = useState(false);
   const [closePromptOpen, setClosePromptOpen] = useState(false);
   const pendingWindowClose = useRef(false);
 
@@ -155,8 +157,7 @@ export default function App() {
   }, [currentFilePath, isDirty]);
 
   const destroyWindow = useCallback(async () => {
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    await getCurrentWindow().destroy();
+    await finishWindowClose();
   }, []);
 
   const handleDesktopOpen = useCallback(async (presetPath?: string) => {
@@ -261,9 +262,11 @@ export default function App() {
     await destroyWindow();
   }, [destroyWindow]);
 
-  // Global keyboard shortcuts
+  // Global keyboard shortcuts — editor-only; file menu accelerators handled in Rust menu bar
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (closePromptOpen) return;
+
       const mod = e.metaKey || e.ctrlKey;
 
       if (e.key === 'Escape' && previewFullscreen) {
@@ -275,11 +278,6 @@ export default function App() {
       if (!mod) return;
 
       if (e.shiftKey) {
-        if (e.key === 'E' || e.key === 'e') {
-          e.preventDefault();
-          void handleExport();
-          return;
-        }
         if (e.key === 'F' || e.key === 'f') {
           e.preventDefault();
           const pane = useEditorStore.getState().activePane;
@@ -291,25 +289,6 @@ export default function App() {
           toggleConsole();
           return;
         }
-        if ((e.key === 'S' || e.key === 's') && isDesktop()) {
-          e.preventDefault();
-          handleDesktopSaveAs();
-          return;
-        }
-      }
-
-      // Ctrl+O — Open file (desktop only)
-      if ((e.key === 'o' || e.key === 'O') && isDesktop()) {
-        e.preventDefault();
-        handleDesktopOpen();
-        return;
-      }
-
-      // Ctrl+S — Save file
-      if (e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        handleDesktopSave();
-        return;
       }
 
       if (e.key === 'Enter') {
@@ -335,7 +314,7 @@ export default function App() {
         decreaseFontSize();
       }
     },
-    [forceRefreshPreview, toggleLayout, setActivePane, increaseFontSize, decreaseFontSize, togglePreviewFullscreen, previewFullscreen, toggleConsole, handleDesktopOpen, handleDesktopSave, handleDesktopSaveAs, handleExport],
+    [closePromptOpen, forceRefreshPreview, toggleLayout, setActivePane, increaseFontSize, decreaseFontSize, togglePreviewFullscreen, previewFullscreen, toggleConsole],
   );
 
   useEffect(() => {
@@ -352,13 +331,37 @@ export default function App() {
     void import('@tauri-apps/api/event').then(async (mod) => {
       if (cancelled) return;
       unlisteners.push(
-        await mod.listen('webcanvas:show-about', () => setAboutOpen(true)),
+        await mod.listen('webcanvas:show-about', () => {
+          setAboutAutoCheck(false);
+          setAboutOpen(true);
+        }),
+        await mod.listen('webcanvas:check-updates', () => {
+          setAboutAutoCheck(true);
+          setAboutOpen(true);
+        }),
         await mod.listen('webcanvas:file-open', () => void handleDesktopOpen()),
         await mod.listen('webcanvas:file-save', () => void handleDesktopSave()),
         await mod.listen('webcanvas:file-save-as', () => void handleDesktopSaveAs()),
         await mod.listen('webcanvas:file-export', () => void handleExport()),
+        await mod.listen('webcanvas:file-close', () => void requestWindowClose()),
         await mod.listen('window-close-requested', () => void requestWindowClose()),
+        await mod.listen<string[]>('webcanvas:pending-files', (event) => {
+          const paths = event.payload;
+          if (paths.length > 0) {
+            void handleDesktopOpen(paths[0]);
+          }
+        }),
       );
+
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        const pending = await invoke<string[]>('take_pending_open_files');
+        if (pending.length > 0) {
+          void handleDesktopOpen(pending[0]);
+        }
+      } catch {
+        // not in Tauri shell
+      }
     });
 
     return () => {
@@ -391,7 +394,15 @@ export default function App() {
           </ToolSection>
         </div>
       )}
-      {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
+      {aboutOpen && (
+        <AboutModal
+          autoCheckUpdates={aboutAutoCheck}
+          onClose={() => {
+            setAboutOpen(false);
+            setAboutAutoCheck(false);
+          }}
+        />
+      )}
       {closePromptOpen && (
         <UnsavedChangesModal
           fileName={fileDisplayName(currentFilePath)}

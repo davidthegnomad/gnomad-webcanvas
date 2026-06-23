@@ -1,12 +1,42 @@
+mod menu;
+mod path_guard;
+mod platform;
 mod updater;
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::{AppHandle, Emitter, Manager, RunEvent, State};
+use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow};
 
 struct PendingFiles(Mutex<Vec<String>>);
+
+/// When false, CloseRequested is intercepted for unsaved-changes flow.
+struct CloseGate(AtomicBool);
+
+pub(crate) fn request_close_from_frontend(app: &AppHandle) {
+    let gate = app.state::<CloseGate>();
+    if gate.0.load(Ordering::SeqCst) {
+        app.exit(0);
+        return;
+    }
+
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.emit("window-close-requested", ());
+    } else {
+        app.exit(0);
+    }
+}
+
+#[tauri::command]
+fn finish_close(window: WebviewWindow, app: AppHandle, gate: State<CloseGate>) -> Result<(), String> {
+    gate.0.store(true, Ordering::SeqCst);
+    window.close().map_err(|e| e.to_string())?;
+    if app.webview_windows().is_empty() {
+        app.exit(0);
+    }
+    Ok(())
+}
 
 fn collect_paths_from_args<I, S>(args: I) -> Vec<PathBuf>
 where
@@ -49,7 +79,7 @@ fn is_supported_file(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-fn focus_main_window(app: &AppHandle) {
+pub(crate) fn focus_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
         let _ = window.unminimize();
@@ -96,7 +126,9 @@ fn queue_or_emit_files(app: &AppHandle, paths: Vec<PathBuf>, pending: &State<Pen
 fn read_text_file_path(path: String) -> Result<String, String> {
     const MAX_BYTES: u64 = 10 * 1024 * 1024;
 
-    let metadata = std::fs::metadata(&path).map_err(|e| e.to_string())?;
+    let path_buf = path_guard::validate_user_readable_path(Path::new(&path))?;
+
+    let metadata = std::fs::metadata(&path_buf).map_err(|e| e.to_string())?;
     if metadata.len() > MAX_BYTES {
         return Err(format!(
             "File is too large to open ({:.1} MB; limit is 10 MB).",
@@ -104,7 +136,7 @@ fn read_text_file_path(path: String) -> Result<String, String> {
         ));
     }
 
-    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+    std::fs::read_to_string(&path_buf).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -113,92 +145,32 @@ fn take_pending_open_files(state: State<PendingFiles>) -> Result<Vec<String>, St
     Ok(std::mem::take(&mut *pending))
 }
 
-fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
-    let about = MenuItem::with_id(app, "about", "About Gnomad Webcanvas", true, None::<&str>)?;
-    let check_updates =
-        MenuItem::with_id(app, "check_updates", "Check for Updates…", true, None::<&str>)?;
+fn handle_menu_event(app: &AppHandle, event_id: &str) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
 
-    let app_submenu = Submenu::with_items(
-        app,
-        "Gnomad Webcanvas",
-        true,
-        &[
-            &about,
-            &check_updates,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::services(app, None)?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::hide(app, Some("Hide Gnomad Webcanvas"))?,
-            &PredefinedMenuItem::hide_others(app, None)?,
-            &PredefinedMenuItem::show_all(app, None)?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::quit(app, Some("Quit Gnomad Webcanvas"))?,
-        ],
-    )?;
+    let event_name = match event_id {
+        "about" => Some("webcanvas:show-about"),
+        "check_updates" => Some("webcanvas:check-updates"),
+        "file_open" => Some("webcanvas:file-open"),
+        "file_save" => Some("webcanvas:file-save"),
+        "file_save_as" => Some("webcanvas:file-save-as"),
+        "file_export" => Some("webcanvas:file-export"),
+        "file_close" => Some("webcanvas:file-close"),
+        _ => None,
+    };
 
-    let file_open = MenuItem::with_id(app, "file_open", "Open…", true, Some("CmdOrCtrl+O"))?;
-    let file_save = MenuItem::with_id(app, "file_save", "Save", true, Some("CmdOrCtrl+S"))?;
-    let file_save_as =
-        MenuItem::with_id(app, "file_save_as", "Save As…", true, Some("CmdOrCtrl+Shift+S"))?;
-    let file_export =
-        MenuItem::with_id(app, "file_export", "Export ZIP…", true, Some("CmdOrCtrl+Shift+E"))?;
-
-    let file_submenu = Submenu::with_items(
-        app,
-        "File",
-        true,
-        &[
-            &file_open,
-            &PredefinedMenuItem::separator(app)?,
-            &file_save,
-            &file_save_as,
-            &PredefinedMenuItem::separator(app)?,
-            &file_export,
-        ],
-    )?;
-
-    let edit_submenu = Submenu::with_items(
-        app,
-        "Edit",
-        true,
-        &[
-            &PredefinedMenuItem::undo(app, None)?,
-            &PredefinedMenuItem::redo(app, None)?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::cut(app, None)?,
-            &PredefinedMenuItem::copy(app, None)?,
-            &PredefinedMenuItem::paste(app, None)?,
-            &PredefinedMenuItem::select_all(app, None)?,
-        ],
-    )?;
-
-    let window_submenu = Submenu::with_items(
-        app,
-        "Window",
-        true,
-        &[
-            &PredefinedMenuItem::minimize(app, None)?,
-            &PredefinedMenuItem::maximize(app, None)?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::fullscreen(app, None)?,
-        ],
-    )?;
-
-    Menu::with_items(
-        app,
-        &[
-            &app_submenu,
-            &file_submenu,
-            &edit_submenu,
-            &window_submenu,
-        ],
-    )
+    if let Some(name) = event_name {
+        let _ = window.emit(name, ());
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(PendingFiles(Mutex::new(Vec::new())))
+        .manage(CloseGate(AtomicBool::new(false)))
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             let files = collect_paths_from_args(argv);
             if files.is_empty() {
@@ -218,39 +190,18 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             read_text_file_path,
             take_pending_open_files,
+            finish_close,
             updater::check_for_updates,
             updater::install_update,
         ])
         .setup(|app| {
-            #[cfg(target_os = "macos")]
-            {
-                let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
-            }
+            platform::setup(app)?;
 
-            let menu = build_menu(app.handle())?;
+            let menu = menu::build_menu(app.handle())?;
             app.set_menu(menu)?;
 
             app.on_menu_event(|app, event| {
-                if let Some(window) = app.get_webview_window("main") {
-                    match event.id().0.as_str() {
-                        "about" | "check_updates" => {
-                            let _ = window.emit("webcanvas:show-about", ());
-                        }
-                        "file_open" => {
-                            let _ = window.emit("webcanvas:file-open", ());
-                        }
-                        "file_save" => {
-                            let _ = window.emit("webcanvas:file-save", ());
-                        }
-                        "file_save_as" => {
-                            let _ = window.emit("webcanvas:file-save-as", ());
-                        }
-                        "file_export" => {
-                            let _ = window.emit("webcanvas:file-export", ());
-                        }
-                        _ => {}
-                    }
-                }
+                handle_menu_event(app, event.id().0.as_str());
             });
 
             let startup_files = collect_paths_from_args(std::env::args().skip(1));
@@ -263,6 +214,10 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let gate = window.state::<CloseGate>();
+                if gate.0.load(Ordering::SeqCst) {
+                    return;
+                }
                 api.prevent_close();
                 let _ = window.emit("window-close-requested", ());
             }
@@ -270,9 +225,6 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| {
-            #[cfg(target_os = "macos")]
-            if let RunEvent::Reopen { .. } = event {
-                focus_main_window(app_handle);
-            }
+            platform::on_run_event(app_handle, event);
         });
 }

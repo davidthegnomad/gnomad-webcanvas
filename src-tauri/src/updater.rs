@@ -28,6 +28,12 @@ pub struct UpdateCheckResult {
     pub notes: Option<String>,
     pub date: Option<String>,
     pub channel: String,
+    pub warning: Option<String>,
+}
+
+struct EndpointResolution {
+    endpoints: Vec<Url>,
+    warning: Option<String>,
 }
 
 async fn latest_beta_manifest_url() -> Result<Url, String> {
@@ -48,8 +54,9 @@ async fn latest_beta_manifest_url() -> Result<Url, String> {
     let tag = releases
         .into_iter()
         .filter(|r| r.prerelease && !r.draft)
-        .max_by(|a, b| a.published_at.cmp(&b.published_at))
-        .map(|r| r.tag_name)
+        .filter_map(|r| r.published_at.map(|date| (date, r.tag_name)))
+        .max_by(|a, b| a.0.cmp(&b.0))
+        .map(|(_, tag)| tag)
         .ok_or_else(|| "No published beta release found on GitHub.".to_string())?;
 
     let raw = format!(
@@ -58,13 +65,9 @@ async fn latest_beta_manifest_url() -> Result<Url, String> {
     Url::parse(&raw).map_err(|e| format!("Invalid updater endpoint: {e}"))
 }
 
-async fn updater_endpoints(channel: &str) -> Result<Vec<Url>, String> {
+async fn updater_endpoints(channel: &str) -> Result<EndpointResolution, String> {
     let mut endpoints = Vec::new();
-
-    // beta.4 builds shipped with this URL; keep as first fallback.
-    if let Ok(url) = Url::parse(LEGACY_LATEST_ENDPOINT) {
-        endpoints.push(url);
-    }
+    let mut warning = None;
 
     if let Ok(url) = Url::parse(GH_PAGES_ENDPOINT) {
         endpoints.push(url);
@@ -73,15 +76,28 @@ async fn updater_endpoints(channel: &str) -> Result<Vec<Url>, String> {
     if channel.eq_ignore_ascii_case("beta") {
         match latest_beta_manifest_url().await {
             Ok(url) => endpoints.push(url),
-            Err(err) => log::warn!("Beta manifest URL lookup failed: {err}"),
+            Err(err) => {
+                log::warn!("Beta manifest URL lookup failed: {err}");
+                warning = Some(format!(
+                    "Beta release feed unavailable ({err}). Using fallback update endpoints."
+                ));
+            }
         }
+    }
+
+    // beta.4 builds shipped with this URL; keep as last fallback.
+    if let Ok(url) = Url::parse(LEGACY_LATEST_ENDPOINT) {
+        endpoints.push(url);
     }
 
     if endpoints.is_empty() {
         return Err("No updater endpoints configured.".to_string());
     }
 
-    Ok(endpoints)
+    Ok(EndpointResolution {
+        endpoints,
+        warning,
+    })
 }
 
 #[tauri::command]
@@ -91,11 +107,11 @@ pub async fn check_for_updates(
 ) -> Result<UpdateCheckResult, String> {
     let channel = channel.unwrap_or_else(|| "beta".into());
     let current_version = app.package_info().version.to_string();
-    let endpoints = updater_endpoints(&channel).await?;
+    let resolution = updater_endpoints(&channel).await?;
 
     let update = app
         .updater_builder()
-        .endpoints(endpoints)
+        .endpoints(resolution.endpoints)
         .map_err(|e| format!("Updater misconfigured: {e}"))?
         .build()
         .map_err(|e| format!("Updater build failed: {e}"))?
@@ -111,6 +127,7 @@ pub async fn check_for_updates(
             notes: info.body.clone(),
             date: info.date.map(|d| d.to_string()),
             channel,
+            warning: resolution.warning,
         }),
         None => Ok(UpdateCheckResult {
             available: false,
@@ -119,6 +136,7 @@ pub async fn check_for_updates(
             notes: None,
             date: None,
             channel,
+            warning: resolution.warning,
         }),
     }
 }
@@ -126,10 +144,10 @@ pub async fn check_for_updates(
 #[tauri::command]
 pub async fn install_update(app: AppHandle, channel: Option<String>) -> Result<(), String> {
     let channel = channel.unwrap_or_else(|| "beta".into());
-    let endpoints = updater_endpoints(&channel).await?;
+    let resolution = updater_endpoints(&channel).await?;
     let update = app
         .updater_builder()
-        .endpoints(endpoints)
+        .endpoints(resolution.endpoints)
         .map_err(|e| format!("Updater misconfigured: {e}"))?
         .build()
         .map_err(|e| format!("Updater build failed: {e}"))?

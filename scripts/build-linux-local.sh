@@ -19,7 +19,7 @@ echo "Installing npm dependencies..."
 npm ci
 
 echo "Building desktop app..."
-npm run tauri:build
+npm run tauri:build:linux
 
 echo ""
 echo "Installers written to:"
