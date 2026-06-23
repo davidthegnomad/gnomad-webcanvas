@@ -224,7 +224,7 @@
         Live HTML, CSS &amp; JavaScript editor with instant preview.
         Use it in your browser or install the desktop app.
       </p>
-      <p class="version">Version 0.1.0-beta.3</p>
+      <p class="version">Version 0.1.0-beta.6</p>
 
       <div class="cards">
         <div class="card">
@@ -243,9 +243,15 @@
         <h2>Download desktop (beta)</h2>
         <ul>
           <li>
-            <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases" target="_blank" rel="noopener noreferrer">
-              <span>GitHub Releases</span>
+            <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-beta.6" target="_blank" rel="noopener noreferrer">
+              <span>v0.1.0-beta.6 (latest)</span>
               <span class="hint">Linux · Windows · macOS</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases" target="_blank" rel="noopener noreferrer">
+              <span>All GitHub Releases</span>
+              <span class="hint">Archive</span>
             </a>
           </li>
           <li>
@@ -258,6 +264,13 @@
       </section>
 
       <p class="note">
+        <strong>Linux tip:</strong> On Wayland/KDE, if the window is blank, launch with
+        <code>GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 gnomad-webcanvas</code>.
+        Prefer the <strong>.rpm</strong> on Fedora/Nobara. Read the
+        <a href="https://davidthegnomad.github.io/gnomad-webcanvas/blog/2026-06-23-shipping-linux-beta.html" style="color: var(--accent-hover)">Beta 6 ship post</a> for details.
+      </p>
+
+      <p class="note" style="margin-top: 1rem">
         <strong>Beta notice:</strong> Features and file formats may change. Save important work locally
         and use <strong>Export ZIP</strong> or desktop <strong>Save</strong> regularly.
         Fedora/Nobara users: install the <strong>.rpm</strong> or <strong>AppImage</strong> (not .deb).

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shipping Gnomad Webcanvas on Linux — Gnomad Webcanvas</title>
+  <meta name="description" content="Shipping Gnomad Webcanvas on Linux documentation for Gnomad Webcanvas." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
+          <p class="doc-path">docs/blog/2026-06-23-shipping-linux-beta.md</p>
+          <a href="#what-is-webcanvas" class="toc-h2">What is Webcanvas?</a>
+<a href="#the-mission-for-today" class="toc-h2">The mission for today</a>
+<a href="#linux-build-from-crash-to-rpm" class="toc-h2">Linux build: from crash to RPM</a>
+<a href="#wayland-webkit" class="toc-h3">Wayland + WebKit</a>
+<a href="#appimage-on-fedora-43" class="toc-h3">AppImage on Fedora 43</a>
+<a href="#one-build-not-one-per-kernel" class="toc-h3">One build, not one per kernel</a>
+<a href="#bug-1-editors-stuck-on-loading-editor" class="toc-h2">Bug 1: Editors stuck on “Loading editor…”</a>
+<a href="#bug-2-quit-and-close-did-nothing" class="toc-h2">Bug 2: Quit and Close did nothing</a>
+<a href="#bug-3-could-not-connect-to-localhost-connection-refused" class="toc-h2">Bug 3: “Could not connect to localhost: Connection refused”</a>
+<a href="#platform-split-one-repo-two-personalities" class="toc-h2">Platform split: one repo, two personalities</a>
+<a href="#security-and-quality-pass" class="toc-h2">Security and quality pass</a>
+<a href="#what-shipped-in-v010-beta6" class="toc-h2">What shipped in v0.1.0-beta.6</a>
+<a href="#whats-next" class="toc-h2">What’s next</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Shipping Gnomad Webcanvas on Linux</h2>
+        <p class="formats">Also available: <a href="2026-06-23-shipping-linux-beta.md">Markdown</a> · <a href="2026-06-23-shipping-linux-beta.txt">Plain text</a></p>
+      </header>
+      <h1 id="shipping-gnomad-webcanvas-on-linux-beta-6">Shipping Gnomad Webcanvas on Linux — Beta 6</h1><p><strong>June 23, 2026</strong> · <a href="https://davidthegnomad.github.io/gnomad-webcanvas/">Gnomad Webcanvas</a> · v0.1.0-beta.6</p>
+<p>Today we took Gnomad Webcanvas from “works on my MacBook” to <strong>actually usable on Linux</strong> — specifically Fedora/Nobara with Wayland, WebKitGTK, and real desktop installs. This post is the story of what broke, what we fixed, and what shipped.</p>
+<hr>
+<h2 id="what-is-webcanvas">What is Webcanvas?</h2><p><strong>Gnomad Webcanvas</strong> is a live HTML/CSS/JS playground: three Monaco editor panes, instant iframe preview, export to ZIP, and native Open/Save when you run the Tauri desktop shell. Same React codebase in the browser or on the desktop.</p>
+<p>If you just want to try it:</p>
+<ul>
+<li><strong>Browser:</strong> <a href="https://davidthegnomad.github.io/gnomad-webcanvas/app/">Play in browser</a></li>
+<li><strong>Desktop:</strong> <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-beta.6">GitHub Releases — v0.1.0-beta.6</a></li>
+</ul>
+<hr>
+<h2 id="the-mission-for-today">The mission for today</h2><p>We had four goals:</p>
+<ol>
+<li><strong>Build and install on Linux</strong> (RPM on Nobara/Fedora 43)</li>
+<li><strong>Harden the menu bar</strong> — Close, Help, Check for Updates, platform-correct menus</li>
+<li><strong>Split macOS and Linux code paths</strong> so each OS gets idiomatic behavior without <code>#ifdef</code> soup in one file</li>
+<li><strong>Fix everything that broke</strong> when we turned on real desktop security (CSP) and quit handling</li>
+</ol>
+<p>We hit all four. Beta 6 is tagged and CI is publishing installers.</p>
+<hr>
+<h2 id="linux-build-from-crash-to-rpm">Linux build: from crash to RPM</h2><p>Getting a Tauri + WebKitGTK app running on modern Fedora is… character-building.</p>
+<h3 id="wayland-webkit">Wayland + WebKit</h3><p>On Wayland (KDE Plasma), WebKitGTK can show a <strong>blank window</strong> or crash unless you force the X11 backend:</p>
+<pre><code class="language-bash">GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 gnomad-webcanvas
+</code></pre>
+<p>We baked those flags into the desktop launcher and added <code>scripts/launch-linux.sh</code> for a one-command start.</p>
+<h3 id="appimage-on-fedora-43">AppImage on Fedora 43</h3><p><code>linuxdeploy</code> ships an old <code>strip</code> binary that chokes on modern ELF <code>.relr.dyn</code> sections. Fix:</p>
+<pre><code class="language-bash">export NO_STRIP=1
+export APPIMAGE_EXTRACT_AND_RUN=1
+npm run tauri:build:linux
+</code></pre>
+<p>That script is now the canonical Linux release path (<code>scripts/build-linux-release.sh</code>).</p>
+<h3 id="one-build-not-one-per-kernel">One build, not one per kernel</h3><p>A common question: <em>do we need a separate installer for every Linux kernel?</em></p>
+<p><strong>No.</strong> Ship <strong>x86_64</strong> builds in three package formats:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.rpm</code></td>
+<td>Fedora, Nobara, RHEL</td>
+</tr>
+<tr>
+<td><code>.deb</code></td>
+<td>Ubuntu, Debian</td>
+</tr>
+<tr>
+<td>AppImage</td>
+<td>Portable / unknown distro</td>
+</tr>
+</tbody></table>
+<p>Kernel updates on the same machine do not require a new download. You only need separate builds per <strong>CPU architecture</strong> (e.g. ARM64 later).</p>
+<hr>
+<h2 id="bug-1-editors-stuck-on-loading-editor">Bug 1: Editors stuck on “Loading editor…”</h2><p><strong>Symptom:</strong> HTML, CSS, and JS panes showed “Loading editor…” forever. Preview worked fine.</p>
+<p><strong>Cause:</strong> We added a Content Security Policy for desktop security. Monaco’s default loader pulls from <code>cdn.jsdelivr.net</code>. CSP blocked it. <code>loader.init()</code> failed silently.</p>
+<p><strong>Fix:</strong> Bundle Monaco from <code>node_modules</code> with Vite worker imports (<code>src/lib/monacoSetup.ts</code>). Editors load offline, no CDN, CSP-compliant. The Monaco chunk is ~4 MB — acceptable for a desktop code editor.</p>
+<hr>
+<h2 id="bug-2-quit-and-close-did-nothing">Bug 2: Quit and Close did nothing</h2><p><strong>Symptom:</strong> File → Quit, the window X button, and Ctrl+W appeared to do nothing. Old instances lingered after reinstall.</p>
+<p><strong>Cause:</strong> Rust called <code>prevent_close()</code> on every close request (for unsaved-changes prompts), but the frontend called <code>destroy()</code> which <strong>does not clear that guard</strong>. The app could never finish exiting.</p>
+<p><strong>Fix:</strong></p>
+<ul>
+<li>Added a <code>CloseGate</code> in Rust and a <code>finish_close</code> command</li>
+<li>Frontend calls <code>finish_close</code> after save/discard</li>
+<li><code>ExitRequested</code> (Quit menu) routes through the same flow</li>
+</ul>
+<p>You can now quit cleanly. If something ever gets stuck: <code>pkill gnomad-webcanvas</code>.</p>
+<hr>
+<h2 id="bug-3-could-not-connect-to-localhost-connection-refused">Bug 3: “Could not connect to localhost: Connection refused”</h2><p><strong>Symptom:</strong> After reinstall, the app showed a connection error to <code>localhost</code>.</p>
+<p><strong>Cause:</strong> An <strong>old AppImage extract</strong> from June was still running from <code>~/.local/opt/gnomad-webcanvas/</code>. It pointed at the <strong>dev server</strong> (<code>http://localhost:5173</code>). Single-instance mode kept focusing that zombie instead of the new RPM.</p>
+<p><strong>Fix:</strong> Kill stale processes, remove the old extract, launch <code>/usr/bin/gnomad-webcanvas</code> explicitly. The launch script handles this automatically.</p>
+<hr>
+<h2 id="platform-split-one-repo-two-personalities">Platform split: one repo, two personalities</h2><p>macOS and Linux expect different menu bar layouts:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Menu structure</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>macOS</strong></td>
+<td>App menu · File · Edit · Window (Close Window lives here per HIG)</td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td>File · Edit · Window · Help (About + Check for Updates)</td>
+</tr>
+</tbody></table>
+<p>We split:</p>
+<ul>
+<li><strong>Rust:</strong> <code>src-tauri/src/menu/linux.rs</code>, <code>macos.rs</code></li>
+<li><strong>Frontend:</strong> <code>src/platform/</code></li>
+<li><strong>Build configs:</strong> <code>tauri.linux.conf.json</code>, <code>tauri.macos.conf.json</code></li>
+</ul>
+<p>Documented in <a href="../PLATFORM_SPLIT.md">PLATFORM_SPLIT.md</a>.</p>
+<hr>
+<h2 id="security-and-quality-pass">Security and quality pass</h2><p>Alongside the bug fixes:</p>
+<ul>
+<li><strong>CSP</strong> locked down for Tauri (no arbitrary remote scripts)</li>
+<li><strong>Path guard</strong> on desktop file reads — blocks <code>/etc</code>, requires paths under <code>$HOME</code>, <code>/tmp</code>, etc.</li>
+<li><strong>Parallel code reviews</strong> (Qwen, DeepSeek, NIM) with a combined action-items report</li>
+<li><strong>31 Vitest tests</strong> including update-status helpers</li>
+</ul>
+<hr>
+<h2 id="what-shipped-in-v010-beta6">What shipped in v0.1.0-beta.6</h2><ul>
+<li>Bundled Monaco (offline editors)</li>
+<li>Reliable Quit/Close on Linux</li>
+<li>Linux/macOS platform split</li>
+<li>Robust File/Help menus with in-app updater</li>
+<li><code>scripts/launch-linux.sh</code> and Linux CI fixes (<code>NO_STRIP</code>, RPM in release workflow)</li>
+<li>GitHub Pages site updated with this post</li>
+</ul>
+<p>Download: <strong><a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-beta.6">Releases — v0.1.0-beta.6</a></strong></p>
+<hr>
+<h2 id="whats-next">What’s next</h2><ul>
+<li>macOS and Windows QA on CI builds</li>
+<li>ARM64 Linux when there’s demand</li>
+<li>Templates, collaboration, and the 1.0 polish pass on <a href="../ROADMAP.md">the roadmap</a></li>
+</ul>
+<p>If you’re on Fedora/Nobara, install the RPM, run with the X11 env vars if needed, and tell us what breaks. Beta means we’re listening.</p>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

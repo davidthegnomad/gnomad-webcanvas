@@ -20,6 +20,26 @@ Regenerate HTML/TXT after editing Markdown:
 
 ────────────────────────────────────────
 
+WORKSPACE (ORGANIZATION META REPO)
+----------------------------------
+
+  Resource              |  Link              
+  ORG_Docs index        |  ORG_Docs/README.md
+  Workspace map         |  WORKSPACE.md      
+  Project catalog       |  PROJECT_CATALOG.md
+  This project's links  |  WORKSPACE_LINKS.md
+
+────────────────────────────────────────
+
+BLOG
+----
+
+  Document                              |  MD                                      |  HTML                                      |  TXT                                    
+  Blog index                            |  blog/index.md                           |  blog/index.html                           |  blog/index.txt                         
+  Shipping Linux — Beta 6 (2026-06-23)  |  blog/2026-06-23-shipping-linux-beta.md  |  blog/2026-06-23-shipping-linux-beta.html  |  blog/2026-06-23-shipping-linux-beta.txt
+
+────────────────────────────────────────
+
 START HERE
 ----------
 

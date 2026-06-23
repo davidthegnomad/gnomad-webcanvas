@@ -27,6 +27,15 @@ npm run docs:export
 
 ---
 
+## Blog
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| Blog index | [blog/index.md](blog/index.md) | [blog/index.html](blog/index.html) | [blog/index.txt](blog/index.txt) |
+| Shipping Linux — Beta 6 (2026-06-23) | [blog/2026-06-23-shipping-linux-beta.md](blog/2026-06-23-shipping-linux-beta.md) | [blog/2026-06-23-shipping-linux-beta.html](blog/2026-06-23-shipping-linux-beta.html) | [blog/2026-06-23-shipping-linux-beta.txt](blog/2026-06-23-shipping-linux-beta.txt) |
+
+---
+
 ## Start here
 
 | Document | MD | HTML | TXT |

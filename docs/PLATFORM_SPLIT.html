@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Platform split — Gnomad Webcanvas</title>
+  <meta name="description" content="Platform split documentation for Gnomad Webcanvas." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
+          <p class="doc-path">docs/PLATFORM_SPLIT.md</p>
+          <a href="#build-commands" class="toc-h2">Build commands</a>
+<a href="#code-layout" class="toc-h2">Code layout</a>
+<a href="#linux-optimizations" class="toc-h2">Linux optimizations</a>
+<a href="#macos-optimizations" class="toc-h2">macOS optimizations</a>
+<a href="#ci-guidance" class="toc-h2">CI guidance</a>
+<a href="#multi-file-open-cli-file-manager" class="toc-h2">Multi-file open (CLI / file manager)</a>
+<a href="#security-p0p1" class="toc-h2">Security (P0/P1)</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Platform split</h2>
+        <p class="formats">Also available: <a href="PLATFORM_SPLIT.md">Markdown</a> · <a href="PLATFORM_SPLIT.txt">Plain text</a></p>
+      </header>
+      <h1 id="platform-split-linux-vs-macos">Platform split — Linux vs macOS</h1><p>Gnomad Preview ships <strong>separate platform builds</strong> with dedicated code paths. Shared React UI; platform logic lives in Rust modules and thin TS helpers.</p>
+<h2 id="build-commands">Build commands</h2><table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Command</th>
+<th>Artifacts</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Linux</strong></td>
+<td><code>npm run tauri:build:linux</code></td>
+<td><code>.deb</code>, <code>.rpm</code>, AppImage</td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>npm run tauri:build:macos</code></td>
+<td><code>.app</code>, <code>.dmg</code></td>
+</tr>
+<tr>
+<td>Dev Linux</td>
+<td><code>npm run tauri:dev:linux</code></td>
+<td>X11 WebKit fallback</td>
+</tr>
+<tr>
+<td>Dev macOS</td>
+<td><code>npm run tauri:dev:macos</code></td>
+<td>Native</td>
+</tr>
+</tbody></table>
+<h2 id="code-layout">Code layout</h2><pre><code>src-tauri/src/
+  menu/
+    linux.rs      # File / Edit / Window / Help
+    macos.rs      # App / File / Edit / Window (HIG)
+  platform/
+    linux.rs      # Linux startup hooks
+    macos.rs      # Activation policy + dock reopen
+  lib.rs          # Shared IPC, file queue, window close
+
+src/platform/
+  linux.ts        # Wayland/WebKit dev hints
+  macos.ts        # macOS runtime label
+  detect.ts       # OS detection from Tauri UA
+  index.ts        # initPlatform() at boot
+
+src-tauri/
+  tauri.linux.conf.json   # bundle targets: deb, rpm, appimage
+  tauri.macos.conf.json   # bundle targets: app, dmg
+</code></pre>
+<h2 id="linux-optimizations">Linux optimizations</h2><ul>
+<li>Dedicated GTK-style menu (Help submenu, Quit in File)</li>
+<li><code>NO_STRIP=1</code> + <code>APPIMAGE_EXTRACT_AND_RUN=1</code> in <code>scripts/build-linux-release.sh</code></li>
+<li>Desktop launcher uses <code>GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1</code></li>
+<li><code>single-instance</code> plugin for <code>.desktop</code> / CLI file open</li>
+</ul>
+<h2 id="macos-optimizations">macOS optimizations</h2><ul>
+<li>App menu with Services, Hide, standard Quit</li>
+<li><code>Bring All to Front</code> in Window menu</li>
+<li>Dock icon reopen handler (<code>RunEvent::Reopen</code>)</li>
+<li>DMG-only bundle config (no Linux artifacts on Mac CI)</li>
+</ul>
+<h2 id="ci-guidance">CI guidance</h2><ul>
+<li><strong>ubuntu-latest</strong> → <code>npm run tauri:build:linux</code></li>
+<li><strong>macos-latest</strong> → <code>npm run tauri:build:macos</code></li>
+<li>Do not run full <code>tauri:build</code> on either; use platform scripts.</li>
+</ul>
+<h2 id="multi-file-open-cli-file-manager">Multi-file open (CLI / file manager)</h2><p>When multiple supported files are passed at startup (or via second instance), Rust emits <code>webcanvas:pending-files</code> with the full list. <strong>The frontend currently opens only the first file</strong> — remaining paths are ignored. This is intentional for v0.1; a file-picker or “open all” flow may come later.</p>
+<p>Single-file opens use <code>webcanvas:open-file</code> directly. Pending paths queued before the window exists are flushed via <code>take_pending_open_files</code> on mount.</p>
+<h2 id="security-p0p1">Security (P0/P1)</h2><ul>
+<li><strong>CSP</strong> configured in <code>tauri.conf.json</code> for the main shell (preview iframe uses its own <code>sandbox</code> attribute).</li>
+<li><strong><code>read_text_file_path</code></strong> resolves paths via <code>path_guard.rs</code> — blocks <code>/etc</code>, <code>/proc</code>, etc.; allows <code>$HOME</code>, <code>/tmp</code>, <code>/mnt</code>, <code>/media</code>.</li>
+</ul>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>
