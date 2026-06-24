@@ -12,11 +12,11 @@ pub fn apply_linux_display_env() {
     linux::apply_display_env();
 }
 
-pub fn setup(app: &mut App) -> tauri::Result<()> {
+pub fn setup(_app: &mut App) -> tauri::Result<()> {
     #[cfg(target_os = "macos")]
-    macos::setup(app)?;
+    macos::setup(_app)?;
     #[cfg(target_os = "linux")]
-    linux::setup(app)?;
+    linux::setup(_app)?;
     Ok(())
 }
 

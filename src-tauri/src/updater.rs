@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 use tauri::AppHandle;
 use tauri_plugin_updater::UpdaterExt;
@@ -58,6 +58,17 @@ static BETA_CACHE: Mutex<BetaUrlCache> = Mutex::new(BetaUrlCache {
     fetched_at: None,
 });
 
+static HTTP_AGENT: OnceLock<ureq::Agent> = OnceLock::new();
+
+fn http_agent() -> &'static ureq::Agent {
+    HTTP_AGENT.get_or_init(|| {
+        let config = ureq::Agent::config_builder()
+            .timeout_global(Some(HTTP_TIMEOUT))
+            .build();
+        config.into()
+    })
+}
+
 fn is_valid_release_tag(tag: &str) -> bool {
     tag.starts_with('v')
         && tag.len() > 1
@@ -67,12 +78,8 @@ fn is_valid_release_tag(tag: &str) -> bool {
 }
 
 fn fetch_github_releases() -> Result<Vec<GhRelease>, String> {
-    let response = ureq::get(GITHUB_RELEASES_API)
-        .config(
-            ureq::config::Config::builder()
-                .timeout_global(Some(HTTP_TIMEOUT))
-                .build(),
-        )
+    let response = http_agent()
+        .get(GITHUB_RELEASES_API)
         .header("User-Agent", "gnomad-webcanvas-updater")
         .call()
         .map_err(|e| format!("Could not reach GitHub releases API: {e}"))?;
