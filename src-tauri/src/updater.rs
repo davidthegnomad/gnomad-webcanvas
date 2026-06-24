@@ -88,8 +88,12 @@ fn fetch_github_releases() -> Result<Vec<GhRelease>, String> {
         return Err("GitHub API rate limit exceeded. Try again later.".to_string());
     }
 
-    response
-        .into_json()
+    let body = response
+        .into_body()
+        .read_to_string()
+        .map_err(|e| format!("Failed to read GitHub releases response: {e}"))?;
+
+    serde_json::from_str(&body)
         .map_err(|e| format!("Invalid GitHub releases response: {e}"))
 }
 
