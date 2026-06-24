@@ -222,7 +222,7 @@ body {
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
-          <p class="doc-path">docs/BUILD_PLATFORMS.md</p>
+          <p class="doc-path">docs\BUILD_PLATFORMS.md</p>
           <a href="#prerequisites-all-platforms" class="toc-h2">Prerequisites (all platforms)</a>
 <a href="#development" class="toc-h2">Development</a>
 <a href="#production-build" class="toc-h2">Production build</a>
@@ -264,11 +264,12 @@ npm run test
 npm run test:watch
 </code></pre>
 <hr>
-<h2 id="production-build">Production build</h2><pre><code class="language-bash">npm run tauri:build
-# CI variant (same build; signing via env — see .env.example)
-npm run tauri:build:ci
+<h2 id="production-build">Production build</h2><p>Use <strong>platform-specific</strong> commands (base <code>tauri.conf.json</code> has no bundle targets):</p>
+<pre><code class="language-bash">npm run tauri:build:linux    # .deb, .rpm, AppImage
+npm run tauri:build:macos    # .app, .dmg
+npm run tauri:build:windows  # NSIS .exe (Windows Alpha)
 </code></pre>
-<p>Output under <code>src-tauri/target/release/bundle/</code>:</p>
+<p>Output under <code>src-tauri/target/release/bundle/</code>.</p>
 <table>
 <thead>
 <tr>
@@ -340,17 +341,22 @@ bash scripts/build-linux-local.sh
 </tr>
 </tbody></table>
 <p>You only need <strong>separate builds per CPU architecture</strong> (e.g. <code>x86_64</code> vs <code>aarch64</code>/ARM). Kernel updates on the same machine do not require a new installer.</p>
+<p>On <strong>Wayland/KDE</strong>, the desktop launcher must set <code>GDK_BACKEND=x11</code> and <code>WEBKIT_DISABLE_DMABUF_RENDERER=1</code> (see <code>src-tauri/bundle/linux/webcanvas.desktop.hbs</code>). Without these, the dock icon may fail with a Wayland protocol error.</p>
 <p>Launch on Wayland/KDE if the window is blank:</p>
 <pre><code class="language-bash">GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 gnomad-webcanvas
 </code></pre>
 <p>Or use <code>scripts/launch-linux.sh</code> after installing the RPM.</p>
 <p>On <strong>Wayland</strong>, use <code>npm run tauri:dev</code>. For WebKit/GPU issues, use <code>npm run tauri:dev:x11</code>.</p>
 <hr>
-<h2 id="windows">Windows</h2><p>Build on Windows with <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a> (Evergreen bootstrapper in <code>tauri.conf.json</code>):</p>
-<pre><code class="language-bash">npm run tauri:build
+<h2 id="windows">Windows</h2><p>Build on Windows with <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a> (silent bootstrapper in <code>tauri.windows.conf.json</code>):</p>
+<pre><code class="language-bash">npm run tauri:build:windows
+# or on Windows:
+powershell -File scripts/build-windows-release.ps1
 </code></pre>
-<p>Output: <code>.msi</code> and NSIS <code>.exe</code>.</p>
-<p><strong>Code signing:</strong> optional — <code>WINDOWS_CERTIFICATE</code> secrets in CI (see <code>.env.example</code>).</p>
+<p>Output: NSIS <code>.exe</code> installer.</p>
+<p><strong>Channel:</strong> <code>0.1.0-alpha.1</code> — <strong>Windows Alpha</strong>. Limited QA; feedback welcome via <a href="https://davidthegnomad.github.io/gnomad-webcanvas/get/">Get page</a>.</p>
+<p><strong>Code signing:</strong> optional — <code>WINDOWS_CERTIFICATE</code> secrets in CI (see <code>.env.example</code>). Unsigned builds may trigger SmartScreen.</p>
+<p><strong>CI:</strong> Windows installers publish only on <code>v*-alpha*</code> tags. Linux/macOS beta releases are unaffected.</p>
 <hr>
 <h2 id="ci-release-builds">CI release builds</h2><p>Tagged pushes (<code>v*</code>) trigger <code>.github/workflows/release.yml</code>:</p>
 <table>
@@ -358,19 +364,23 @@ bash scripts/build-linux-local.sh
 <tr>
 <th>Runner</th>
 <th>Target</th>
+<th>When</th>
 </tr>
 </thead>
 <tbody><tr>
 <td><code>macos-latest</code></td>
 <td><code>aarch64-apple-darwin</code>, <code>x86_64-apple-darwin</code></td>
+<td><code>v*-beta*</code> tags</td>
 </tr>
 <tr>
 <td><code>ubuntu-latest</code></td>
 <td><code>x86_64-unknown-linux-gnu</code></td>
+<td><code>v*-beta*</code> tags</td>
 </tr>
 <tr>
 <td><code>windows-latest</code></td>
 <td><code>x86_64-pc-windows-msvc</code></td>
+<td><strong><code>v*-alpha*</code> tags only</strong></td>
 </tr>
 </tbody></table>
 <p>Releases publish automatically as <strong>pre-releases</strong> (<code>prerelease: true</code>). Flip to stable in the workflow when ready.</p>

@@ -222,7 +222,7 @@ body {
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
-          <p class="doc-path">docs/SECURITY_MODEL.md</p>
+          <p class="doc-path">docs\SECURITY_MODEL.md</p>
           <a href="#trust-boundaries" class="toc-h2">Trust boundaries</a>
 <a href="#preview-sandbox" class="toc-h2">Preview sandbox</a>
 <a href="#filesystem-access-desktop" class="toc-h2">Filesystem access (desktop)</a>
@@ -237,12 +237,12 @@ body {
         <h2>Security Model</h2>
         <p class="formats">Also available: <a href="SECURITY_MODEL.md">Markdown</a> · <a href="SECURITY_MODEL.txt">Plain text</a></p>
       </header>
-      <h1 id="security-model-gnomad-webcanvas">Security Model — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-beta.2<br><strong>Last updated:</strong> June 2026</p>
+      <h1 id="security-model-gnomad-webcanvas">Security Model — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-alpha.1 (Windows) / 0.1.0-beta.6 (Linux &amp; macOS)<br><strong>Last updated:</strong> June 2026</p>
 <hr>
 <h2 id="trust-boundaries">Trust boundaries</h2><p>Gnomad Webcanvas executes <strong>user-authored HTML, CSS, and JavaScript</strong> in a preview iframe. The app itself is trusted; user code is untrusted.</p>
 <pre><code>┌─────────────────────────────────────────┐
-│  Trusted: React UI, Monaco, Zustand     │
-│  Trusted: Tauri shell, dialog, fs       │
+│  Trusted: React UI, Monaco, Zustand   │
+│  Trusted: Tauri shell, dialog, IPC      │
 ├─────────────────────────────────────────┤
 │  User-selected: local files (desktop)   │
 ├─────────────────────────────────────────┤
@@ -282,15 +282,23 @@ body {
 </thead>
 <tbody><tr>
 <td>Scope</td>
-<td>User-selected paths via native Open/Save dialogs only</td>
+<td>User-selected paths via native Open/Save dialogs or validated absolute paths</td>
 </tr>
 <tr>
 <td>Permissions</td>
-<td><code>fs:allow-read-text-file</code>, <code>fs:allow-write-text-file</code> in capabilities</td>
+<td><strong>No</strong> <code>fs:allow-read-text-file</code> / <code>fs:allow-write-*</code> in capabilities</td>
 </tr>
 <tr>
-<td>No directory traversal</td>
-<td>App does not browse filesystem outside dialog results</td>
+<td>IPC commands</td>
+<td><code>read_text_file_path</code>, <code>write_text_file_path</code>, <code>write_binary_file_path</code></td>
+</tr>
+<tr>
+<td>Path policy</td>
+<td><code>path_guard.rs</code> — home/temp allowlists, blocked system dirs, extension allowlists</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Component-wise path checks (<code>USERPROFILE</code> via <code>dirs</code> crate); no string-prefix bypass</td>
 </tr>
 </tbody></table>
 <p>Tauri capability file: <code>src-tauri/capabilities/default.json</code></p>
@@ -312,11 +320,15 @@ body {
 </tr>
 <tr>
 <td>Monaco editor</td>
-<td>Loads from CDN in development</td>
+<td>Bundled locally in desktop builds</td>
 </tr>
 <tr>
 <td>App backend</td>
-<td>None — no server component in v0.1</td>
+<td>GitHub API for beta updater manifest lookup only</td>
+</tr>
+<tr>
+<td>App shell</td>
+<td>Updater endpoints in <code>tauri.conf.json</code></td>
 </tr>
 </tbody></table>
 <p><strong>Recommendation:</strong> Do not enter secrets (API keys, tokens) in editor panes if sharing URLs or exporting ZIPs.</p>
@@ -336,7 +348,7 @@ body {
 </tr>
 <tr>
 <td>Project code (desktop)</td>
-<td>User-chosen <code>.html</code> files</td>
+<td>User-chosen files on disk</td>
 <td>User-controlled</td>
 </tr>
 <tr>
@@ -347,7 +359,12 @@ body {
 </tbody></table>
 <p>See <a href="PRIVACY.md">PRIVACY.md</a>.</p>
 <hr>
-<h2 id="content-security-policy">Content Security Policy</h2><p><code>tauri.conf.json</code> sets <code>csp: null</code> to allow inline scripts in the WebView for preview assembly. This is acceptable because the app loads local bundled assets — not arbitrary remote HTML as the shell document.</p>
+<h2 id="content-security-policy">Content Security Policy</h2><p><code>tauri.conf.json</code> sets an explicit CSP for the main shell:</p>
+<ul>
+<li><code>script-src &#39;self&#39; &#39;wasm-unsafe-eval&#39;</code> (no <code>unsafe-inline</code> on scripts)</li>
+<li><code>style-src &#39;self&#39; &#39;unsafe-inline&#39;</code> (Tailwind / UI)</li>
+<li>Preview iframe uses its own <code>sandbox</code> attribute</li>
+</ul>
 <hr>
 <h2 id="threat-summary">Threat summary</h2><table>
 <thead>
@@ -373,23 +390,29 @@ body {
 <td>CDN compromise could affect preview</td>
 </tr>
 <tr>
-<td>Path traversal on Save</td>
-<td>Dialog-scoped paths only</td>
+<td>Path traversal on Open/Save</td>
+<td><code>path_guard</code> + dialog paths</td>
+<td>Low when using desktop builds ≥ alpha.1</td>
+</tr>
+<tr>
+<td>Unrestricted FS from WebView</td>
+<td>FS plugin writes removed; IPC only</td>
 <td>Low</td>
 </tr>
 <tr>
-<td>localStorage exfiltration</td>
-<td>Same-origin policy</td>
-<td>Other scripts on same origin could read (web hosting)</td>
+<td>Unsigned desktop updates</td>
+<td>Updater minisign + pubkey in config</td>
+<td>Unsigned Windows installer until code signing configured</td>
 </tr>
 </tbody></table>
 <hr>
 <h2 id="pre-release-checklist">Pre-release checklist</h2><ul>
-<li><input disabled="" type="checkbox"> No secrets in source or default templates</li>
-<li><input disabled="" type="checkbox"> Tauri capabilities minimal (fs + dialog only)</li>
-<li><input disabled="" type="checkbox"> CDN registry URLs use HTTPS</li>
-<li><input disabled="" type="checkbox"> Share URL payload contains no automatic network callbacks</li>
-<li><input disabled="" type="checkbox"> Release binaries built from tagged CI commits</li>
+<li><input checked="" disabled="" type="checkbox"> No secrets in source or default templates</li>
+<li><input checked="" disabled="" type="checkbox"> Tauri capabilities minimal (dialog + IPC commands only)</li>
+<li><input checked="" disabled="" type="checkbox"> CDN registry URLs use HTTPS</li>
+<li><input checked="" disabled="" type="checkbox"> Share URL payload contains no automatic network callbacks</li>
+<li><input disabled="" type="checkbox"> Windows code signing (SmartScreen) — optional CI secrets</li>
+<li><input disabled="" type="checkbox"> macOS notarization — optional CI secrets</li>
 </ul>
 <hr>
 <p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

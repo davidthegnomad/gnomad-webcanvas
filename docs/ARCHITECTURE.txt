@@ -1,12 +1,12 @@
 ════════════════════════════════════════════════════════════════════════
   ARCHITECTURE
-  Gnomad Webcanvas · docs/ARCHITECTURE.md
+  Gnomad Webcanvas · docs\ARCHITECTURE.md
 ════════════════════════════════════════════════════════════════════════
 
 ARCHITECTURE — GNOMAD WEBCANVAS
 ===============================
 
-Version: 0.1.0-beta.2  
+Version: 0.1.0-alpha.1 / 0.1.0-beta.6  
 Last updated: June 2026
 
 ────────────────────────────────────────
@@ -53,7 +53,7 @@ LAYER RESPONSIBILITIES
   React UI         |  Layout, editor UX, preview assembly, sharing  |  Direct filesystem without bridge       
   Zustand store    |  Code, projects, preview settings              |  Persistence format (delegated to utils)
   Platform bridge  |  Open/Save abstraction                         |  UI rendering                           
-  Tauri plugins    |  Native dialogs, file read/write               |  Editor logic                           
+  Tauri shell      |  Native dialogs, guarded IPC file I/O          |  Editor logic                           
   Preview iframe   |  User HTML/CSS/JS execution                    |  Parent DOM access (sandboxed)          
 
 ────────────────────────────────────────

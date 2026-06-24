@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   TROUBLESHOOTING
-  Gnomad Webcanvas · docs/TROUBLESHOOTING.md
+  Gnomad Webcanvas · docs\TROUBLESHOOTING.md
 ════════════════════════════════════════════════════════════════════════
 
 TROUBLESHOOTING — GNOMAD WEBCANVAS

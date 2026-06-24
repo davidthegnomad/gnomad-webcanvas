@@ -7,7 +7,7 @@ GNOMAD WEBCANVAS
 ================
 
 Beta
-Version
+Version-818cf8)
 Platforms
 
 Gnomad Webcanvas is a live HTML/CSS/JS playground with Monaco editing, instant iframe preview, project export, URL sharing, and native Open/Save on desktop — built with Tauri and React.
@@ -28,17 +28,17 @@ Quick UI experiments shouldn't require spinning up a dev server or switching to 
 CAPABILITIES (V0.1.0)
 ---------------------
 
-  Area       |  What you get                                                            
-  Editor     |  Monaco HTML/CSS/JS panes, resizable layout, dark/light/hc themes        
-  Preview    |  Live iframe, viewport presets, console capture, fullscreen              
-  Projects   |  Multi-project localStorage, starter templates                           
-  Libraries  |  Toggle CDN libs (Tailwind, GSAP, Three.js, …)                           
-  Tools      |  Color picker, CSS generator, font pairings                              
-  Export     |  ZIP download (index.html + style.css + script.js)                       
-  Share      |  LZ-compressed URL hash — no backend                                     
-  Desktop    |  Tauri Open/Save (DOMParser file parsing), window title + dirty indicator
-  Testing    |  Vitest unit tests (19) for parser, share URL, preview assembler         
-  Platform   |  macOS, Windows, Linux installers via CI; web via Vite                   
+  Area       |  What you get                                                                 
+  Editor     |  Monaco HTML/CSS/JS panes, resizable layout, dark/light/hc themes             
+  Preview    |  Live iframe, viewport presets, console capture, fullscreen                   
+  Projects   |  Multi-project localStorage, starter templates                                
+  Libraries  |  Toggle CDN libs (Tailwind, GSAP, Three.js, …)                                
+  Tools      |  Color picker, CSS generator, font pairings                                   
+  Export     |  ZIP download (index.html + style.css + script.js)                            
+  Share      |  LZ-compressed URL hash — no backend                                          
+  Desktop    |  Tauri Open/Save (DOMParser file parsing), window title + dirty indicator     
+  Testing    |  Vitest unit tests (32) for parser, share URL, preview assembler, path helpers
+  Platform   |  Linux & macOS beta.6; Windows alpha.1; web via Vite                          
 
 ────────────────────────────────────────
 
@@ -60,14 +60,17 @@ Prerequisites: Node.js LTS, Rust stable, Tauri v2 platform deps
     npm install
     npm run dev          # Web: http://localhost:5173
     npm run tauri:dev    # Desktop shell + Vite HMR
-    npm run test         # Vitest unit tests (19)
+    npm run test         # Vitest unit tests (32)
     npm run lint         # ESLint
+    npm run tauri:build:linux    # Linux beta
+    npm run tauri:build:macos    # macOS beta
+    npm run tauri:build:windows  # Windows alpha (NSIS)
 
 Production build:
 
   [bash]
     npm run build
-    npm run tauri:build
+    npm run tauri:build:linux   # or :macos / :windows
 
 ────────────────────────────────────────
 
@@ -80,7 +83,7 @@ ARCHITECTURE (SUMMARY)
     └───────────────────────────┬─────────────────────────────┘
                                 │ platformBridge (web vs Tauri)
     ┌───────────────────────────▼─────────────────────────────┐
-    │  Tauri 2: fs + dialog plugins (Open/Save)             │
+    │  Tauri 2: guarded IPC file commands + native dialogs │
     └─────────────────────────────────────────────────────────┘
 
 Deep dive: docs/TECH_STACK.md · docs/ARCHITECTURE.md

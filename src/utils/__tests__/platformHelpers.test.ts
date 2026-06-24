@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { formatShortcut, isMacOS, modKeyLabel, modShortcut } from '../modKeyLabel';
-import { basename } from '../pathUtils';
+import { basename, fileExtension } from '../pathUtils';
 import { addRecentFile, getRecentFiles, clearRecentFiles } from '../recentFiles';
 import { isFileBackedSession } from '../platformBridge';
 
@@ -29,6 +29,11 @@ describe('pathUtils', () => {
   it('basename handles posix and windows paths', () => {
     expect(basename('/tmp/project.html')).toBe('project.html');
     expect(basename('C:\\Users\\me\\page.htm')).toBe('page.htm');
+  });
+
+  it('fileExtension handles windows paths', () => {
+    expect(fileExtension('C:\\Users\\me\\style.css')).toBe('css');
+    expect(fileExtension('/tmp/noext')).toBe('');
   });
 });
 

@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   SHIPPING GNOMAD WEBCANVAS ON LINUX
-  Gnomad Webcanvas · docs/blog/2026-06-23-shipping-linux-beta.md
+  Gnomad Webcanvas · docs\blog\2026-06-23-shipping-linux-beta.md
 ════════════════════════════════════════════════════════════════════════
 
 SHIPPING GNOMAD WEBCANVAS ON LINUX — BETA 6

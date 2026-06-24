@@ -218,13 +218,13 @@
   <body>
     <div class="wrap">
       <div class="logo" aria-hidden="true">WC</div>
-      <p class="badge">Public Beta</p>
+      <p class="badge">Windows Alpha · Linux/macOS Beta</p>
       <h1>Gnomad Webcanvas</h1>
       <p class="subtitle">
         Live HTML, CSS &amp; JavaScript editor with instant preview.
         Use it in your browser or install the desktop app.
       </p>
-      <p class="version">Version 0.1.0-beta.6</p>
+      <p class="version">Windows <strong>0.1.0-alpha.1</strong> · Linux/macOS <strong>0.1.0-beta.6</strong></p>
 
       <div class="cards">
         <div class="card">
@@ -240,12 +240,30 @@
       </div>
 
       <section class="downloads">
-        <h2>Download desktop (beta)</h2>
+        <h2>Download Windows (Alpha)</h2>
+        <ul>
+          <li>
+            <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-alpha.1" target="_blank" rel="noopener noreferrer">
+              <span>v0.1.0-alpha.1 — NSIS installer (.exe)</span>
+              <span class="hint">Windows 10/11 · x64</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/expanded_assets/v0.1.0-alpha.1" target="_blank" rel="noopener noreferrer">
+              <span>All Windows Alpha assets</span>
+              <span class="hint">Checksums on release page</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="downloads" style="margin-top: 1.5rem">
+        <h2>Download Linux &amp; macOS (Beta)</h2>
         <ul>
           <li>
             <a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-beta.6" target="_blank" rel="noopener noreferrer">
-              <span>v0.1.0-beta.6 (latest)</span>
-              <span class="hint">Linux · Windows · macOS</span>
+              <span>v0.1.0-beta.6 (latest beta)</span>
+              <span class="hint">.rpm · .deb · AppImage · .dmg</span>
             </a>
           </li>
           <li>
@@ -264,6 +282,11 @@
       </section>
 
       <p class="note">
+        <strong>Windows Alpha:</strong> Early release — limited testing. SmartScreen may warn on unsigned installer.
+        Read the <a href="https://davidthegnomad.github.io/gnomad-webcanvas/blog/2026-06-24-windows-alpha-security.html" style="color: var(--accent-hover)">Windows Alpha ship post</a> for details.
+      </p>
+
+      <p class="note" style="margin-top: 1rem">
         <strong>Linux tip:</strong> On Wayland/KDE, if the window is blank, launch with
         <code>GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 gnomad-webcanvas</code>.
         Prefer the <strong>.rpm</strong> on Fedora/Nobara. Read the

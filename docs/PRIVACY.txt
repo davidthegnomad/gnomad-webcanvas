@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   PRIVACY
-  Gnomad Webcanvas · docs/PRIVACY.md
+  Gnomad Webcanvas · docs\PRIVACY.md
 ════════════════════════════════════════════════════════════════════════
 
 PRIVACY — GNOMAD WEBCANVAS

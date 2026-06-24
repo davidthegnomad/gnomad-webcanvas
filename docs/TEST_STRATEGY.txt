@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   TEST STRATEGY
-  Gnomad Webcanvas · docs/TEST_STRATEGY.md
+  Gnomad Webcanvas · docs\TEST_STRATEGY.md
 ════════════════════════════════════════════════════════════════════════
 
 TEST STRATEGY — GNOMAD WEBCANVAS

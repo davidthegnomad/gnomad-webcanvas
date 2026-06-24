@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   TECHNOLOGY STACK
-  Gnomad Webcanvas · docs/TECH_STACK.md
+  Gnomad Webcanvas · docs\TECH_STACK.md
 ════════════════════════════════════════════════════════════════════════
 
 TECHNOLOGY STACK — GNOMAD WEBCANVAS

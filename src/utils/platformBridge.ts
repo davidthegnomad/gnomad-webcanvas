@@ -33,6 +33,17 @@ const ZIP_SAVE_FILTER = {
   extensions: ['zip'],
 };
 
+function dialogPath(result: unknown): string | null {
+  if (typeof result !== 'string' || result.length === 0) return null;
+  return result;
+}
+
+function hasAllowedExtension(filePath: string): boolean {
+  const base = filePath.replace(/\\/g, '/').split('/').pop() ?? filePath;
+  const ext = base.includes('.') ? base.split('.').pop()?.toLowerCase() ?? '' : '';
+  return OPEN_FILE_EXTENSIONS.includes(ext);
+}
+
 // Web implementation — no native file access
 const webBridge: PlatformBridge = {
   isDesktop: false,
@@ -44,38 +55,42 @@ const webBridge: PlatformBridge = {
 
 async function createTauriBridge(): Promise<PlatformBridge> {
   const { open, save } = await import('@tauri-apps/plugin-dialog');
-  const { readTextFile, writeTextFile, writeFile } = await import('@tauri-apps/plugin-fs');
+  const { invoke } = await import('@tauri-apps/api/core');
 
   const writeProject = async (html: string, css: string, js: string, path: string) => {
     const content = assembleFullHtml(html, css, js);
-    await writeTextFile(path, content);
+    await invoke('write_text_file_path', { path, content });
     return path;
   };
 
   const saveProjectAs = async (html: string, css: string, js: string) => {
-    const path = await save({
-      filters: [HTML_SAVE_FILTER],
-      defaultPath: 'project.html',
-    });
+    const path = dialogPath(
+      await save({
+        filters: [HTML_SAVE_FILTER],
+        defaultPath: 'project.html',
+      }),
+    );
 
     if (!path) return null;
-    return writeProject(html, css, js, path as string);
+    return writeProject(html, css, js, path);
   };
 
   const openProject = async (presetPath?: string) => {
     const path =
       presetPath ??
-      (await open({
-        multiple: false,
-        filters: [WEB_FILE_FILTER],
-      }));
+      dialogPath(
+        await open({
+          multiple: false,
+          filters: [WEB_FILE_FILTER],
+        }),
+      );
 
     if (!path) return null;
+    if (!hasAllowedExtension(path)) return null;
 
-    const filePath = path as string;
-    const content = await readTextFile(filePath);
-    const parsed = parseFileContent(content, filePath);
-    return { ...parsed, filePath };
+    const content = await invoke<string>('read_text_file_path', { path });
+    const parsed = parseFileContent(content, path);
+    return { ...parsed, filePath: path };
   };
 
   return {
@@ -89,13 +104,15 @@ async function createTauriBridge(): Promise<PlatformBridge> {
     },
     saveProjectAs,
     exportZip: async (blob, defaultName) => {
-      const path = await save({
-        filters: [ZIP_SAVE_FILTER],
-        defaultPath: defaultName.endsWith('.zip') ? defaultName : `${defaultName}.zip`,
-      });
+      const path = dialogPath(
+        await save({
+          filters: [ZIP_SAVE_FILTER],
+          defaultPath: defaultName.endsWith('.zip') ? defaultName : `${defaultName}.zip`,
+        }),
+      );
       if (!path) return false;
       const bytes = new Uint8Array(await blob.arrayBuffer());
-      await writeFile(path as string, bytes);
+      await invoke('write_binary_file_path', { path, content: Array.from(bytes) });
       return true;
     },
   };

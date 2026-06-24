@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   UI DESIGN
-  Gnomad Webcanvas · docs/UI_DESIGN.md
+  Gnomad Webcanvas · docs\UI_DESIGN.md
 ════════════════════════════════════════════════════════════════════════
 
 UI DESIGN — GNOMAD WEBCANVAS

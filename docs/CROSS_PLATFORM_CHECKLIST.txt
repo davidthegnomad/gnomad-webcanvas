@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   CROSS-PLATFORM CHECKLIST
-  Gnomad Webcanvas · docs/CROSS_PLATFORM_CHECKLIST.md
+  Gnomad Webcanvas · docs\CROSS_PLATFORM_CHECKLIST.md
 ════════════════════════════════════════════════════════════════════════
 
 CROSS-PLATFORM CHECKLIST — GNOMAD WEBCANVAS

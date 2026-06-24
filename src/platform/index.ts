@@ -1,6 +1,7 @@
 import { detectAppPlatform, desktopPlatformLabel } from './detect';
 import { getLinuxRuntime, logLinuxDevHints } from './linux';
 import { getMacRuntime } from './macos';
+import { getWindowsRuntime } from './windows';
 import type { PlatformRuntime } from './types';
 
 export type { AppPlatform, DesktopPlatform, PlatformRuntime } from './types';
@@ -20,10 +21,11 @@ export function getPlatformRuntime(): PlatformRuntime {
     case 'macos':
       return getMacRuntime();
     case 'windows':
-    case 'unknown':
-      return { kind, label: desktopPlatformLabel(kind === 'unknown' ? 'unknown' : kind), webkitEnvHints: {} };
-    default:
+      return getWindowsRuntime();
+    case 'web':
       return WEB_RUNTIME;
+    case 'unknown':
+      return { kind, label: desktopPlatformLabel('unknown'), webkitEnvHints: {} };
   }
 }
 

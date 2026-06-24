@@ -1,6 +1,6 @@
 # Architecture — Gnomad Webcanvas
 
-**Version:** 0.1.0-beta.2  
+**Version:** 0.1.0-alpha.1 / 0.1.0-beta.6  
 **Last updated:** June 2026
 
 ---
@@ -47,7 +47,7 @@ Gnomad Webcanvas is a **live HTML/CSS/JS editor** with instant preview. Users wr
 | **React UI** | Layout, editor UX, preview assembly, sharing | Direct filesystem without bridge |
 | **Zustand store** | Code, projects, preview settings | Persistence format (delegated to utils) |
 | **Platform bridge** | Open/Save abstraction | UI rendering |
-| **Tauri plugins** | Native dialogs, file read/write | Editor logic |
+| **Tauri shell** | Native dialogs, guarded IPC file I/O | Editor logic |
 | **Preview iframe** | User HTML/CSS/JS execution | Parent DOM access (sandboxed) |
 
 ---

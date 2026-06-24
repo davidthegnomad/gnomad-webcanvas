@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   DEMO SCRIPT
-  Gnomad Webcanvas · docs/DEMO_SCRIPT.md
+  Gnomad Webcanvas · docs\DEMO_SCRIPT.md
 ════════════════════════════════════════════════════════════════════════
 
 DEMO SCRIPT — GNOMAD WEBCANVAS

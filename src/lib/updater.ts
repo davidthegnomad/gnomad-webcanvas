@@ -11,6 +11,12 @@ export interface UpdateCheckResult {
   warning?: string;
 }
 
+export interface InstallUpdateResult {
+  installed: boolean;
+  restartRequired: boolean;
+  version?: string;
+}
+
 export async function checkForUpdates(channel = 'beta'): Promise<UpdateCheckResult> {
   if (!isDesktop()) {
     return {
@@ -22,7 +28,14 @@ export async function checkForUpdates(channel = 'beta'): Promise<UpdateCheckResu
   return invoke<UpdateCheckResult>('check_for_updates', { channel });
 }
 
-export async function installUpdate(channel = 'beta'): Promise<void> {
+export async function installUpdate(channel = 'beta'): Promise<InstallUpdateResult> {
+  if (!isDesktop()) {
+    return { installed: false, restartRequired: false };
+  }
+  return invoke<InstallUpdateResult>('install_update', { channel });
+}
+
+export async function restartApp(): Promise<void> {
   if (!isDesktop()) return;
-  await invoke('install_update', { channel });
+  await invoke('restart_app');
 }

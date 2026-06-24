@@ -5,12 +5,14 @@ mod desktop;
 mod macos;
 #[cfg(target_os = "linux")]
 mod linux;
-#[cfg(all(not(target_os = "macos"), not(target_os = "linux")))]
-mod other;
+#[cfg(target_os = "windows")]
+mod windows;
 
 #[cfg(target_os = "macos")]
 pub use macos::build_menu;
 #[cfg(target_os = "linux")]
 pub use linux::build_menu;
-#[cfg(all(not(target_os = "macos"), not(target_os = "linux")))]
-pub use other::build_menu;
+#[cfg(target_os = "windows")]
+pub use windows::build_menu;
+#[cfg(all(not(target_os = "macos"), not(target_os = "linux"), not(target_os = "windows")))]
+pub use desktop::build_menu;

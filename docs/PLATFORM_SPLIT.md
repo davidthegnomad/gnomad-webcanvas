@@ -1,15 +1,19 @@
-# Platform split — Linux vs macOS
+# Platform split — Linux, macOS, and Windows
 
-Gnomad Preview ships **separate platform builds** with dedicated code paths. Shared React UI; platform logic lives in Rust modules and thin TS helpers.
+Gnomad Webcanvas ships **separate platform builds** with dedicated code paths. Shared React UI; platform logic lives in Rust modules, Tauri config overlays, and thin TS helpers.
 
 ## Build commands
 
-| Platform | Command | Artifacts |
-|----------|---------|-----------|
-| **Linux** | `npm run tauri:build:linux` | `.deb`, `.rpm`, AppImage |
-| **macOS** | `npm run tauri:build:macos` | `.app`, `.dmg` |
-| Dev Linux | `npm run tauri:dev:linux` | X11 WebKit fallback |
-| Dev macOS | `npm run tauri:dev:macos` | Native |
+| Platform | Command | Artifacts | Channel |
+|----------|---------|-----------|---------|
+| **Linux** | `npm run tauri:build:linux` | `.deb`, `.rpm`, AppImage | Beta (`0.1.0-beta.6`) |
+| **macOS** | `npm run tauri:build:macos` | `.app`, `.dmg` | Beta (`0.1.0-beta.6`) |
+| **Windows** | `npm run tauri:build:windows` | NSIS `.exe` | **Alpha** (`0.1.0-alpha.1`) |
+| Dev Linux | `npm run tauri:dev:linux` | X11 WebKit fallback | — |
+| Dev macOS | `npm run tauri:dev:macos` | Native | — |
+| Dev Windows | `npm run tauri:dev:windows` | Native + Win config | — |
+
+**Do not run plain `npm run tauri:build` for releases** — base `tauri.conf.json` has `bundle.targets: []`. Always use the platform script or CI matrix config.
 
 ## Code layout
 
@@ -18,20 +22,26 @@ src-tauri/src/
   menu/
     linux.rs      # File / Edit / Window / Help
     macos.rs      # App / File / Edit / Window (HIG)
+    desktop.rs    # Shared File menu (Linux + Windows)
+    windows.rs    # Windows → re-exports desktop menu
   platform/
     linux.rs      # Linux startup hooks
     macos.rs      # Activation policy + dock reopen
-  lib.rs          # Shared IPC, file queue, window close
+  path_guard.rs   # Cross-platform IPC path policy (home, temp, blocked system dirs)
+  lib.rs          # Shared IPC, async file I/O, window close
 
 src/platform/
   linux.ts        # Wayland/WebKit dev hints
   macos.ts        # macOS runtime label
-  detect.ts       # OS detection from Tauri UA
+  windows.ts      # Windows runtime label
+  detect.ts       # OS detection (Tauri command + UA fallback)
   index.ts        # initPlatform() at boot
 
 src-tauri/
-  tauri.linux.conf.json   # bundle targets: deb, rpm, appimage
-  tauri.macos.conf.json   # bundle targets: app, dmg
+  tauri.conf.json         # Shared app shell, CSP, updater pubkey
+  tauri.linux.conf.json   # bundle targets: deb, rpm, appimage · version beta.6
+  tauri.macos.conf.json   # bundle targets: app, dmg · version beta.6
+  tauri.windows.conf.json # bundle targets: nsis · file associations · version alpha.1
 ```
 
 ## Linux optimizations
@@ -46,21 +56,36 @@ src-tauri/
 - App menu with Services, Hide, standard Quit
 - `Bring All to Front` in Window menu
 - Dock icon reopen handler (`RunEvent::Reopen`)
-- DMG-only bundle config (no Linux artifacts on Mac CI)
+- DMG-only bundle config (no Linux/Windows artifacts on Mac CI)
+
+## Windows (Alpha)
+
+- NSIS installer via `tauri.windows.conf.json` only
+- File associations (`.html`, `.css`, `.js`, `.md`) — Windows config only
+- WebView2 silent bootstrapper
+- Guarded IPC read/write (`read_text_file_path`, `write_*`) — no direct `fs` plugin from frontend
+- **Alpha channel** — limited QA; use beta Linux/macOS builds for daily driver
 
 ## CI guidance
 
-- **ubuntu-latest** → `npm run tauri:build:linux`
-- **macos-latest** → `npm run tauri:build:macos`
-- Do not run full `tauri:build` on either; use platform scripts.
+| Tag pattern | Workflow job | Platforms |
+|-------------|----------------|-----------|
+| `v*-alpha*` | `build-windows-alpha` | Windows only |
+| `v*-beta*`, `v*` (no alpha) | `build-release` | Linux + macOS |
+
+- **ubuntu-latest** → `tauri.linux.conf.json`
+- **macos-latest** → `tauri.macos.conf.json`
+- **windows-latest** → `tauri.windows.conf.json` (alpha tags only)
 
 ## Multi-file open (CLI / file manager)
 
 When multiple supported files are passed at startup (or via second instance), Rust emits `webcanvas:pending-files` with the full list. **The frontend currently opens only the first file** — remaining paths are ignored. This is intentional for v0.1; a file-picker or “open all” flow may come later.
 
-Single-file opens use `webcanvas:open-file` directly. Pending paths queued before the window exists are flushed via `take_pending_open_files` on mount.
+Single-file and multi-file opens use `webcanvas:pending-files`. Paths queued before the window exists are flushed via `take_pending_open_files` on mount.
 
-## Security (P0/P1)
+## Security
 
-- **CSP** configured in `tauri.conf.json` for the main shell (preview iframe uses its own `sandbox` attribute).
-- **`read_text_file_path`** resolves paths via `path_guard.rs` — blocks `/etc`, `/proc`, etc.; allows `$HOME`, `/tmp`, `/mnt`, `/media`.
+- **CSP** in base `tauri.conf.json` — `script-src` without `unsafe-inline`; Monaco uses `'wasm-unsafe-eval'`
+- **Guarded IPC** — `path_guard.rs` validates paths (component-wise home/temp checks on Windows; blocks system dirs)
+- **No `fs` plugin permissions** in `capabilities/default.json` — reads/writes go through Rust commands only
+- **Updater** — minisign signature verified by `tauri-plugin-updater`; user confirms restart after install

@@ -143,13 +143,13 @@
   <body>
     <div class="glow" aria-hidden="true"></div>
     <main class="wrap">
-      <p class="badge">Beta · Gnomad Webcanvas</p>
+      <p class="badge">Windows Alpha · Linux/macOS Beta</p>
       <h1>⚡ Gnomad Webcanvas</h1>
       <p class="lead">
         A live HTML/CSS/JS playground with Monaco editing, instant iframe preview,
         project export, and native Open/Save on desktop — by Gnomad Studio.
       </p>
-      <p class="version">Current version: <strong>v0.1.0-beta.6</strong></p>
+      <p class="version">Windows <strong>v0.1.0-alpha.1</strong> · Linux/macOS <strong>v0.1.0-beta.6</strong></p>
 
       <div class="panes" aria-hidden="true">
         <span class="pane-dot html">HTML</span>
@@ -162,12 +162,16 @@
         Runs in the <strong>browser</strong> (<code>npm run dev</code>) or as a
         <strong>Tauri desktop app</strong> (<code>npm run tauri:dev</code>).
         Same React codebase, platform bridge for file I/O.
-        <strong>31 Vitest unit tests</strong> cover core utils (<code>npm run test</code>).
+        <strong>32 Vitest unit tests</strong> cover core utils (<code>npm run test</code>).
       </div>
 
       <section style="margin-top: 2rem">
         <h2>Latest</h2>
         <div class="cards">
+          <a class="card" href="blog/2026-06-24-windows-alpha-security.html">
+            <strong>📝 Windows Alpha 1 — security &amp; platform split</strong>
+            <span>Guarded IPC, path hardening, separate Windows/Linux/macOS release channels (Jun 24, 2026)</span>
+          </a>
           <a class="card" href="blog/2026-06-23-shipping-linux-beta.html">
             <strong>📝 Shipping Linux — Beta 6</strong>
             <span>Monaco CSP fix, quit/close, RPM installs, and what we learned (Jun 23, 2026)</span>
@@ -181,6 +185,10 @@
           <a class="card" href="app/">
             <strong>▶ Play in browser</strong>
             <span>Live HTML/CSS/JS editor — no install</span>
+          </a>
+          <a class="card" href="../get/">
+            <strong>⬇ Download desktop</strong>
+            <span>Windows Alpha installer · Linux/macOS Beta</span>
           </a>
         </div>
       </section>

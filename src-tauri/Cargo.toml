@@ -1,6 +1,6 @@
 [package]
 name = "gnomad-webcanvas"
-version = "0.1.0-beta.6"
+version = "0.1.0-alpha.1"
 description = "Gnomad Webcanvas — live HTML/CSS/JS editor"
 authors = ["Gnomad Studio"]
 license = "MIT"
@@ -20,11 +20,11 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.11.2", features = [] }
 tauri-plugin-log = "2"
-tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-clipboard-manager = "2"
 url = "2"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+dirs = "6"
+ureq = { version = "3", features = ["json"] }

@@ -1,6 +1,6 @@
-import { parseHtmlFile, assembleFullHtml } from './parseHtmlFile';
+import { parseHtmlFile } from './parseHtmlFile';
 
-export { assembleFullHtml };
+import { fileExtension } from './pathUtils';
 
 export const OPEN_FILE_EXTENSIONS = ['html', 'htm', 'txt', 'css', 'js', 'md'];
 
@@ -8,7 +8,7 @@ export function parseFileContent(
   content: string,
   filePath: string,
 ): { html: string; css: string; js: string } {
-  const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
+  const ext = fileExtension(filePath);
 
   switch (ext) {
     case 'css':
@@ -18,7 +18,7 @@ export function parseFileContent(
     case 'txt':
     case 'md':
       return {
-        html: `<pre class="text-file">${escapeHtml(content)}</pre>`,
+        html: `<pre class="text-file">${escapeHtmlTextContent(content)}</pre>`,
         css: `pre.text-file {
   white-space: pre-wrap;
   word-break: break-word;
@@ -36,9 +36,12 @@ export function parseFileContent(
   }
 }
 
-function escapeHtml(text: string): string {
+/** Escape text for safe insertion inside HTML text nodes (not attribute values). */
+function escapeHtmlTextContent(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

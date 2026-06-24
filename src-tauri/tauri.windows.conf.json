@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0-alpha.1",
+  "bundle": {
+    "targets": ["nsis"],
+    "fileAssociations": [
+      {
+        "ext": ["html", "htm"],
+        "name": "HTML Document",
+        "description": "HTML document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["css"],
+        "name": "CSS Stylesheet",
+        "description": "CSS stylesheet",
+        "role": "Editor"
+      },
+      {
+        "ext": ["js"],
+        "name": "JavaScript",
+        "description": "JavaScript source file",
+        "role": "Editor"
+      },
+      {
+        "ext": ["md"],
+        "name": "Markdown",
+        "description": "Markdown document",
+        "role": "Editor"
+      }
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "languages": ["English"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

@@ -12,6 +12,83 @@ Format based on Keep a Changelog.
 
 ────────────────────────────────────────
 
+[0.1.0-ALPHA.1] — 2026-06-24
+----------------------------
+
+Windows Alpha
+
+First Windows Alpha release — separate from Linux/macOS Beta 6 channel. Use for early feedback only.
+
+Added
+
+  • tauri.windows.conf.json — Windows-only NSIS bundle, file associations, WebView2 bootstrapper
+  • scripts/build-windows-release.sh / .ps1 and npm run tauri:build:windows
+  • src/platform/windows.ts, src-tauri/src/menu/windows.rs
+  • Parallel AI code reviews (GLM, Kimi, Qwen via NVIDIA NIM) with combined action reports in reviews/
+  • GitHub Pages download section for Windows Alpha installer
+
+Security (P0 hardening)
+
+  • Cross-platform path_guard (dirs crate, component-wise Windows checks)
+  • Guarded IPC file commands — removed unrestricted fs plugin writes from frontend
+  • CSP tightened (script-src without unsafe-inline)
+  • Async file I/O via spawn_blocking (no main-thread blocking reads)
+  • Updater: validated release tags, HTTP timeouts, user-confirmed restart (restart_app)
+
+Changed
+
+  • App.tsx decomposed into hooks (useProjectHydration, useTauriDesktopEvents, etc.)
+  • CI: v-alpha tags build Windows only; v-beta tags build Linux + macOS
+  • Base tauri.conf.json — shared shell only; platform configs own bundle targets
+
+Fixed
+
+  • Windows USERPROFILE path resolution (was Linux-only HOME)
+  • Prefix confusion in path allowlists (C:\Users\Alice vs AliceMalicious)
+  • Multi-file CLI open now emits webcanvas:pending-files consistently
+
+────────────────────────────────────────
+
+[0.1.0-BETA.6] — 2026-06-23
+---------------------------
+
+Added
+
+  • Linux/macOS platform split (menus, build configs, runtime hooks)
+  • Bundled Monaco editor (offline; no CDN dependency under CSP)
+  • Robust File/Help menu bar with Close, About, and Check for Updates
+  • finish_close flow for reliable Quit on Linux
+  • scripts/launch-linux.sh — kills stale AppImage extracts before launch
+  • Path guard for desktop file reads (blocks system paths)
+  • Unit tests for update status helpers and path guard
+
+Fixed
+
+  • HTML/CSS/JS editors stuck on “Loading editor…” (CSP blocked jsDelivr Monaco CDN)
+  • Window Quit/Close blocked after unsaved-changes hook (prevent_close without release)
+  • Stale AppImage extract pointing at localhost:5173 instead of bundled assets
+  • Linux AppImage build on Fedora 43+ (NO_STRIP=1)
+
+────────────────────────────────────────
+
+[0.1.0-BETA.3] — 2026-06-09
+---------------------------
+
+Added
+
+  • Custom WC app icon (Tauri bundle + web favicon)
+  • Native macOS menu bar with About modal and in-app updater
+  • Desktop export via native Save dialog (ZIP)
+  • Share copies public GitHub Pages URL on desktop
+
+Fixed
+
+  • Templates and CDN libs now update Monaco editor and live preview
+  • Cmd+Tab app switcher (activation policy, single-instance focus, dock reopen)
+  • Default HTML template: Welcome to Webcanvas!
+
+────────────────────────────────────────
+
 [0.1.0-BETA.2] — 2026-06-01
 ---------------------------
 

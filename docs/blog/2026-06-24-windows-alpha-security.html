@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shipping Windows Alpha — Gnomad Webcanvas</title>
+  <meta name="description" content="Shipping Windows Alpha documentation for Gnomad Webcanvas." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
+          <p class="doc-path">docs\blog\2026-06-24-windows-alpha-security.md</p>
+          <a href="#why-a-separate-windows-channel" class="toc-h2">Why a separate Windows channel?</a>
+<a href="#what-we-did-today" class="toc-h2">What we did today</a>
+<a href="#ai-assisted-code-review" class="toc-h3">AI-assisted code review</a>
+<a href="#platform-code-layout" class="toc-h3">Platform code layout</a>
+<a href="#download" class="toc-h2">Download</a>
+<a href="#windows-alpha-expectations" class="toc-h3">Windows Alpha expectations</a>
+<a href="#what39s-next" class="toc-h2">What&#39;s next</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Shipping Windows Alpha</h2>
+        <p class="formats">Also available: <a href="2026-06-24-windows-alpha-security.md">Markdown</a> · <a href="2026-06-24-windows-alpha-security.txt">Plain text</a></p>
+      </header>
+      <h1 id="shipping-windows-alpha-security-hardening-and-platform-split">Shipping Windows Alpha — Security hardening and platform split</h1><p><strong>Date:</strong> 2026-06-24<br><strong>Version:</strong> <code>v0.1.0-alpha.1</code> (Windows only)<br><strong>Linux / macOS:</strong> remain on <strong><code>v0.1.0-beta.6</code></strong></p>
+<hr>
+<p>Today we cut the first <strong>Windows Alpha</strong> for Gnomad Webcanvas — a separate channel from the Linux and macOS <strong>beta</strong> builds you may already be running. We have not done much hands-on Windows QA yet, so we&#39;re calling this <strong>alpha</strong> and keeping beta releases for the platforms we ship daily.</p>
+<h2 id="why-a-separate-windows-channel">Why a separate Windows channel?</h2><p>Linux Beta 6 has been our daily driver on Fedora/Nobara. Windows needs its own bundle config (NSIS, WebView2 bootstrapper, file associations) and its own path-security rules. Rather than risk breaking Linux/macOS installers, we:</p>
+<ol>
+<li>Split Tauri config into <strong>platform overlays</strong> (<code>tauri.linux.conf.json</code>, <code>tauri.macos.conf.json</code>, <code>tauri.windows.conf.json</code>)</li>
+<li>Split CI so <strong><code>v*-alpha*</code> tags build Windows only</strong>; <strong><code>v*-beta*</code> tags still build Linux + macOS</strong></li>
+<li>Pinned Linux/macOS artifact version to <strong>beta.6</strong> in their configs while Windows ships <strong>alpha.1</strong></li>
+</ol>
+<h2 id="what-we-did-today">What we did today</h2><h3 id="ai-assisted-code-review">AI-assisted code review</h3><p>We ran parallel reviews with <strong>GLM 5.1</strong>, <strong>Kimi K2.6</strong>, and <strong>Qwen3.5 122B</strong> (all via NVIDIA NIM), then implemented their consensus <strong>P0</strong> fixes:</p>
+<ul>
+<li><strong>Path guard</strong> — cross-platform <code>path_guard.rs</code> using the <code>dirs</code> crate; component-wise checks on Windows (fixes <code>USERPROFILE</code> and prefix-confusion bugs)</li>
+<li><strong>Guarded IPC</strong> — removed unrestricted Tauri <code>fs</code> writes; all file I/O goes through validated Rust commands</li>
+<li><strong>CSP</strong> — dropped <code>unsafe-inline</code> from <code>script-src</code> in the desktop shell</li>
+<li><strong>Async I/O</strong> — file reads/writes run off the main thread</li>
+<li><strong>Updater</strong> — release tag validation, HTTP timeouts, install completes before user-triggered restart</li>
+</ul>
+<p>Reports live in <a href="../../reviews/"><code>reviews/</code></a> in the repo.</p>
+<h3 id="platform-code-layout">Platform code layout</h3><pre><code>src-tauri/
+  tauri.conf.json          # shared shell
+  tauri.windows.conf.json  # NSIS, file associations, alpha version
+  tauri.linux.conf.json    # deb/rpm/AppImage, beta.6
+  tauri.macos.conf.json    # app/dmg, beta.6
+  src/menu/windows.rs      # Windows menu routing
+src/platform/windows.ts    # Windows runtime helper
+</code></pre>
+<p>See <a href="../PLATFORM_SPLIT.md">PLATFORM_SPLIT.md</a> for the full map.</p>
+<h2 id="download">Download</h2><table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Channel</th>
+<th>Get it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Windows</strong></td>
+<td>Alpha 1</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-alpha.1">GitHub Release v0.1.0-alpha.1</a> · <a href="https://davidthegnomad.github.io/gnomad-webcanvas/get/">Get page</a></td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td>Beta 6</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases/tag/v0.1.0-beta.6">v0.1.0-beta.6 release</a></td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td>Beta 6</td>
+<td>same as Linux</td>
+</tr>
+<tr>
+<td><strong>Web</strong></td>
+<td>Always latest</td>
+<td><a href="https://davidthegnomad.github.io/gnomad-webcanvas/app/">Play in browser</a></td>
+</tr>
+</tbody></table>
+<h3 id="windows-alpha-expectations">Windows Alpha expectations</h3><ul>
+<li>NSIS <code>.exe</code> installer (WebView2 bootstrapper downloads if needed)</li>
+<li>File associations for <code>.html</code>, <code>.css</code>, <code>.js</code>, <code>.md</code></li>
+<li><strong>Unsigned</strong> — SmartScreen may warn until we configure code signing</li>
+<li>Please <a href="mailto:david@gnomad.studio?subject=Webcanvas%20Windows%20Alpha%20Feedback">report bugs</a></li>
+</ul>
+<h2 id="what39s-next">What&#39;s next</h2><ul>
+<li>Real-world Windows QA (save/open, associations, updater, multi-monitor)</li>
+<li>Code signing for SmartScreen</li>
+<li>Promote Windows to beta when we&#39;re confident — without touching Linux/macOS version pins</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

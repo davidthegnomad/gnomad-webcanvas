@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   ACCESSIBILITY
-  Gnomad Webcanvas · docs/ACCESSIBILITY.md
+  Gnomad Webcanvas · docs\ACCESSIBILITY.md
 ════════════════════════════════════════════════════════════════════════
 
 ACCESSIBILITY — GNOMAD WEBCANVAS

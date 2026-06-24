@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   RECOMMENDED DOCUMENTATION
-  Gnomad Webcanvas · docs/RECOMMENDED_DOCS.md
+  Gnomad Webcanvas · docs\RECOMMENDED_DOCS.md
 ════════════════════════════════════════════════════════════════════════
 
 RECOMMENDED DOCUMENTATION — PORTFOLIO & PRODUCTION READINESS

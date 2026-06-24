@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   DOCUMENTATION INDEX (ALL FORMATS)
-  Gnomad Webcanvas · docs/DOCS_INDEX.md
+  Gnomad Webcanvas · docs\DOCS_INDEX.md
 ════════════════════════════════════════════════════════════════════════
 
 DOCUMENTATION INDEX (ALL FORMATS) — GNOMAD WEBCANVAS

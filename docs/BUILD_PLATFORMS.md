@@ -37,13 +37,15 @@ npm run test:watch
 
 ## Production build
 
+Use **platform-specific** commands (base `tauri.conf.json` has no bundle targets):
+
 ```bash
-npm run tauri:build
-# CI variant (same build; signing via env — see .env.example)
-npm run tauri:build:ci
+npm run tauri:build:linux    # .deb, .rpm, AppImage
+npm run tauri:build:macos    # .app, .dmg
+npm run tauri:build:windows  # NSIS .exe (Windows Alpha)
 ```
 
-Output under `src-tauri/target/release/bundle/`:
+Output under `src-tauri/target/release/bundle/`.
 
 | Platform | Artifacts |
 |----------|-----------|
@@ -128,15 +130,21 @@ On **Wayland**, use `npm run tauri:dev`. For WebKit/GPU issues, use `npm run tau
 
 ## Windows
 
-Build on Windows with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (Evergreen bootstrapper in `tauri.conf.json`):
+Build on Windows with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (silent bootstrapper in `tauri.windows.conf.json`):
 
 ```bash
-npm run tauri:build
+npm run tauri:build:windows
+# or on Windows:
+powershell -File scripts/build-windows-release.ps1
 ```
 
-Output: `.msi` and NSIS `.exe`.
+Output: NSIS `.exe` installer.
 
-**Code signing:** optional — `WINDOWS_CERTIFICATE` secrets in CI (see `.env.example`).
+**Channel:** `0.1.0-alpha.1` — **Windows Alpha**. Limited QA; feedback welcome via [Get page](https://davidthegnomad.github.io/gnomad-webcanvas/get/).
+
+**Code signing:** optional — `WINDOWS_CERTIFICATE` secrets in CI (see `.env.example`). Unsigned builds may trigger SmartScreen.
+
+**CI:** Windows installers publish only on `v*-alpha*` tags. Linux/macOS beta releases are unaffected.
 
 ---
 
@@ -144,11 +152,11 @@ Output: `.msi` and NSIS `.exe`.
 
 Tagged pushes (`v*`) trigger `.github/workflows/release.yml`:
 
-| Runner | Target |
-|--------|--------|
-| `macos-latest` | `aarch64-apple-darwin`, `x86_64-apple-darwin` |
-| `ubuntu-latest` | `x86_64-unknown-linux-gnu` |
-| `windows-latest` | `x86_64-pc-windows-msvc` |
+| Runner | Target | When |
+|--------|--------|------|
+| `macos-latest` | `aarch64-apple-darwin`, `x86_64-apple-darwin` | `v*-beta*` tags |
+| `ubuntu-latest` | `x86_64-unknown-linux-gnu` | `v*-beta*` tags |
+| `windows-latest` | `x86_64-pc-windows-msvc` | **`v*-alpha*` tags only** |
 
 Releases publish automatically as **pre-releases** (`prerelease: true`). Flip to stable in the workflow when ready.
 

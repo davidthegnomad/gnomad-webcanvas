@@ -1,7 +1,7 @@
 # Gnomad Webcanvas
 
 [![Beta](https://img.shields.io/badge/status-beta-818cf8)](https://davidthegnomad.github.io/gnomad-webcanvas/)
-[![Version](https://img.shields.io/badge/version-0.1.0--beta.3-818cf8)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha.1%20(Win)-818cf8)](CHANGELOG.md)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20Web-333)](docs/BUILD_PLATFORMS.md)
 
 **Gnomad Webcanvas** is a live HTML/CSS/JS playground with Monaco editing, instant iframe preview, project export, URL sharing, and native Open/Save on desktop — built with Tauri and React.
@@ -30,8 +30,8 @@ Quick UI experiments shouldn't require spinning up a dev server or switching to 
 | **Export** | ZIP download (index.html + style.css + script.js) |
 | **Share** | LZ-compressed URL hash — no backend |
 | **Desktop** | Tauri Open/Save (DOMParser file parsing), window title + dirty indicator |
-| **Testing** | Vitest unit tests (19) for parser, share URL, preview assembler |
-| **Platform** | macOS, Windows, Linux installers via CI; web via Vite |
+| **Testing** | Vitest unit tests (32) for parser, share URL, preview assembler, path helpers |
+| **Platform** | Linux & macOS beta.6; **Windows alpha.1**; web via Vite |
 
 ---
 
@@ -52,15 +52,18 @@ cd 05_apps_and_extensions/gnomad-preview
 npm install
 npm run dev          # Web: http://localhost:5173
 npm run tauri:dev    # Desktop shell + Vite HMR
-npm run test         # Vitest unit tests (19)
+npm run test         # Vitest unit tests (32)
 npm run lint         # ESLint
+npm run tauri:build:linux    # Linux beta
+npm run tauri:build:macos    # macOS beta
+npm run tauri:build:windows  # Windows alpha (NSIS)
 ```
 
 **Production build:**
 
 ```bash
 npm run build
-npm run tauri:build
+npm run tauri:build:linux   # or :macos / :windows
 ```
 
 ---
@@ -73,7 +76,7 @@ npm run tauri:build
 └───────────────────────────┬─────────────────────────────┘
                             │ platformBridge (web vs Tauri)
 ┌───────────────────────────▼─────────────────────────────┐
-│  Tauri 2: fs + dialog plugins (Open/Save)             │
+│  Tauri 2: guarded IPC file commands + native dialogs │
 └─────────────────────────────────────────────────────────┘
 ```
 

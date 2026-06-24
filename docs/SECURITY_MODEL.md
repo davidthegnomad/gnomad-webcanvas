@@ -1,6 +1,6 @@
 # Security Model — Gnomad Webcanvas
 
-**Version:** 0.1.0-beta.2  
+**Version:** 0.1.0-alpha.1 (Windows) / 0.1.0-beta.6 (Linux & macOS)  
 **Last updated:** June 2026
 
 ---
@@ -11,8 +11,8 @@ Gnomad Webcanvas executes **user-authored HTML, CSS, and JavaScript** in a previ
 
 ```
 ┌─────────────────────────────────────────┐
-│  Trusted: React UI, Monaco, Zustand     │
-│  Trusted: Tauri shell, dialog, fs       │
+│  Trusted: React UI, Monaco, Zustand   │
+│  Trusted: Tauri shell, dialog, IPC      │
 ├─────────────────────────────────────────┤
 │  User-selected: local files (desktop)   │
 ├─────────────────────────────────────────┤
@@ -39,9 +39,11 @@ Gnomad Webcanvas executes **user-authored HTML, CSS, and JavaScript** in a previ
 
 | Rule | Detail |
 |------|--------|
-| Scope | User-selected paths via native Open/Save dialogs only |
-| Permissions | `fs:allow-read-text-file`, `fs:allow-write-text-file` in capabilities |
-| No directory traversal | App does not browse filesystem outside dialog results |
+| Scope | User-selected paths via native Open/Save dialogs or validated absolute paths |
+| Permissions | **No** `fs:allow-read-text-file` / `fs:allow-write-*` in capabilities |
+| IPC commands | `read_text_file_path`, `write_text_file_path`, `write_binary_file_path` |
+| Path policy | `path_guard.rs` — home/temp allowlists, blocked system dirs, extension allowlists |
+| Windows | Component-wise path checks (`USERPROFILE` via `dirs` crate); no string-prefix bypass |
 
 Tauri capability file: `src-tauri/capabilities/default.json`
 
@@ -53,8 +55,9 @@ Tauri capability file: `src-tauri/capabilities/default.json`
 |--------|---------|
 | User JS in preview | Can fetch any URL (browser/WebView network stack) |
 | CDN libraries | Loaded when user toggles libraries (known registry in `cdnRegistry.ts`) |
-| Monaco editor | Loads from CDN in development |
-| App backend | None — no server component in v0.1 |
+| Monaco editor | Bundled locally in desktop builds |
+| App backend | GitHub API for beta updater manifest lookup only |
+| App shell | Updater endpoints in `tauri.conf.json` |
 
 **Recommendation:** Do not enter secrets (API keys, tokens) in editor panes if sharing URLs or exporting ZIPs.
 
@@ -65,7 +68,7 @@ Tauri capability file: `src-tauri/capabilities/default.json`
 | Data | Location | Sensitivity |
 |------|----------|-------------|
 | Project code (web) | localStorage | Local only; survives browser restarts |
-| Project code (desktop) | User-chosen `.html` files | User-controlled |
+| Project code (desktop) | User-chosen files on disk | User-controlled |
 | Share URLs | URL hash | Visible in browser history and referrer logs |
 
 See [PRIVACY.md](PRIVACY.md).
@@ -74,7 +77,11 @@ See [PRIVACY.md](PRIVACY.md).
 
 ## Content Security Policy
 
-`tauri.conf.json` sets `csp: null` to allow inline scripts in the WebView for preview assembly. This is acceptable because the app loads local bundled assets — not arbitrary remote HTML as the shell document.
+`tauri.conf.json` sets an explicit CSP for the main shell:
+
+- `script-src 'self' 'wasm-unsafe-eval'` (no `unsafe-inline` on scripts)
+- `style-src 'self' 'unsafe-inline'` (Tailwind / UI)
+- Preview iframe uses its own `sandbox` attribute
 
 ---
 
@@ -85,18 +92,20 @@ See [PRIVACY.md](PRIVACY.md).
 | Malicious user JS in preview | iframe isolation | User runs own code deliberately |
 | XSS via shared URL | Recipient loads attacker-crafted hash | Only open links from trusted sources |
 | CDN supply chain | Curated registry; user opt-in | CDN compromise could affect preview |
-| Path traversal on Save | Dialog-scoped paths only | Low |
-| localStorage exfiltration | Same-origin policy | Other scripts on same origin could read (web hosting) |
+| Path traversal on Open/Save | `path_guard` + dialog paths | Low when using desktop builds ≥ alpha.1 |
+| Unrestricted FS from WebView | FS plugin writes removed; IPC only | Low |
+| Unsigned desktop updates | Updater minisign + pubkey in config | Unsigned Windows installer until code signing configured |
 
 ---
 
 ## Pre-release checklist
 
-- [ ] No secrets in source or default templates
-- [ ] Tauri capabilities minimal (fs + dialog only)
-- [ ] CDN registry URLs use HTTPS
-- [ ] Share URL payload contains no automatic network callbacks
-- [ ] Release binaries built from tagged CI commits
+- [x] No secrets in source or default templates
+- [x] Tauri capabilities minimal (dialog + IPC commands only)
+- [x] CDN registry URLs use HTTPS
+- [x] Share URL payload contains no automatic network callbacks
+- [ ] Windows code signing (SmartScreen) — optional CI secrets
+- [ ] macOS notarization — optional CI secrets
 
 ---
 

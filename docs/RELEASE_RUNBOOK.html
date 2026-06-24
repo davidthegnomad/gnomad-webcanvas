@@ -222,25 +222,53 @@ body {
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
-          <p class="doc-path">docs/RELEASE_RUNBOOK.md</p>
+          <p class="doc-path">docs\RELEASE_RUNBOOK.md</p>
           <a href="#overview" class="toc-h2">Overview</a>
 <a href="#pre-release-checklist" class="toc-h2">Pre-release checklist</a>
 <a href="#version-bump" class="toc-h2">Version bump</a>
 <a href="#tag-and-release" class="toc-h2">Tag and release</a>
+<a href="#windows-alpha" class="toc-h3">Windows Alpha</a>
+<a href="#linux-macos-beta" class="toc-h3">Linux / macOS Beta</a>
 <a href="#post-ci-steps" class="toc-h2">Post-CI steps</a>
 <a href="#rollback" class="toc-h2">Rollback</a>
-<a href="#future-signing-amp-notarization" class="toc-h2">Future: signing &amp; notarization</a>
-<a href="#human-only-actions" class="toc-h2">Human-only actions</a>
+<a href="#signing-secrets-github-actions" class="toc-h2">Signing secrets (GitHub Actions)</a>
+<a href="#links" class="toc-h2">Links</a>
         </nav>
     <main class="content doc-body">
       <header class="hero">
         <h2>Release Runbook</h2>
         <p class="formats">Also available: <a href="RELEASE_RUNBOOK.md">Markdown</a> · <a href="RELEASE_RUNBOOK.txt">Plain text</a></p>
       </header>
-      <h1 id="release-runbook-gnomad-webcanvas">Release Runbook — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-beta.2<br><strong>Last updated:</strong> June 2026</p>
+      <h1 id="release-runbook-gnomad-webcanvas">Release Runbook — Gnomad Webcanvas</h1><p><strong>Version:</strong> 0.1.0-alpha.1 (Windows) / 0.1.0-beta.6 (Linux &amp; macOS)<br><strong>Last updated:</strong> June 2026</p>
 <hr>
-<h2 id="overview">Overview</h2><p>Releases are triggered by pushing a <strong>version tag</strong> (<code>v*</code>). GitHub Actions builds macOS, Linux, and Windows installers and creates a <strong>draft</strong> GitHub Release.</p>
-<p>Workflow: <code>.github/workflows/release.yml</code></p>
+<h2 id="overview">Overview</h2><p>Releases are triggered by pushing a <strong>version tag</strong> (<code>v*</code>). GitHub Actions builds installers and <strong>publishes</strong> a GitHub Release automatically (no manual publish step).</p>
+<p><strong>Platform split (important):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tag pattern</th>
+<th>CI builds</th>
+<th>Channel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>v*-alpha*</code></td>
+<td><strong>Windows only</strong></td>
+<td>Windows Alpha</td>
+</tr>
+<tr>
+<td><code>v*-beta*</code> (no <code>alpha</code>)</td>
+<td><strong>Linux + macOS only</strong></td>
+<td>Linux/macOS Beta</td>
+</tr>
+</tbody></table>
+<p>This keeps Windows Alpha from rebuilding or overwriting Linux/macOS beta artifacts.</p>
+<p><strong>From Cursor:</strong> ask the agent to release, or run:</p>
+<pre><code class="language-bash">npm run release              # full flow: test → tag → CI → publish
+npm run release -- --retag   # rebuild after CI fix (same version)
+</code></pre>
+<p>Workflow: <code>.github/workflows/release.yml</code> · Skill: <code>.cursor/skills/release-gnomad-webcanvas/SKILL.md</code></p>
+<p>GitHub Pages (<code>/get/</code>) deploys on every push to <code>main</code> via <code>.github/workflows/deploy-web.yml</code>.</p>
 <hr>
 <h2 id="pre-release-checklist">Pre-release checklist</h2><pre><code class="language-bash">cd 05_apps_and_extensions/gnomad-preview
 
@@ -250,18 +278,21 @@ npm run test
 npx tsc -b --noEmit
 npm run build
 
-# Desktop smoke (local)
-npm run tauri:build   # on your OS
+# Desktop smoke (local — use platform script)
+npm run tauri:build:windows   # Windows alpha
+npm run tauri:build:linux     # Linux beta
+npm run tauri:build:macos     # macOS beta
 
 # Docs current
 npm run docs:export
 </code></pre>
 <ul>
 <li><input disabled="" type="checkbox"> <a href="../CHANGELOG.md">CHANGELOG.md</a> updated</li>
-<li><input disabled="" type="checkbox"> <code>npm run test</code> passes (19 unit tests)</li>
-<li><input disabled="" type="checkbox"> Version bumped in <code>package.json</code> and <code>src-tauri/tauri.conf.json</code></li>
+<li><input disabled="" type="checkbox"> <code>npm run test</code> passes (unit tests)</li>
+<li><input disabled="" type="checkbox"> Version bumped in <code>package.json</code>, <code>src-tauri/tauri.conf.json</code>, and platform configs</li>
+<li><input disabled="" type="checkbox"> <code>public/get/index.html</code> download links updated</li>
 <li><input disabled="" type="checkbox"> <a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a> completed for target platforms</li>
-<li><input disabled="" type="checkbox"> No secrets in diff</li>
+<li><input disabled="" type="checkbox"> No secrets in diff (never commit <code>.env</code>)</li>
 </ul>
 <hr>
 <h2 id="version-bump">Version bump</h2><p>Align these files:</p>
@@ -270,30 +301,57 @@ npm run docs:export
 <tr>
 <th>File</th>
 <th>Field</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody><tr>
 <td><code>package.json</code></td>
 <td><code>&quot;version&quot;</code></td>
+<td>Repo default (currently Windows alpha)</td>
 </tr>
 <tr>
 <td><code>src-tauri/tauri.conf.json</code></td>
 <td><code>&quot;version&quot;</code></td>
+<td>Shared shell</td>
+</tr>
+<tr>
+<td><code>src-tauri/tauri.windows.conf.json</code></td>
+<td><code>&quot;version&quot;</code></td>
+<td>Windows Alpha</td>
+</tr>
+<tr>
+<td><code>src-tauri/tauri.linux.conf.json</code></td>
+<td><code>&quot;version&quot;</code></td>
+<td>Linux Beta</td>
+</tr>
+<tr>
+<td><code>src-tauri/tauri.macos.conf.json</code></td>
+<td><code>&quot;version&quot;</code></td>
+<td>macOS Beta</td>
 </tr>
 <tr>
 <td><code>CHANGELOG.md</code></td>
 <td>New section header</td>
+<td></td>
+</tr>
+<tr>
+<td><code>public/get/index.html</code></td>
+<td>Version lines + release URLs</td>
+<td></td>
 </tr>
 </tbody></table>
 <hr>
-<h2 id="tag-and-release">Tag and release</h2><pre><code class="language-bash">git pull origin main
-git add -A
-git commit -m &quot;Release v0.1.0&quot;
-git tag -a v0.1.0 -m &quot;Gnomad Webcanvas v0.1.0&quot;
-git push origin main
-git push origin v0.1.0
+<h2 id="tag-and-release">Tag and release</h2><h3 id="windows-alpha">Windows Alpha</h3><pre><code class="language-bash">git pull origin main
+# package.json + tauri.windows.conf.json at 0.1.0-alpha.N
+npm run release   # creates v0.1.0-alpha.N → Windows CI only
 </code></pre>
-<p>Monitor <strong>Actions → Release Desktop Builds</strong>. Expect three matrix jobs:</p>
+<h3 id="linux-macos-beta">Linux / macOS Beta</h3><p>Bump <code>tauri.linux.conf.json</code> and <code>tauri.macos.conf.json</code> (e.g. <code>0.1.0-beta.7</code>).<br>Set <code>package.json</code> to the beta version for tagging, or tag manually:</p>
+<pre><code class="language-bash">git tag -a v0.1.0-beta.7 -m &quot;Gnomad Webcanvas v0.1.0-beta.7&quot;
+git push origin v0.1.0-beta.7
+</code></pre>
+<p>To rebuild the same version after a CI fix:</p>
+<pre><code class="language-bash">npm run release -- --retag
+</code></pre>
 <table>
 <thead>
 <tr>
@@ -302,25 +360,25 @@ git push origin v0.1.0
 </tr>
 </thead>
 <tbody><tr>
-<td>macOS (aarch64)</td>
+<td>Windows Alpha (<code>v*-alpha*</code>)</td>
+<td>NSIS <code>.exe</code></td>
+</tr>
+<tr>
+<td>macOS Beta (aarch64 + x86_64)</td>
 <td><code>.dmg</code>, <code>.app</code></td>
 </tr>
 <tr>
-<td>Ubuntu (x86_64)</td>
+<td>Ubuntu Beta (x86_64)</td>
 <td><code>.deb</code>, <code>.rpm</code>, AppImage</td>
 </tr>
-<tr>
-<td>Windows (x86_64)</td>
-<td><code>.msi</code>, <code>.exe</code></td>
-</tr>
 </tbody></table>
+<p>CI uploads per-target <code>SHA256SUMS-*.txt</code> artifacts.</p>
 <hr>
-<h2 id="post-ci-steps">Post-CI steps</h2><ol>
-<li>Open the <strong>draft release</strong> on GitHub</li>
-<li>Verify attached assets per platform</li>
-<li>Edit release notes (copy from CHANGELOG)</li>
-<li>Publish release (or keep draft for internal QA)</li>
-<li>Smoke-install one artifact per OS</li>
+<h2 id="post-ci-steps">Post-CI steps</h2><p>Automated by <code>npm run release</code>. Optional manual smoke test:</p>
+<ol>
+<li>Download one artifact per platform from the GitHub Release</li>
+<li>Walk <a href="QA_CHECKLIST.md">docs/QA_CHECKLIST.md</a> on at least one platform</li>
+<li>Verify <a href="https://davidthegnomad.github.io/gnomad-webcanvas/get/">Get page</a> links resolve</li>
 </ol>
 <hr>
 <h2 id="rollback">Rollback</h2><table>
@@ -339,34 +397,42 @@ git push origin v0.1.0
 <td>Re-run failed job or patch and tag <code>v0.1.1</code></td>
 </tr>
 <tr>
-<td>Critical bug in published release</td>
-<td>Mark release as pre-release; publish hotfix tag</td>
+<td>Windows alpha breaks Linux/macOS</td>
+<td>Should not happen — alpha tags skip Linux/macOS jobs</td>
 </tr>
 </tbody></table>
-<p>Never force-push tags that others may have pulled.</p>
 <hr>
-<h2 id="future-signing-amp-notarization">Future: signing &amp; notarization</h2><p>Not yet configured. When adding:</p>
-<table>
+<h2 id="signing-secrets-github-actions">Signing secrets (GitHub Actions)</h2><table>
 <thead>
 <tr>
 <th>Secret</th>
-<th>Purpose</th>
+<th>Platform</th>
 </tr>
 </thead>
 <tbody><tr>
 <td><code>TAURI_SIGNING_PRIVATE_KEY</code></td>
-<td>Updater + bundle signing</td>
+<td>Updater signatures (all)</td>
 </tr>
 <tr>
-<td><code>APPLE_ID</code>, <code>APPLE_PASSWORD</code>, <code>APPLE_TEAM_ID</code></td>
+<td><code>TAURI_SIGNING_PRIVATE_KEY_PASSWORD</code></td>
+<td>Updater</td>
+</tr>
+<tr>
+<td><code>APPLE_*</code></td>
 <td>macOS notarization</td>
 </tr>
+<tr>
+<td><code>WINDOWS_CERTIFICATE</code></td>
+<td>Windows code signing (optional)</td>
+</tr>
 </tbody></table>
-<p>See Gnomad Desktop Assistant <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/UPDATER.md">UPDATER.md</a> for key setup pattern.</p>
 <hr>
-<h2 id="human-only-actions">Human-only actions</h2><p>See <a href="../HUMAN.md">HUMAN.md</a> for owner checklist (signing keys, store submissions).</p>
-<hr>
-<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+<h2 id="links">Links</h2><ul>
+<li><a href="https://github.com/davidthegnomad/gnomad-webcanvas/releases">Releases</a></li>
+<li><a href="https://github.com/davidthegnomad/gnomad-webcanvas/actions">Actions</a></li>
+<li><a href="https://davidthegnomad.github.io/gnomad-webcanvas/">GitHub Pages</a></li>
+<li><a href="https://davidthegnomad.github.io/gnomad-webcanvas/get/">Get / Download</a></li>
+</ul>
 
       <footer class="doc-footer">
         <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

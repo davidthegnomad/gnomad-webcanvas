@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   BUILDING GNOMAD WEBCANVAS FOR MACOS, LINUX, AND WINDOWS
-  Gnomad Webcanvas · docs/BUILD_PLATFORMS.md
+  Gnomad Webcanvas · docs\BUILD_PLATFORMS.md
 ════════════════════════════════════════════════════════════════════════
 
 BUILDING GNOMAD WEBCANVAS FOR MACOS, LINUX, AND WINDOWS
@@ -44,12 +44,14 @@ DEVELOPMENT
 PRODUCTION BUILD
 ----------------
 
-  [bash]
-    npm run tauri:build
-    # CI variant (same build; signing via env — see .env.example)
-    npm run tauri:build:ci
+Use platform-specific commands (base tauri.conf.json has no bundle targets):
 
-Output under src-tauri/target/release/bundle/:
+  [bash]
+    npm run tauri:build:linux    # .deb, .rpm, AppImage
+    npm run tauri:build:macos    # .app, .dmg
+    npm run tauri:build:windows  # NSIS .exe (Windows Alpha)
+
+Output under src-tauri/target/release/bundle/.
 
   Platform  |  Artifacts           
   macOS     |  .app, .dmg          
@@ -114,6 +116,8 @@ No. One x86_64 build covers all common desktop distros (Fedora, Nobara, Ubuntu, 
 
 You only need separate builds per CPU architecture (e.g. x86_64 vs aarch64/ARM). Kernel updates on the same machine do not require a new installer.
 
+On Wayland/KDE, the desktop launcher must set GDK_BACKEND=x11 and WEBKIT_DISABLE_DMABUF_RENDERER=1 (see src-tauri/bundle/linux/webcanvas.desktop.hbs). Without these, the dock icon may fail with a Wayland protocol error.
+
 Launch on Wayland/KDE if the window is blank:
 
   [bash]
@@ -128,14 +132,20 @@ On Wayland, use npm run tauri:dev. For WebKit/GPU issues, use npm run tauri:dev:
 WINDOWS
 -------
 
-Build on Windows with WebView2 (Evergreen bootstrapper in tauri.conf.json):
+Build on Windows with WebView2 (silent bootstrapper in tauri.windows.conf.json):
 
   [bash]
-    npm run tauri:build
+    npm run tauri:build:windows
+    # or on Windows:
+    powershell -File scripts/build-windows-release.ps1
 
-Output: .msi and NSIS .exe.
+Output: NSIS .exe installer.
 
-Code signing: optional — WINDOWS_CERTIFICATE secrets in CI (see .env.example).
+Channel: 0.1.0-alpha.1 — Windows Alpha. Limited QA; feedback welcome via Get page.
+
+Code signing: optional — WINDOWS_CERTIFICATE secrets in CI (see .env.example). Unsigned builds may trigger SmartScreen.
+
+CI: Windows installers publish only on v-alpha tags. Linux/macOS beta releases are unaffected.
 
 ────────────────────────────────────────
 
@@ -144,10 +154,10 @@ CI RELEASE BUILDS
 
 Tagged pushes (v*) trigger .github/workflows/release.yml:
 
-  Runner          |  Target                                   
-  macos-latest    |  aarch64-apple-darwin, x86_64-apple-darwin
-  ubuntu-latest   |  x86_64-unknown-linux-gnu                 
-  windows-latest  |  x86_64-pc-windows-msvc                   
+  Runner          |  Target                                     |  When               
+  macos-latest    |  aarch64-apple-darwin, x86_64-apple-darwin  |  v-beta tags        
+  ubuntu-latest   |  x86_64-unknown-linux-gnu                   |  v-beta tags        
+  windows-latest  |  x86_64-pc-windows-msvc                     |  *v-alpha tags only*
 
 Releases publish automatically as pre-releases (prerelease: true). Flip to stable in the workflow when ready.
 

@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   USER GUIDE
-  Gnomad Webcanvas · docs/USER_GUIDE.md
+  Gnomad Webcanvas · docs\USER_GUIDE.md
 ════════════════════════════════════════════════════════════════════════
 
 USER GUIDE — GNOMAD WEBCANVAS

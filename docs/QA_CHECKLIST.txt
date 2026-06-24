@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   QA CHECKLIST
-  Gnomad Webcanvas · docs/QA_CHECKLIST.md
+  Gnomad Webcanvas · docs\QA_CHECKLIST.md
 ════════════════════════════════════════════════════════════════════════
 
 QA CHECKLIST — GNOMAD WEBCANVAS

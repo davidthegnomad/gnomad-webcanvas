@@ -6,6 +6,42 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.1.0-alpha.1] — 2026-06-24
+
+### Windows Alpha
+
+First **Windows Alpha** release — separate from Linux/macOS **Beta 6** channel. Use for early feedback only.
+
+### Added
+
+- `tauri.windows.conf.json` — Windows-only NSIS bundle, file associations, WebView2 bootstrapper
+- `scripts/build-windows-release.sh` / `.ps1` and `npm run tauri:build:windows`
+- `src/platform/windows.ts`, `src-tauri/src/menu/windows.rs`
+- Parallel AI code reviews (GLM, Kimi, Qwen via NVIDIA NIM) with combined action reports in `reviews/`
+- GitHub Pages download section for Windows Alpha installer
+
+### Security (P0 hardening)
+
+- Cross-platform `path_guard` (`dirs` crate, component-wise Windows checks)
+- Guarded IPC file commands — removed unrestricted `fs` plugin writes from frontend
+- CSP tightened (`script-src` without `unsafe-inline`)
+- Async file I/O via `spawn_blocking` (no main-thread blocking reads)
+- Updater: validated release tags, HTTP timeouts, user-confirmed restart (`restart_app`)
+
+### Changed
+
+- `App.tsx` decomposed into hooks (`useProjectHydration`, `useTauriDesktopEvents`, etc.)
+- CI: `v*-alpha*` tags build **Windows only**; `v*-beta*` tags build Linux + macOS
+- Base `tauri.conf.json` — shared shell only; platform configs own bundle targets
+
+### Fixed
+
+- Windows `USERPROFILE` path resolution (was Linux-only `HOME`)
+- Prefix confusion in path allowlists (`C:\Users\Alice` vs `AliceMalicious`)
+- Multi-file CLI open now emits `webcanvas:pending-files` consistently
+
+---
+
 ## [0.1.0-beta.6] — 2026-06-23
 
 ### Added

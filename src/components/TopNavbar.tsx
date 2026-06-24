@@ -170,13 +170,14 @@ export default function TopNavbar() {
   }, [initializeStore, setCurrentProject, updateProjectsMeta, bumpProjectVersion]);
 
   const handleDeleteProject = useCallback((id: string) => {
+    const { projects, currentProjectId } = useEditorStore.getState();
     if (projects.length <= 1) return;
     const updated = deleteProject(id);
     updateProjectsMeta(updated);
     if (id === currentProjectId && updated.length > 0) {
       handleSwitchProject(updated[0].id);
     }
-  }, [projects.length, currentProjectId, updateProjectsMeta, handleSwitchProject]);
+  }, [updateProjectsMeta, handleSwitchProject]);
 
   const handleRename = useCallback((id: string) => {
     if (!renameValue.trim()) return;

@@ -224,7 +224,7 @@ body {
           <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">HUMAN.md</p>
           <a href="#priority-order" class="toc-h2">Priority order</a>
-<a href="#1-first-release-tag-v010" class="toc-h2">1. First release tag (v0.1.0)</a>
+<a href="#1-desktop-release-automated" class="toc-h2">1. Desktop release (automated)</a>
 <a href="#2-github-repo-amp-pages-optional" class="toc-h2">2. GitHub repo &amp; Pages (optional)</a>
 <a href="#3-apple-developer-notarization" class="toc-h2">3. Apple Developer + notarization</a>
 <a href="#4-updater-signing-keys-future" class="toc-h2">4. Updater signing keys (future)</a>
@@ -281,18 +281,13 @@ body {
 </tr>
 </tbody></table>
 <hr>
-<h2 id="1-first-release-tag-v010">1. First release tag (v0.1.0)</h2><p><strong>Why:</strong> CI release workflow only runs on <code>v*</code> tags. Without a tag, no GitHub Release artifacts exist.</p>
-<p><strong>When ready:</strong></p>
+<h2 id="1-desktop-release-automated">1. Desktop release (automated)</h2><p><strong>Why:</strong> CI release workflow only runs on <code>v*</code> tags.</p>
+<p><strong>From Cursor:</strong> say <em>&quot;release Gnomad Webcanvas&quot;</em> or <em>&quot;ship beta&quot;</em> — the agent runs <code>npm run release</code>.</p>
+<p><strong>Manual (same command):</strong></p>
 <pre><code class="language-bash">cd 05_apps_and_extensions/gnomad-preview
-npm run lint
-npx tsc -b --noEmit
-npm run build
-npm run docs:export
-git tag -a v0.1.0 -m &quot;Gnomad Webcanvas v0.1.0&quot;
-git push origin v0.1.0
+npm run release
 </code></pre>
-<p>Monitor <strong>Actions → Release Desktop Builds</strong>. Expect three matrix jobs (macOS, Linux, Windows).</p>
-<p><strong>After CI:</strong> Walk <a href="docs/QA_CHECKLIST.md">docs/QA_CHECKLIST.md</a> on at least one platform, then publish the draft release.</p>
+<p>No GitHub website login needed after one-time <code>gh auth login</code> on this machine.</p>
 <p><strong>Docs:</strong> <a href="docs/RELEASE_RUNBOOK.md">docs/RELEASE_RUNBOOK.md</a></p>
 <hr>
 <h2 id="2-github-repo-amp-pages-optional">2. GitHub repo &amp; Pages (optional)</h2><p><strong>Why:</strong> Host <code>docs/index.html</code> as a project site (like Gnomad Desktop Assistant).</p>
@@ -352,11 +347,12 @@ git push origin v0.1.0
 <hr>
 <h2 id="what-agents-already-handle">What agents already handle</h2><ul>
 <li>Code, docs export, lint/typecheck guidance</li>
-<li>Release workflow when <strong>you</strong> push a <code>v*</code> tag</li>
+<li><strong>Full desktop release</strong> via <code>npm run release</code> (tag → CI → published GitHub Release)</li>
 <li>Documentation in <code>docs/</code> (MD source)</li>
 </ul>
 <hr>
 <h2 id="quick-reference-commands">Quick reference commands</h2><pre><code class="language-bash">npm run docs:export     # regenerate HTML/TXT from Markdown
+npm run release         # ship desktop beta (tag + CI + publish)
 npm run tauri:dev       # local desktop dev
 npm run tauri:build     # local production build
 npm run lint            # ESLint

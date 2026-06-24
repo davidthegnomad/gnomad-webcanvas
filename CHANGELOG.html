@@ -223,7 +223,19 @@ body {
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
           <p class="doc-path">CHANGELOG.md</p>
-          <a href="#010-beta2-2026-06-01" class="toc-h2">[0.1.0-beta.2] — 2026-06-01</a>
+          <a href="#010-alpha1-2026-06-24" class="toc-h2">[0.1.0-alpha.1] — 2026-06-24</a>
+<a href="#windows-alpha" class="toc-h3">Windows Alpha</a>
+<a href="#added" class="toc-h3">Added</a>
+<a href="#security-p0-hardening" class="toc-h3">Security (P0 hardening)</a>
+<a href="#changed" class="toc-h3">Changed</a>
+<a href="#fixed" class="toc-h3">Fixed</a>
+<a href="#010-beta6-2026-06-23" class="toc-h2">[0.1.0-beta.6] — 2026-06-23</a>
+<a href="#added" class="toc-h3">Added</a>
+<a href="#fixed" class="toc-h3">Fixed</a>
+<a href="#010-beta3-2026-06-09" class="toc-h2">[0.1.0-beta.3] — 2026-06-09</a>
+<a href="#added" class="toc-h3">Added</a>
+<a href="#fixed" class="toc-h3">Fixed</a>
+<a href="#010-beta2-2026-06-01" class="toc-h2">[0.1.0-beta.2] — 2026-06-01</a>
 <a href="#added" class="toc-h3">Added</a>
 <a href="#changed" class="toc-h3">Changed</a>
 <a href="#010-beta1-2026-05-30" class="toc-h2">[0.1.0-beta.1] — 2026-05-30</a>
@@ -238,6 +250,60 @@ body {
       </header>
       <h1 id="changelog-gnomad-webcanvas">Changelog — Gnomad Webcanvas</h1><p>All notable changes to this project are documented here.</p>
 <p>Format based on <a href="https://keepachangelog.com/">Keep a Changelog</a>.</p>
+<hr>
+<h2 id="010-alpha1-2026-06-24">[0.1.0-alpha.1] — 2026-06-24</h2><h3 id="windows-alpha">Windows Alpha</h3><p>First <strong>Windows Alpha</strong> release — separate from Linux/macOS <strong>Beta 6</strong> channel. Use for early feedback only.</p>
+<h3 id="added">Added</h3><ul>
+<li><code>tauri.windows.conf.json</code> — Windows-only NSIS bundle, file associations, WebView2 bootstrapper</li>
+<li><code>scripts/build-windows-release.sh</code> / <code>.ps1</code> and <code>npm run tauri:build:windows</code></li>
+<li><code>src/platform/windows.ts</code>, <code>src-tauri/src/menu/windows.rs</code></li>
+<li>Parallel AI code reviews (GLM, Kimi, Qwen via NVIDIA NIM) with combined action reports in <code>reviews/</code></li>
+<li>GitHub Pages download section for Windows Alpha installer</li>
+</ul>
+<h3 id="security-p0-hardening">Security (P0 hardening)</h3><ul>
+<li>Cross-platform <code>path_guard</code> (<code>dirs</code> crate, component-wise Windows checks)</li>
+<li>Guarded IPC file commands — removed unrestricted <code>fs</code> plugin writes from frontend</li>
+<li>CSP tightened (<code>script-src</code> without <code>unsafe-inline</code>)</li>
+<li>Async file I/O via <code>spawn_blocking</code> (no main-thread blocking reads)</li>
+<li>Updater: validated release tags, HTTP timeouts, user-confirmed restart (<code>restart_app</code>)</li>
+</ul>
+<h3 id="changed">Changed</h3><ul>
+<li><code>App.tsx</code> decomposed into hooks (<code>useProjectHydration</code>, <code>useTauriDesktopEvents</code>, etc.)</li>
+<li>CI: <code>v*-alpha*</code> tags build <strong>Windows only</strong>; <code>v*-beta*</code> tags build Linux + macOS</li>
+<li>Base <code>tauri.conf.json</code> — shared shell only; platform configs own bundle targets</li>
+</ul>
+<h3 id="fixed">Fixed</h3><ul>
+<li>Windows <code>USERPROFILE</code> path resolution (was Linux-only <code>HOME</code>)</li>
+<li>Prefix confusion in path allowlists (<code>C:\Users\Alice</code> vs <code>AliceMalicious</code>)</li>
+<li>Multi-file CLI open now emits <code>webcanvas:pending-files</code> consistently</li>
+</ul>
+<hr>
+<h2 id="010-beta6-2026-06-23">[0.1.0-beta.6] — 2026-06-23</h2><h3 id="added">Added</h3><ul>
+<li>Linux/macOS platform split (menus, build configs, runtime hooks)</li>
+<li>Bundled Monaco editor (offline; no CDN dependency under CSP)</li>
+<li>Robust File/Help menu bar with Close, About, and Check for Updates</li>
+<li><code>finish_close</code> flow for reliable Quit on Linux</li>
+<li><code>scripts/launch-linux.sh</code> — kills stale AppImage extracts before launch</li>
+<li>Path guard for desktop file reads (blocks system paths)</li>
+<li>Unit tests for update status helpers and path guard</li>
+</ul>
+<h3 id="fixed">Fixed</h3><ul>
+<li>HTML/CSS/JS editors stuck on “Loading editor…” (CSP blocked jsDelivr Monaco CDN)</li>
+<li>Window Quit/Close blocked after unsaved-changes hook (<code>prevent_close</code> without release)</li>
+<li>Stale AppImage extract pointing at <code>localhost:5173</code> instead of bundled assets</li>
+<li>Linux AppImage build on Fedora 43+ (<code>NO_STRIP=1</code>)</li>
+</ul>
+<hr>
+<h2 id="010-beta3-2026-06-09">[0.1.0-beta.3] — 2026-06-09</h2><h3 id="added">Added</h3><ul>
+<li>Custom WC app icon (Tauri bundle + web favicon)</li>
+<li>Native macOS menu bar with About modal and in-app updater</li>
+<li>Desktop export via native Save dialog (ZIP)</li>
+<li>Share copies public GitHub Pages URL on desktop</li>
+</ul>
+<h3 id="fixed">Fixed</h3><ul>
+<li>Templates and CDN libs now update Monaco editor and live preview</li>
+<li>Cmd+Tab app switcher (activation policy, single-instance focus, dock reopen)</li>
+<li>Default HTML template: <code>Welcome to Webcanvas!</code></li>
+</ul>
 <hr>
 <h2 id="010-beta2-2026-06-01">[0.1.0-beta.2] — 2026-06-01</h2><h3 id="added">Added</h3><ul>
 <li>Vitest unit tests (19) for <code>parseHtmlFile</code>, <code>shareUrl</code>, and <code>assembleSource</code></li>

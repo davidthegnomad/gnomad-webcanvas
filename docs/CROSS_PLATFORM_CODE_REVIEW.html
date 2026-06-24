@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gnomad Webcanvas — Gnomad Webcanvas</title>
+  <meta name="description" content="Gnomad Webcanvas documentation for Gnomad Webcanvas." />
+  <style>:root {
+  --bg-base: #0d1117;
+  --bg-panel: rgba(22, 27, 34, 0.95);
+  --bg-elevated: rgba(33, 38, 45, 0.98);
+  --border: rgba(48, 54, 61, 0.9);
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #818cf8;
+  --accent-secondary: #c084fc;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --pill-radius: 999px;
+  --radius: 12px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(192, 132, 252, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(129, 140, 248, 0.08), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(129, 140, 248, 0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(129, 140, 248, 0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">⚡</span><h1>Gnomad Webcanvas</h1></div>
+          <p class="doc-path">docs\CROSS_PLATFORM_CODE_REVIEW.md</p>
+          <a href="#executive-summary" class="toc-h2">Executive summary</a>
+<a href="#critical-bugs-p0-fix-before-calling-desktop-10" class="toc-h2">Critical bugs (P0 — fix before calling desktop “1.0”)</a>
+<a href="#verified-code-reference-bug-1" class="toc-h3">Verified code reference (bug #1)</a>
+<a href="#macos-improvements" class="toc-h2">macOS improvements</a>
+<a href="#windows-improvements" class="toc-h2">Windows improvements</a>
+<a href="#linux-improvements-nobara-fedora-wayland" class="toc-h2">Linux improvements (Nobara / Fedora / Wayland)</a>
+<a href="#web-vs-desktop-parity-gaps" class="toc-h2">Web vs desktop parity gaps</a>
+<a href="#ci-release-gaps" class="toc-h2">CI / release gaps</a>
+<a href="#prioritized-refactor-roadmap" class="toc-h2">Prioritized refactor roadmap</a>
+<a href="#p0-blockers-for-desktop-10" class="toc-h3">P0 — Blockers for desktop 1.0</a>
+<a href="#p1-platform-polish" class="toc-h3">P1 — Platform polish</a>
+<a href="#p2-quality-of-life" class="toc-h3">P2 — Quality of life</a>
+<a href="#suggested-fix-order-copy-paste-checklist" class="toc-h2">Suggested fix order (copy-paste checklist)</a>
+<a href="#what-already-works-well" class="toc-h2">What already works well</a>
+<a href="#related-docs" class="toc-h2">Related docs</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Gnomad Webcanvas</h2>
+        <p class="formats">Also available: <a href="CROSS_PLATFORM_CODE_REVIEW.md">Markdown</a> · <a href="CROSS_PLATFORM_CODE_REVIEW.txt">Plain text</a></p>
+      </header>
+      <h1 id="gnomad-webcanvas-cross-platform-code-review">Gnomad Webcanvas — Cross-Platform Code Review</h1><p><strong>Project:</strong> <code>05_apps_and_extensions/gnomad-preview</code><br><strong>Scope:</strong> macOS, Windows, Linux, and web parity (Tauri 2 + React 19)<br><strong>Date:</strong> 2026-06-15<br><strong>Reviewers:</strong> Codebase audit + Nemotron 3 Ultra (OpenRouter) synthesis  </p>
+<blockquote>
+<p><strong>Update 2026-06-15:</strong> P0 + most P1/P2 code fixes implemented. Signing/notarization/Flatpak remain optional infra.</p>
+</blockquote>
+<hr>
+<h2 id="executive-summary">Executive summary</h2><ul>
+<li><strong>Critical data-loss risk:</strong> Desktop <code>Ctrl+S</code> / <code>Cmd+S</code> on an unsaved file (no <code>filePath</code> yet) calls <code>webBridge.saveProjectAs()</code>, which <strong>returns <code>null</code></strong> — save appears to run but nothing is written.</li>
+<li><strong>No close guard:</strong> <code>UnsavedChangesModal</code> exists but is never wired; Rust has no <code>CloseRequested</code> handler — closing the window drops dirty edits silently.</li>
+<li><strong>Desktop file UX is keyboard-only:</strong> Open/Save work via shortcuts in <code>App.tsx</code>, but <code>TopNavbar</code> has no File menu or buttons — poor discoverability on all desktop OSes.</li>
+<li><strong>Open dialog vs parser mismatch:</strong> Dialog filters only <code>.html</code>/<code>.htm</code>, while <code>fileContent.ts</code> already supports <code>.css</code>, <code>.js</code>, <code>.md</code>, <code>.txt</code> — dead capability.</li>
+<li><strong>Linux dev friction on Nobara/Fedora:</strong> <code>npm run tauri:dev:linux</code> hardcodes <code>GDK_BACKEND=x11</code> and disables DMA-BUF; <code>install-linux-deps.sh</code> covers dnf but <code>BUILD_PLATFORMS.md</code> only documents apt.</li>
+<li><strong>CI coverage gaps:</strong> Releases build macOS <strong>arm64 only</strong> (no Intel/universal), no notarization, no Windows signing, Linux <strong>x86_64 only</strong>.</li>
+</ul>
+<hr>
+<h2 id="critical-bugs-p0-fix-before-calling-desktop-10">Critical bugs (P0 — fix before calling desktop “1.0”)</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>src/utils/platformBridge.ts</code></td>
+<td><code>saveProject()</code> without <code>filePath</code> delegates to <code>webBridge.saveProjectAs()</code>, which always returns <code>null</code> on desktop. First save does nothing.</td>
+<td>In <code>createTauriBridge()</code>, when <code>!filePath</code>, call the same <code>dialog.save</code> + <code>writeTextFile</code> logic as <code>saveProjectAs</code> (or invoke <code>saveProjectAs</code> on self, not <code>webBridge</code>).</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>src/App.tsx</code>, <code>src-tauri/src/lib.rs</code></td>
+<td>No unsaved-changes prompt on window close. <code>UnsavedChangesModal.tsx</code> is never imported.</td>
+<td>In <code>lib.rs</code>, intercept <code>CloseRequested</code>, prevent close, emit event to frontend. In <code>App.tsx</code>, show modal; save/discard/cancel before <code>getCurrentWindow().close()</code>.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>src/utils/platformBridge.ts</code></td>
+<td>Open filter: <code>[&#39;html&#39;, &#39;htm&#39;]</code> only.</td>
+<td>Extend to <code>[&#39;html&#39;, &#39;htm&#39;, &#39;css&#39;, &#39;js&#39;, &#39;md&#39;, &#39;txt&#39;]</code> and route through <code>parseFileContent()</code> from <code>fileContent.ts</code> by extension.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src/utils/projectManager.ts</code>, <code>src/App.tsx</code></td>
+<td>Desktop uses <strong>both</strong> <code>localStorage</code> projects and optional <code>currentFilePath</code> — two sources of truth; switching projects does not clear file path; “dirty” state conflates both models.</td>
+<td>On desktop: file on disk is authoritative when <code>currentFilePath</code> is set; <code>localStorage</code> for session/recents only. Gate with <code>isDesktop()</code>.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>src-tauri/capabilities/default.json</code></td>
+<td>Broad <code>fs:allow-read-text-file</code> / <code>allow-write-text-file</code> without scoped paths (Tauri 2 best practice).</td>
+<td>Add FS scopes limited to user-selected paths (dialog-granted) plus app data dir. See <a href="https://v2.tauri.app/reference/acl/permission/">Tauri fs scope docs</a>.</td>
+<td><strong>S</strong></td>
+</tr>
+</tbody></table>
+<h3 id="verified-code-reference-bug-1">Verified code reference (bug #1)</h3><pre><code class="language-47:54:05_apps_and_extensions/gnomad-preview/src/utils/platformBridge.ts">    saveProject: async (html, css, js, filePath?) =&gt; {
+      if (!filePath) {
+        return webBridge.saveProjectAs!(html, css, js);
+      }
+      const content = assembleFullHtml(html, css, js);
+      await writeTextFile(filePath, content);
+      return filePath;
+    },
+</code></pre>
+<p><code>webBridge.saveProjectAs</code> is defined to <code>return null</code> — this is the first-save failure.</p>
+<hr>
+<h2 id="macos-improvements">macOS improvements</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>src-tauri/tauri.conf.json</code></td>
+<td>No signing/notarization config documented in repo.</td>
+<td>Add <code>bundle.macOS</code> signing identity, entitlements plist (<code>com.apple.security.files.user-selected.read-write</code>), minimum macOS version. Document in <code>docs/BUILD_PLATFORMS.md</code>.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td>Matrix target <code>aarch64-apple-darwin</code> only — Intel Mac users get no CI-built artifact.</td>
+<td>Add <code>x86_64-apple-darwin</code> job or universal binary via <code>lipo</code>; notarize with <code>notarytool</code> + staple in CI.</td>
+<td><strong>L</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>src/components/ShortcutsModal.tsx</code>, <code>TopNavbar.tsx</code></td>
+<td>UI labels say <code>Ctrl+…</code> everywhere; macOS footnote is easy to miss.</td>
+<td>Add <code>src/utils/modKeyLabel.ts</code>: detect macOS → show <code>⌘</code> in shortcuts modal and toolbar tooltips.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src-tauri/src/lib.rs</code></td>
+<td>No native app menu (File → Open/Save/Quit). Expected on macOS.</td>
+<td>Use <code>tauri::menu</code> — File, Edit (cut/copy/paste via predefined items), Window. Wire to same handlers as <code>App.tsx</code> shortcuts.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>docs/BUILD_PLATFORMS.md</code></td>
+<td>States releases are “drafts”; <code>release.yml</code> sets <code>releaseDraft: false</code> (auto-publish).</td>
+<td>Align docs with workflow; add QA gate before tag if staying manual.</td>
+<td><strong>S</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="windows-improvements">Windows improvements</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>src-tauri/tauri.conf.json</code></td>
+<td>NSIS in bundle targets; no documented code-signing or WebView2 bootstrap story.</td>
+<td>Configure <code>bundle.windows.certificateThumbprint</code> for CI; document WebView2 Evergreen requirement in user guide.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>src/App.tsx</code></td>
+<td>Window title uses <code>currentFilePath.split(/[/\\]/).pop()</code> — works, but full path in title bar on some themes looks cluttered.</td>
+<td>Use <code>@tauri-apps/api/path</code> <code>basename()</code> for title; optional status-bar path.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td>No <code>signtool</code> step after build.</td>
+<td>Sign <code>.exe</code>/<code>.msi</code> in CI with stored cert; verify with <code>signtool verify</code>.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src-tauri/src/lib.rs</code></td>
+<td>Same as macOS — no native menu/accelerators exposed in shell.</td>
+<td>Shared menu setup with platform-appropriate accelerators (<code>Ctrl+</code> auto on Windows).</td>
+<td><strong>M</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="linux-improvements-nobara-fedora-wayland">Linux improvements (Nobara / Fedora / Wayland)</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>package.json</code></td>
+<td><code>&quot;tauri:dev:linux&quot;</code> forces <code>GDK_BACKEND=x11</code> and <code>WEBKIT_DISABLE_DMABUF_RENDERER=1</code>. Breaks native Wayland sessions; masks GPU issues instead of documenting them.</td>
+<td>Default <code>tauri:dev</code> without overrides; add <code>tauri:dev:x11</code> escape hatch script; detect <code>WAYLAND_DISPLAY</code> in docs.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>scripts/install-linux-deps.sh</code></td>
+<td>Fedora/Nobara dnf packages — good for this machine.</td>
+<td>Reference from <code>BUILD_PLATFORMS.md</code> (currently apt-only); add webkit2gtk version note for Tauri 2.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td>Ubuntu apt deps differ from <code>install-linux-deps.sh</code> — expected, but AppImage/deb testing on real Nobara not documented.</td>
+<td>Add QA step: test AppImage on Fedora + deb on Ubuntu in release runbook.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src-tauri/tauri.conf.json</code></td>
+<td>Targets <code>deb</code>, <code>rpm</code>, <code>appimage</code> — good. No Flatpak manifest for sandboxed distro installs.</td>
+<td>Optional P2: <code>flatpak/org.gnomad.Webcanvas.yml</code> with portal-based file access.</td>
+<td><strong>L</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>src/App.tsx</code> / theming</td>
+<td>UI theme from editor preference only; no sync with system GTK light/dark on Linux.</td>
+<td><code>@tauri-apps/plugin-os</code> theme API or <code>prefers-color-scheme</code> for shell chrome (editor theme can stay independent).</td>
+<td><strong>M</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="web-vs-desktop-parity-gaps">Web vs desktop parity gaps</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>src/components/TopNavbar.tsx</code></td>
+<td>No Open / Save / Save As controls when <code>isDesktop()</code>.</td>
+<td>Add compact File dropdown (desktop-only) calling <code>getPlatformBridge()</code> methods.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>src/utils/exportProject.ts</code></td>
+<td>Always uses <code>file-saver</code> blob download — works but bypasses native save location on desktop.</td>
+<td>Extend <code>platformBridge</code> with <code>exportZip(blob, defaultName)</code> using Tauri save dialog + binary write.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>src/utils/platformBridge.ts</code></td>
+<td><code>isDesktop()</code> checks <code>&#39;__TAURI_INTERNALS__&#39; in window</code> — correct for Tauri 2; no fallback if detection fails mid-load.</td>
+<td>Also try dynamic <code>import(&#39;@tauri-apps/api/core&#39;)</code> <code>isTauri()</code> once; log detection failures in dev.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src/components/PreviewFrame.tsx</code></td>
+<td>iframe <code>sandbox=&quot;allow-scripts&quot;</code> only — some user HTML (forms, same-origin tricks) won&#39;t behave like a normal browser tab.</td>
+<td>Document limitation; optional “relaxed sandbox” toggle for desktop with warning.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>src/utils/fileContent.ts</code> vs <code>parseHtmlFile.ts</code></td>
+<td>Duplicate HTML parsing (regex vs <code>DOMParser</code>); <code>fileContent.ts</code> unused by bridge.</td>
+<td>Single module: export <code>parseHtmlFile</code> + <code>parseFileContent</code>; delete regex duplicate.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>src/main.tsx</code></td>
+<td>Web splash dismissal lives in index flow; desktop skips via <code>webSplash.ts</code> — OK.</td>
+<td>No change; document in architecture doc.</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="ci-release-gaps">CI / release gaps</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Problem</th>
+<th>Recommended fix</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td>Single arch per OS; no checksums file, no artifact signing.</td>
+<td>Matrix expansion; attach <code>SHA256SUMS</code>; consider <code>cosign</code> for supply chain.</td>
+<td><strong>M</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td><code>prerelease: true</code> — confirm intentional for beta channel.</td>
+<td>Document in <code>RELEASE_RUNBOOK.md</code>; flip when stable.</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>package.json</code></td>
+<td>No <code>tauri:build:ci</code> variant documenting env vars for signing.</td>
+<td>Add script + env template in <code>.env.example</code> (signing secrets stay in CI only).</td>
+<td><strong>S</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src-tauri/tauri.conf.json</code></td>
+<td><code>&quot;csp&quot;: null</code> — permissive for a code editor loading user HTML/JS; acceptable for dev tool but worth hardening for production web deploy.</td>
+<td>Separate CSP for web build vs desktop; desktop can stay relaxed for local preview fidelity.</td>
+<td><strong>M</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="prioritized-refactor-roadmap">Prioritized refactor roadmap</h2><h3 id="p0-blockers-for-desktop-10">P0 — Blockers for desktop 1.0</h3><ol>
+<li>Fix <code>saveProject</code> first-save path (<code>platformBridge.ts</code>)</li>
+<li>Wire <code>UnsavedChangesModal</code> + close guard (<code>lib.rs</code>, <code>App.tsx</code>)</li>
+<li>Align open dialog filters with <code>parseFileContent</code></li>
+<li>Scope FS capabilities (<code>capabilities/default.json</code>)</li>
+<li>Native File menu (<code>lib.rs</code>) + TopNavbar File dropdown</li>
+</ol>
+<h3 id="p1-platform-polish">P1 — Platform polish</h3><ol start="6">
+<li>Dynamic <code>⌘</code> / <code>Ctrl</code> labels in UI</li>
+<li>Desktop-native ZIP export via save dialog</li>
+<li>File-first project model on desktop (<code>projectManager.ts</code>)</li>
+<li>macOS notarization + universal binary in CI</li>
+<li>Windows code signing in CI</li>
+<li>Linux: Wayland-friendly dev defaults + Fedora doc parity</li>
+</ol>
+<h3 id="p2-quality-of-life">P2 — Quality of life</h3><ol start="12">
+<li>Deduplicate HTML parsers</li>
+<li>System theme sync (Linux/macOS/Windows)</li>
+<li>Configurable preview iframe sandbox</li>
+<li>Recent files list (native menu or app menu)</li>
+<li>Flatpak manifest (optional)</li>
+</ol>
+<hr>
+<h2 id="suggested-fix-order-copy-paste-checklist">Suggested fix order (copy-paste checklist)</h2><pre><code class="language-bash"># 1. platformBridge.ts — saveProject without path → dialog.save (not webBridge)
+# 2. lib.rs + App.tsx — CloseRequested → UnsavedChangesModal
+# 3. platformBridge.ts — open filters + parseFileContent routing
+# 4. capabilities/default.json — fs scopes
+# 5. lib.rs — native File/Edit/Window menu
+# 6. TopNavbar.tsx — File menu (desktop only)
+# 7. package.json — split tauri:dev vs tauri:dev:x11; document Nobara deps
+# 8. release.yml + BUILD_PLATFORMS.md — signing, arch matrix, doc sync
+</code></pre>
+<hr>
+<h2 id="what-already-works-well">What already works well</h2><ul>
+<li><strong>Keyboard shortcuts</strong> correctly use <code>e.metaKey || e.ctrlKey</code> in <code>App.tsx</code> — cross-platform modifier handling is sound.</li>
+<li><strong>Window title</strong> dirty indicator (<code>*</code>) and path basename split handles <code>\</code> and <code>/</code>.</li>
+<li><strong>platformBridge pattern</strong> cleanly separates web vs desktop; lazy Tauri plugin imports keep web bundle lean.</li>
+<li><strong>Bundle targets</strong> in <code>tauri.conf.json</code> cover all three desktop packaging formats.</li>
+<li><strong>CI matrix</strong> builds Linux + Windows + macOS on tag push — good foundation.</li>
+<li><strong>Vitest</strong> covers parser, share URL, assembler — add platformBridge unit tests next.</li>
+</ul>
+<hr>
+<h2 id="related-docs">Related docs</h2><ul>
+<li><a href="./CROSS_PLATFORM_CHECKLIST.md">CROSS_PLATFORM_CHECKLIST.md</a> — pre-merge checklist</li>
+<li><a href="./BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a> — build instructions</li>
+<li><a href="./QA_CHECKLIST.md">QA_CHECKLIST.md</a> — manual QA before release</li>
+</ul>
+<hr>
+<p><em>Generated for Gnomad Studio internal review. Raw model artifact: <code>scripts/context-stack/offload-artifacts/gnomad-preview-cross-platform-review.json</code></em></p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

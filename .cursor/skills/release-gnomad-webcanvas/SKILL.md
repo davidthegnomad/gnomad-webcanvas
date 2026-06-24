@@ -23,15 +23,15 @@ This will:
 2. Run `npm run test` + `npm run build`
 3. Create annotated tag `v{version}` from `package.json`
 4. Push tag → triggers **Release Desktop Builds** workflow
-5. Wait for macOS / Windows / Linux builds
+5. Wait for CI (`v*-alpha*` → Windows only; `v*-beta*` → Linux + macOS only)
 6. Verify the GitHub Release is **published** (not draft)
 
 ## Before releasing a *new* version
 
 Align version in:
-- `package.json`
-- `src-tauri/tauri.conf.json`
-- `public/get/index.html` (version line)
+- `package.json` + `src-tauri/tauri.conf.json`
+- Platform configs: `tauri.windows.conf.json` (alpha), `tauri.linux.conf.json` + `tauri.macos.conf.json` (beta)
+- `public/get/index.html` (version line + release URLs)
 - `CHANGELOG.md` (new `## [x.y.z]` section)
 
 Commit and push to `main`, then `npm run release`.

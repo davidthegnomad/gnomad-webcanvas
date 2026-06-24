@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════
   BUILD NARRATIVE
-  Gnomad Webcanvas · docs/BUILD.md
+  Gnomad Webcanvas · docs\BUILD.md
 ════════════════════════════════════════════════════════════════════════
 
 BUILD NARRATIVE — GNOMAD WEBCANVAS

@@ -9,7 +9,7 @@ import {
   openExternalUrl,
   buildBugReportMailto,
 } from '../constants/appInfo';
-import { checkForUpdates, installUpdate } from '../lib/updater';
+import { checkForUpdates, installUpdate, restartApp } from '../lib/updater';
 import { formatUpdateCheckMessage } from '../lib/updateStatus';
 import { isDesktop } from '../utils/platformBridge';
 import { TipButton } from './HoverTip';
@@ -60,9 +60,20 @@ export default function AboutModal({ onClose, autoCheckUpdates = false }: AboutM
     setUpdateBusy(true);
     setUpdateStatus('Downloading update…');
     try {
-      await installUpdate('beta');
+      const result = await installUpdate('beta');
+      if (result.restartRequired) {
+        setUpdateStatus(
+          result.version
+            ? `Update ${result.version} installed. Restarting…`
+            : 'Update installed. Restarting…',
+        );
+        await restartApp();
+        return;
+      }
+      setUpdateStatus('Update installed.');
     } catch (err) {
       setUpdateStatus(err instanceof Error ? err.message : 'Update install failed.');
+    } finally {
       setUpdateBusy(false);
     }
   };

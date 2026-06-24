@@ -1,13 +1,22 @@
 # Release Runbook — Gnomad Webcanvas
 
-**Version:** 0.1.0-beta.2  
+**Version:** 0.1.0-alpha.1 (Windows) / 0.1.0-beta.6 (Linux & macOS)  
 **Last updated:** June 2026
 
 ---
 
 ## Overview
 
-Releases are triggered by pushing a **version tag** (`v*`). GitHub Actions builds macOS, Linux, and Windows installers and **publishes** a GitHub Release automatically (no manual publish step).
+Releases are triggered by pushing a **version tag** (`v*`). GitHub Actions builds installers and **publishes** a GitHub Release automatically (no manual publish step).
+
+**Platform split (important):**
+
+| Tag pattern | CI builds | Channel |
+|-------------|-----------|---------|
+| `v*-alpha*` | **Windows only** | Windows Alpha |
+| `v*-beta*` (no `alpha`) | **Linux + macOS only** | Linux/macOS Beta |
+
+This keeps Windows Alpha from rebuilding or overwriting Linux/macOS beta artifacts.
 
 **From Cursor:** ask the agent to release, or run:
 
@@ -17,6 +26,8 @@ npm run release -- --retag   # rebuild after CI fix (same version)
 ```
 
 Workflow: `.github/workflows/release.yml` · Skill: `.cursor/skills/release-gnomad-webcanvas/SKILL.md`
+
+GitHub Pages (`/get/`) deploys on every push to `main` via `.github/workflows/deploy-web.yml`.
 
 ---
 
@@ -31,8 +42,10 @@ npm run test
 npx tsc -b --noEmit
 npm run build
 
-# Desktop smoke (local)
-npm run tauri:build   # on your OS
+# Desktop smoke (local — use platform script)
+npm run tauri:build:windows   # Windows alpha
+npm run tauri:build:linux     # Linux beta
+npm run tauri:build:macos     # macOS beta
 
 # Docs current
 npm run docs:export
@@ -40,9 +53,10 @@ npm run docs:export
 
 - [ ] [CHANGELOG.md](../CHANGELOG.md) updated
 - [ ] `npm run test` passes (unit tests)
-- [ ] Version bumped in `package.json` and `src-tauri/tauri.conf.json`
+- [ ] Version bumped in `package.json`, `src-tauri/tauri.conf.json`, and platform configs
+- [ ] `public/get/index.html` download links updated
 - [ ] [QA_CHECKLIST.md](QA_CHECKLIST.md) completed for target platforms
-- [ ] No secrets in diff
+- [ ] No secrets in diff (never commit `.env`)
 
 ---
 
@@ -50,22 +64,37 @@ npm run docs:export
 
 Align these files:
 
-| File | Field |
-|------|-------|
-| `package.json` | `"version"` |
-| `src-tauri/tauri.conf.json` | `"version"` |
-| `CHANGELOG.md` | New section header |
+| File | Field | Notes |
+|------|-------|-------|
+| `package.json` | `"version"` | Repo default (currently Windows alpha) |
+| `src-tauri/tauri.conf.json` | `"version"` | Shared shell |
+| `src-tauri/tauri.windows.conf.json` | `"version"` | Windows Alpha |
+| `src-tauri/tauri.linux.conf.json` | `"version"` | Linux Beta |
+| `src-tauri/tauri.macos.conf.json` | `"version"` | macOS Beta |
+| `CHANGELOG.md` | New section header | |
+| `public/get/index.html` | Version lines + release URLs | |
 
 ---
 
 ## Tag and release
 
+### Windows Alpha
+
 ```bash
 git pull origin main
-npm run release
+# package.json + tauri.windows.conf.json at 0.1.0-alpha.N
+npm run release   # creates v0.1.0-alpha.N → Windows CI only
 ```
 
-The script runs tests, creates `v{version}` from `package.json`, pushes the tag, waits for CI, and verifies the release is published.
+### Linux / macOS Beta
+
+Bump `tauri.linux.conf.json` and `tauri.macos.conf.json` (e.g. `0.1.0-beta.7`).  
+Set `package.json` to the beta version for tagging, or tag manually:
+
+```bash
+git tag -a v0.1.0-beta.7 -m "Gnomad Webcanvas v0.1.0-beta.7"
+git push origin v0.1.0-beta.7
+```
 
 To rebuild the same version after a CI fix:
 
@@ -75,9 +104,9 @@ npm run release -- --retag
 
 | Job | Artifact |
 |-----|----------|
-| macOS (aarch64 + x86_64) | `.dmg`, `.app` |
-| Ubuntu (x86_64) | `.deb`, `.rpm`, AppImage |
-| Windows (x86_64) | `.msi`, `.exe` |
+| Windows Alpha (`v*-alpha*`) | NSIS `.exe` |
+| macOS Beta (aarch64 + x86_64) | `.dmg`, `.app` |
+| Ubuntu Beta (x86_64) | `.deb`, `.rpm`, AppImage |
 
 CI uploads per-target `SHA256SUMS-*.txt` artifacts.
 
@@ -89,6 +118,7 @@ Automated by `npm run release`. Optional manual smoke test:
 
 1. Download one artifact per platform from the GitHub Release
 2. Walk [docs/QA_CHECKLIST.md](QA_CHECKLIST.md) on at least one platform
+3. Verify [Get page](https://davidthegnomad.github.io/gnomad-webcanvas/get/) links resolve
 
 ---
 
@@ -98,29 +128,24 @@ Automated by `npm run release`. Optional manual smoke test:
 |----------|--------|
 | Bad tag pushed | Delete release + tag; fix; re-tag |
 | Single platform failed | Re-run failed job or patch and tag `v0.1.1` |
-| Critical bug in published release | Mark release as pre-release; publish hotfix tag |
-
-Never force-push tags that others may have pulled.
+| Windows alpha breaks Linux/macOS | Should not happen — alpha tags skip Linux/macOS jobs |
 
 ---
 
-## Future: signing & notarization
+## Signing secrets (GitHub Actions)
 
-Not yet configured. When adding:
-
-| Secret | Purpose |
-|--------|---------|
-| `TAURI_SIGNING_PRIVATE_KEY` | Updater + bundle signing |
-| `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | macOS notarization |
-
-See Gnomad Desktop Assistant [UPDATER.md](https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/UPDATER.md) for key setup pattern.
+| Secret | Platform |
+|--------|----------|
+| `TAURI_SIGNING_PRIVATE_KEY` | Updater signatures (all) |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Updater |
+| `APPLE_*` | macOS notarization |
+| `WINDOWS_CERTIFICATE` | Windows code signing (optional) |
 
 ---
 
-## Human-only actions
+## Links
 
-See [HUMAN.md](../HUMAN.md) for owner checklist (signing keys, store submissions).
-
----
-
-Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙
+- [Releases](https://github.com/davidthegnomad/gnomad-webcanvas/releases)
+- [Actions](https://github.com/davidthegnomad/gnomad-webcanvas/actions)
+- [GitHub Pages](https://davidthegnomad.github.io/gnomad-webcanvas/)
+- [Get / Download](https://davidthegnomad.github.io/gnomad-webcanvas/get/)

@@ -3,6 +3,9 @@ mod path_guard;
 mod platform;
 mod updater;
 
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
@@ -14,9 +17,19 @@ struct PendingFiles(Mutex<Vec<String>>);
 /// When false, CloseRequested is intercepted for unsaved-changes flow.
 struct CloseGate(AtomicBool);
 
+static MENU_EVENTS: &[(&str, &str)] = &[
+    ("about", "webcanvas:show-about"),
+    ("check_updates", "webcanvas:check-updates"),
+    ("file_open", "webcanvas:file-open"),
+    ("file_save", "webcanvas:file-save"),
+    ("file_save_as", "webcanvas:file-save-as"),
+    ("file_export", "webcanvas:file-export"),
+    ("file_close", "webcanvas:file-close"),
+];
+
 pub(crate) fn request_close_from_frontend(app: &AppHandle) {
     let gate = app.state::<CloseGate>();
-    if gate.0.load(Ordering::SeqCst) {
+    if gate.0.load(Ordering::Acquire) {
         app.exit(0);
         return;
     }
@@ -30,7 +43,7 @@ pub(crate) fn request_close_from_frontend(app: &AppHandle) {
 
 #[tauri::command]
 fn finish_close(window: WebviewWindow, app: AppHandle, gate: State<CloseGate>) -> Result<(), String> {
-    gate.0.store(true, Ordering::SeqCst);
+    gate.0.store(true, Ordering::Release);
     window.close().map_err(|e| e.to_string())?;
     if app.webview_windows().is_empty() {
         app.exit(0);
@@ -71,10 +84,9 @@ fn is_supported_file(path: &Path) -> bool {
     path.extension()
         .and_then(|e| e.to_str())
         .map(|ext| {
-            matches!(
-                ext.to_ascii_lowercase().as_str(),
-                "html" | "htm" | "txt" | "css" | "js" | "md"
-            )
+            path_guard::READABLE_EXTENSIONS
+                .iter()
+                .any(|allowed| ext.eq_ignore_ascii_case(allowed))
         })
         .unwrap_or(false)
 }
@@ -87,22 +99,11 @@ pub(crate) fn focus_main_window(app: &AppHandle) {
     }
 }
 
-fn emit_open_file(app: &AppHandle, path: &Path) {
-    if !is_supported_file(path) {
-        return;
-    }
-    let _ = app.emit(
-        "webcanvas:open-file",
-        path.to_string_lossy().to_string(),
-    );
-    focus_main_window(app);
-}
-
 fn queue_or_emit_files(app: &AppHandle, paths: Vec<PathBuf>, pending: &State<PendingFiles>) {
     let supported: Vec<String> = paths
         .into_iter()
         .filter(|p| is_supported_file(p))
-        .map(|p| p.to_string_lossy().to_string())
+        .map(|p| p.to_string_lossy().into_owned())
         .collect();
 
     if supported.is_empty() {
@@ -110,33 +111,94 @@ fn queue_or_emit_files(app: &AppHandle, paths: Vec<PathBuf>, pending: &State<Pen
     }
 
     if app.webview_windows().is_empty() {
-        let mut pending_files = pending.0.lock().expect("pending files lock");
-        pending_files.extend(supported);
+        match pending.0.lock() {
+            Ok(mut pending_files) => pending_files.extend(supported),
+            Err(e) => log::warn!("pending files lock poisoned: {e}"),
+        }
         return;
     }
 
-    if supported.len() == 1 {
-        emit_open_file(app, Path::new(&supported[0]));
-    } else {
-        let _ = app.emit("webcanvas:pending-files", supported);
+    let _ = app.emit("webcanvas:pending-files", supported);
+    focus_main_window(app);
+}
+
+const MAX_BYTES: u64 = 10 * 1024 * 1024;
+
+async fn read_verified_bytes(path: PathBuf) -> Result<Vec<u8>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut file = File::open(&path).map_err(|_| "Could not open file.".to_string())?;
+        let meta = file
+            .metadata()
+            .map_err(|_| "Could not read file metadata.".to_string())?;
+        if !meta.is_file() {
+            return Err("Path is not a regular file.".to_string());
+        }
+        let len = meta.len();
+        if len > MAX_BYTES {
+            return Err(format!(
+                "File is too large to open ({:.1} MB; limit is 10 MB).",
+                len as f64 / (1024.0 * 1024.0)
+            ));
+        }
+        let mut bytes = vec![0u8; len as usize];
+        std::io::Read::read_exact(&mut file, &mut bytes)
+            .map_err(|_| "Could not read file.".to_string())?;
+        Ok(bytes)
+    })
+    .await
+    .map_err(|e| format!("File read task failed: {e}"))?
+}
+
+async fn write_verified_bytes(path: PathBuf, content: Vec<u8>) -> Result<(), String> {
+    if content.len() as u64 > MAX_BYTES {
+        return Err("File is too large to write (10 MB limit).".to_string());
     }
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut file = File::create(&path).map_err(|_| "Could not write file.".to_string())?;
+        file.write_all(&content)
+            .map_err(|_| "Could not write file.".to_string())
+    })
+    .await
+    .map_err(|e| format!("File write task failed: {e}"))?
 }
 
 #[tauri::command]
-fn read_text_file_path(path: String) -> Result<String, String> {
-    const MAX_BYTES: u64 = 10 * 1024 * 1024;
-
+async fn read_text_file_path(path: String) -> Result<String, String> {
+    path_guard::reject_null_bytes(&path)?;
     let path_buf = path_guard::validate_user_readable_path(Path::new(&path))?;
+    let bytes = read_verified_bytes(path_buf).await?;
+    String::from_utf8(bytes).map_err(|e| format!("File is not valid UTF-8 text: {e}"))
+}
 
-    let metadata = std::fs::metadata(&path_buf).map_err(|e| e.to_string())?;
-    if metadata.len() > MAX_BYTES {
-        return Err(format!(
-            "File is too large to open ({:.1} MB; limit is 10 MB).",
-            metadata.len() as f64 / (1024.0 * 1024.0)
-        ));
+#[tauri::command]
+async fn write_text_file_path(path: String, content: String) -> Result<(), String> {
+    let path_buf = path_guard::validate_user_writable_path(
+        Path::new(&path),
+        path_guard::TEXT_WRITE_EXTENSIONS,
+    )?;
+    write_verified_bytes(path_buf, content.into_bytes()).await
+}
+
+#[tauri::command]
+async fn write_binary_file_path(path: String, content: Vec<u8>) -> Result<(), String> {
+    let path_buf = path_guard::validate_user_writable_path(
+        Path::new(&path),
+        path_guard::BINARY_WRITE_EXTENSIONS,
+    )?;
+    write_verified_bytes(path_buf, content).await
+}
+
+#[tauri::command]
+fn get_desktop_platform() -> &'static str {
+    if cfg!(target_os = "windows") {
+        "windows"
+    } else if cfg!(target_os = "macos") {
+        "macos"
+    } else if cfg!(target_os = "linux") {
+        "linux"
+    } else {
+        "unknown"
     }
-
-    std::fs::read_to_string(&path_buf).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -150,19 +212,12 @@ fn handle_menu_event(app: &AppHandle, event_id: &str) {
         return;
     };
 
-    let event_name = match event_id {
-        "about" => Some("webcanvas:show-about"),
-        "check_updates" => Some("webcanvas:check-updates"),
-        "file_open" => Some("webcanvas:file-open"),
-        "file_save" => Some("webcanvas:file-save"),
-        "file_save_as" => Some("webcanvas:file-save-as"),
-        "file_export" => Some("webcanvas:file-export"),
-        "file_close" => Some("webcanvas:file-close"),
-        _ => None,
-    };
+    static MAP: std::sync::OnceLock<HashMap<&'static str, &'static str>> =
+        std::sync::OnceLock::new();
+    let map = MAP.get_or_init(|| MENU_EVENTS.iter().copied().collect());
 
-    if let Some(name) = event_name {
-        let _ = window.emit(name, ());
+    if let Some(name) = map.get(event_id) {
+        let _ = window.emit(*name, ());
     }
 }
 
@@ -183,7 +238,6 @@ pub fn run() {
                 queue_or_emit_files(app, files, &pending);
             }
         }))
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
@@ -191,10 +245,14 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             read_text_file_path,
+            write_text_file_path,
+            write_binary_file_path,
+            get_desktop_platform,
             take_pending_open_files,
             finish_close,
             updater::check_for_updates,
             updater::install_update,
+            updater::restart_app,
         ])
         .setup(|app| {
             platform::setup(app)?;
@@ -217,7 +275,7 @@ pub fn run() {
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 let gate = window.state::<CloseGate>();
-                if gate.0.load(Ordering::SeqCst) {
+                if gate.0.load(Ordering::Acquire) {
                     return;
                 }
                 api.prevent_close();

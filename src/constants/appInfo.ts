@@ -1,9 +1,19 @@
 import packageJson from '../../package.json';
+import { detectAppPlatform } from '../platform/detect';
 import { PRODUCT_NAME, STUDIO_NAME, STUDIO_URL } from './branding';
 
 export const APP_NAME = PRODUCT_NAME;
 export const APP_VERSION = packageJson.version;
-export const APP_CHANNEL = 'Beta';
+
+function resolveAppChannel(): string {
+  if (detectAppPlatform() === 'windows' && APP_VERSION.includes('alpha')) {
+    return 'Windows Alpha';
+  }
+  if (APP_VERSION.includes('alpha')) return 'Alpha';
+  return 'Beta';
+}
+
+export const APP_CHANNEL = resolveAppChannel();
 export const APP_VERSION_LABEL = `${APP_VERSION} · ${APP_CHANNEL}`;
 export const BUG_REPORT_EMAIL = 'david@gnomad.studio';
 
