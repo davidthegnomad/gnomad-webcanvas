@@ -3,10 +3,18 @@
     "targets": ["deb", "rpm", "appimage"],
     "linux": {
       "deb": {
-        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs"
+        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs",
+        "postInstallScript": "bundle/linux/postinstall.sh",
+        "files": {
+          "/usr/bin/gnomad-webcanvas-launch": "bundle/linux/gnomad-webcanvas-launch.sh"
+        }
       },
       "rpm": {
-        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs"
+        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs",
+        "postInstallScript": "bundle/linux/postinstall.sh",
+        "files": {
+          "/usr/bin/gnomad-webcanvas-launch": "bundle/linux/gnomad-webcanvas-launch.sh"
+        }
       }
     }
   }

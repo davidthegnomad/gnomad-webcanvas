@@ -7,6 +7,11 @@ mod macos;
 #[cfg(target_os = "linux")]
 mod linux;
 
+pub fn apply_linux_display_env() {
+    #[cfg(target_os = "linux")]
+    linux::apply_display_env();
+}
+
 pub fn setup(app: &mut App) -> tauri::Result<()> {
     #[cfg(target_os = "macos")]
     macos::setup(app)?;

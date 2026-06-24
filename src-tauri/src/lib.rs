@@ -168,6 +168,8 @@ fn handle_menu_event(app: &AppHandle, event_id: &str) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    platform::apply_linux_display_env();
+
     tauri::Builder::default()
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(CloseGate(AtomicBool::new(false)))
