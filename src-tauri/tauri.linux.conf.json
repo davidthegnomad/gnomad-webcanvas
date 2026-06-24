@@ -1,5 +1,13 @@
 {
   "bundle": {
-    "targets": ["deb", "rpm", "appimage"]
+    "targets": ["deb", "rpm", "appimage"],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs"
+      },
+      "rpm": {
+        "desktopTemplate": "bundle/linux/webcanvas.desktop.hbs"
+      }
+    }
   }
 }

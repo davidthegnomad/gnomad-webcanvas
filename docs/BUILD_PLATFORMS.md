@@ -112,6 +112,8 @@ Plain `npm run tauri:build` still works for `.deb` and `.rpm`; AppImage may fail
 
 You only need **separate builds per CPU architecture** (e.g. `x86_64` vs `aarch64`/ARM). Kernel updates on the same machine do not require a new installer.
 
+On **Wayland/KDE**, the desktop launcher must set `GDK_BACKEND=x11` and `WEBKIT_DISABLE_DMABUF_RENDERER=1` (see `src-tauri/bundle/linux/webcanvas.desktop.hbs`). Without these, the dock icon may fail with a Wayland protocol error.
+
 Launch on Wayland/KDE if the window is blank:
 
 ```bash
